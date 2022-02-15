@@ -79,7 +79,7 @@ namespace UIM.DAL.Data.Migrations
                     b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("date");
 
-                    b.Property<int>("DepartmentId")
+                    b.Property<int?>("DepartmentId")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
@@ -177,6 +177,7 @@ namespace UIM.DAL.Data.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -231,13 +232,7 @@ namespace UIM.DAL.Data.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("AppUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CategoryId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("CategoryId1")
+                    b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
@@ -256,15 +251,15 @@ namespace UIM.DAL.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppUserId");
-
-                    b.HasIndex("CategoryId1");
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("SubmissionId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Ideas");
                 });
@@ -352,10 +347,8 @@ namespace UIM.DAL.Data.Migrations
             modelBuilder.Entity("UIM.Model.Entities.AppUser", b =>
                 {
                     b.HasOne("UIM.Model.Entities.Department", "Department")
-                        .WithMany("AppUser")
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("User")
+                        .HasForeignKey("DepartmentId");
 
                     b.Navigation("Department");
                 });
@@ -382,23 +375,23 @@ namespace UIM.DAL.Data.Migrations
 
             modelBuilder.Entity("UIM.Model.Entities.Idea", b =>
                 {
-                    b.HasOne("UIM.Model.Entities.AppUser", "AppUser")
-                        .WithMany("Ideas")
-                        .HasForeignKey("AppUserId");
-
                     b.HasOne("UIM.Model.Entities.Category", "Category")
                         .WithMany("Idea")
-                        .HasForeignKey("CategoryId1");
+                        .HasForeignKey("CategoryId");
 
                     b.HasOne("UIM.Model.Entities.Submission", "Submission")
                         .WithMany("Idea")
                         .HasForeignKey("SubmissionId");
 
-                    b.Navigation("AppUser");
+                    b.HasOne("UIM.Model.Entities.AppUser", "User")
+                        .WithMany("Ideas")
+                        .HasForeignKey("UserId");
 
                     b.Navigation("Category");
 
                     b.Navigation("Submission");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("UIM.Model.Entities.Like", b =>
@@ -409,15 +402,15 @@ namespace UIM.DAL.Data.Migrations
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("UIM.Model.Entities.AppUser", "AppUser")
+                    b.HasOne("UIM.Model.Entities.AppUser", "User")
                         .WithMany("Likes")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.Navigation("AppUser");
-
                     b.Navigation("Idea");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("UIM.Model.Entities.View", b =>
@@ -428,15 +421,15 @@ namespace UIM.DAL.Data.Migrations
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.HasOne("UIM.Model.Entities.AppUser", "AppUser")
+                    b.HasOne("UIM.Model.Entities.AppUser", "User")
                         .WithMany("Views")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
-                    b.Navigation("AppUser");
-
                     b.Navigation("Idea");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("UIM.Model.Entities.AppUser", b =>
@@ -455,7 +448,7 @@ namespace UIM.DAL.Data.Migrations
 
             modelBuilder.Entity("UIM.Model.Entities.Department", b =>
                 {
-                    b.Navigation("AppUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("UIM.Model.Entities.Idea", b =>

@@ -42,10 +42,12 @@ namespace UIM.DAL.Data
 
             builder.Entity<Department>().Property(_ => _.Name).IsRequired();
 
+            builder.Entity<Category>().Property(_ => _.Name).IsRequired();
+
             // Relationships
             // Likes - User
             builder.Entity<Like>()
-                .HasOne(_ => _.AppUser)
+                .HasOne(_ => _.User)
                 .WithMany(_ => _.Likes)
                 .HasForeignKey(_ => _.UserId)
                 .OnDelete(DeleteBehavior.ClientCascade);
@@ -63,7 +65,7 @@ namespace UIM.DAL.Data
 
             // Views - User
             builder.Entity<View>()
-                .HasOne(_ => _.AppUser)
+                .HasOne(_ => _.User)
                 .WithMany(_ => _.Views)
                 .HasForeignKey(_ => _.UserId)
                 .OnDelete(DeleteBehavior.ClientCascade);

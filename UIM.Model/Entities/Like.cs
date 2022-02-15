@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace UIM.Model.Entities
 {
@@ -11,7 +10,7 @@ namespace UIM.Model.Entities
         public DateTime CreatedAt { get; set; }
 
         // Referential Integrities
-        public AppUser AppUser { get; set; }
+        public AppUser User { get; set; }
 
         public Idea Idea { get; set; }
     }

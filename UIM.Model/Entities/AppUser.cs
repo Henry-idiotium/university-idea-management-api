@@ -7,7 +7,7 @@ namespace UIM.Model.Entities
     public class AppUser : IdentityUser
     {
         public string FullName { get; set; }
-        public int DepartmentId { get; set; }
+        public int? DepartmentId { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public byte[] ProfileImage { get; set; }
         public DateTime CreatedAt { get; set; }

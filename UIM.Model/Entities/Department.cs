@@ -10,6 +10,6 @@ namespace UIM.Model.Entities
         public string Name { get; set; }
 
         // Referential Integrity
-        public ICollection<AppUser> AppUser { get; set; }
+        public ICollection<AppUser> User { get; set; }
     }
 }

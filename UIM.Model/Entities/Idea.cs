@@ -11,12 +11,12 @@ namespace UIM.Model.Entities
         public string Description { get; set; }
         public string Content { get; set; }
         public string UserId { get; set; }
-        public string CategoryId { get; set; }
+        public int? CategoryId { get; set; }
         public string SubmissionId { get; set; }
         public DateTime CreatedAt { get; set; }
 
         // Referential Integrities
-        public AppUser AppUser { get; set; }
+        public AppUser User { get; set; }
         public Submission Submission { get; set; }
         public Category Category { get; set; }
         public ICollection<Attachment> Attachments { get; set; }
