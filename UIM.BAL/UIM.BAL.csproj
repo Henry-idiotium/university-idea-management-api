@@ -7,6 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\UIM.DAL\UIM.DAL.csproj" />
     <ProjectReference Include="..\UIM.Model\UIM.Model.csproj" />
+    <ProjectReference Include="..\UIM.Common\UIM.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
