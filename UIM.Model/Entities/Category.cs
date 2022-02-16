@@ -10,6 +10,6 @@ namespace UIM.Model.Entities
         public string Name { get; set; }
 
         // Referential Integrity
-        public ICollection<Idea> Idea { get; set; }
+        public ICollection<Idea> Ideas { get; set; }
     }
 }

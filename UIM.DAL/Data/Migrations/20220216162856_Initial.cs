@@ -38,7 +38,7 @@ namespace UIM.DAL.Data.Migrations
                 name: "Departments",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", maxLength: 450, nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
@@ -51,7 +51,7 @@ namespace UIM.DAL.Data.Migrations
                 name: "Submissions",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     InitialDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -68,7 +68,7 @@ namespace UIM.DAL.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FullName = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
                     DepartmentId = table.Column<int>(type: "int", nullable: true),
                     DateOfBirth = table.Column<DateTime>(type: "date", nullable: true),
                     ProfileImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
@@ -127,12 +127,13 @@ namespace UIM.DAL.Data.Migrations
                 name: "Ideas",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsAnonymous = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    CategoryId = table.Column<int>(type: "int", nullable: true),
+                    CategoryId = table.Column<int>(type: "int", nullable: false),
                     SubmissionId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -185,7 +186,7 @@ namespace UIM.DAL.Data.Migrations
                 name: "Comments",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
                     IdeaId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Parrent = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),

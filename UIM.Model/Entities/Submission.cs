@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace UIM.Model.Entities
 {
@@ -14,6 +13,6 @@ namespace UIM.Model.Entities
         public DateTime CreatedAt { get; set; }
 
         // Referential Integrity
-        public ICollection<Idea> Idea { get; set; }
+        public ICollection<Idea> Ideas { get; set; }
     }
 }
