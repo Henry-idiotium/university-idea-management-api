@@ -2,13 +2,23 @@ using System;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using UIM.BAL.Services;
+using UIM.BAL.Services.Interfaces;
 using UIM.DAL.Data;
+using UIM.DAL.Repositories;
+using UIM.DAL.Repositories.Interfaces;
 using UIM.Model.Entities;
 
 namespace UIM.API.Helpers
 {
     public static class ServiceExtensions
     {
+        public static void AddDIContainerExt(this IServiceCollection services)
+        {
+            services.AddScoped<IIdeaRepository, IdeaRepository>();
+            services.AddScoped<IIdeaService, IdeaService>();
+        }
+
         public static void AddDbContextExt(this IServiceCollection services, string localDbConnectionString)
         {
             var isDev = EnvHelpers.GetEnvVar("ASPNETCORE_ENVIRONMENT").ToLower() == "development";
