@@ -29,7 +29,6 @@ namespace UIM.DAL.Data
             builder.Entity<AppUser>(conf =>
             {
                 conf.Property(_ => _.DateOfBirth).HasColumnType("date");
-
                 conf.Property(_ => _.FullName).HasMaxLength(450);
 
                 conf.HasOne(_ => _.Department).WithMany(_ => _.Users)
@@ -39,7 +38,6 @@ namespace UIM.DAL.Data
             builder.Entity<Like>(conf =>
             {
                 conf.HasKey(_ => new { _.UserId, _.IdeaId });
-
                 conf.Property(_ => _.IsLike).IsRequired();
 
                 conf.HasOne(_ => _.User).WithMany(_ => _.Likes)
@@ -77,12 +75,11 @@ namespace UIM.DAL.Data
 
             builder.Entity<Comment>(conf =>
             {
+                conf.Property(_ => _.IdeaId).IsRequired();
+                conf.Property(_ => _.Content).IsRequired();
+                
                 conf.Property(_ => _.Id).HasMaxLength(450)
                     .ValueGeneratedOnAdd();
-
-                conf.Property(_ => _.IdeaId).IsRequired();
-
-                conf.Property(_ => _.Content).IsRequired();
 
                 conf.HasOne(_ => _.Idea).WithMany(_ => _.Comments)
                     .OnDelete(DeleteBehavior.Cascade);
@@ -90,22 +87,18 @@ namespace UIM.DAL.Data
 
             builder.Entity<Submission>(conf =>
             {
+                conf.Property(_ => _.InitialDate).IsRequired();
+                conf.Property(_ => _.FinalDate).IsRequired();
+                conf.Property(_ => _.Title).IsRequired();
                 conf.Property(_ => _.Id).HasMaxLength(450)
                     .ValueGeneratedOnAdd();
-
-                conf.Property(_ => _.InitialDate).IsRequired();
-
-                conf.Property(_ => _.FinalDate).IsRequired();
-
-                conf.Property(_ => _.Title).IsRequired();
             });
 
             builder.Entity<Department>(conf =>
             {
+                conf.Property(_ => _.Name).IsRequired();
                 conf.Property(_ => _.Id).HasMaxLength(450)
                     .ValueGeneratedOnAdd();
-
-                conf.Property(_ => _.Name).IsRequired();
             });
 
             builder.Entity<Category>().Property(_ => _.Name).IsRequired();
@@ -113,6 +106,16 @@ namespace UIM.DAL.Data
             builder.Entity<Attachment>()
                 .HasOne(_ => _.Idea).WithMany(_ => _.Attachments)
                 .OnDelete(DeleteBehavior.Cascade);
+                
+            builder.Entity<RefreshToken>(conf =>
+            {
+                conf.HasOne(_ => _.User).WithMany(_ => _.RefreshTokens);
+                
+                conf.Property(_ => _.Token).HasMaxLength(100);
+                conf.Property(_ => _.UserId).IsRequired();
+                conf.Property(_ => _.ReplacedByToken).HasMaxLength(100);
+                conf.Property(_ => _.ReasonRevoked).HasMaxLength(500);
+            });
         }
     }
 }
