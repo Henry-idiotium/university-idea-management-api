@@ -12,10 +12,11 @@ namespace UIM.Model.Entities
         public byte[] ProfileImage { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        // Referential Integrity
+        // Referential Integrities
         public Department Department { get; set; }
         public ICollection<Like> Likes { get; set; }
         public ICollection<View> Views { get; set; }
         public ICollection<Idea> Ideas { get; set; }
+        public ICollection<RefreshToken> RefreshTokens { get; set; }
     }
 }

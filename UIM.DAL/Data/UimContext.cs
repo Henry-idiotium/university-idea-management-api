@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -77,7 +75,14 @@ namespace UIM.DAL.Data
                 .HasForeignKey(_ => _.IdeaId)
                 .OnDelete(DeleteBehavior.ClientCascade);
 
-
+            builder.Entity<RefreshToken>(conf =>
+            {
+                conf.HasOne(_ => _.User).WithMany(_ => _.RefreshTokens);
+                conf.Property(_ => _.Token).HasMaxLength(100);
+                conf.Property(_ => _.UserId).IsRequired();
+                conf.Property(_ => _.ReplacedByToken).HasMaxLength(100);
+                conf.Property(_ => _.ReasonRevoked).HasMaxLength(500);
+            });
         }
     }
 }

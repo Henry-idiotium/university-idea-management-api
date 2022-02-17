@@ -1,18 +1,16 @@
+using UIM.Model.Dtos.Token;
+
 namespace UIM.Model.Dtos.Auth
 {
     public class AuthResponse
     {
-        public AuthResponse(Info userInfo)
+        public AuthResponse(UserDetailsResponse userInfo)
         {
             UserInfo = userInfo;
         }
 
-        public Info UserInfo { get; set; }
-
-        public class Info
-        {
-            public string Id { get; set; }
-            public string Email { get; set; }
-        }
+        public AccessToken AccessToken { get; set; }
+        public string RefreshToken { get; set; }
+        public UserDetailsResponse UserInfo { get; set; }
     }
 }
