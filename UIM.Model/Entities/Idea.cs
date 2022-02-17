@@ -10,8 +10,9 @@ namespace UIM.Model.Entities
         public string Title { get; set; }
         public string Description { get; set; }
         public string Content { get; set; }
+        public bool IsAnonymous { get; set; }
         public string UserId { get; set; }
-        public int? CategoryId { get; set; }
+        public int CategoryId { get; set; }
         public string SubmissionId { get; set; }
         public DateTime CreatedAt { get; set; }
 

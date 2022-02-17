@@ -10,7 +10,7 @@ using UIM.DAL.Data;
 namespace UIM.DAL.Data.Migrations
 {
     [DbContext(typeof(UimContext))]
-    [Migration("20220215015622_Initial")]
+    [Migration("20220216162856_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -92,7 +92,8 @@ namespace UIM.DAL.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("FullName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -190,6 +191,8 @@ namespace UIM.DAL.Data.Migrations
             modelBuilder.Entity("UIM.Model.Entities.Comment", b =>
                 {
                     b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Content")
@@ -217,6 +220,7 @@ namespace UIM.DAL.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasMaxLength(450)
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -232,9 +236,11 @@ namespace UIM.DAL.Data.Migrations
             modelBuilder.Entity("UIM.Model.Entities.Idea", b =>
                 {
                     b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("CategoryId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
@@ -245,6 +251,9 @@ namespace UIM.DAL.Data.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAnonymous")
+                        .HasColumnType("bit");
 
                     b.Property<string>("SubmissionId")
                         .HasColumnType("nvarchar(450)");
@@ -290,6 +299,8 @@ namespace UIM.DAL.Data.Migrations
             modelBuilder.Entity("UIM.Model.Entities.Submission", b =>
                 {
                     b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -349,8 +360,9 @@ namespace UIM.DAL.Data.Migrations
             modelBuilder.Entity("UIM.Model.Entities.AppUser", b =>
                 {
                     b.HasOne("UIM.Model.Entities.Department", "Department")
-                        .WithMany("User")
-                        .HasForeignKey("DepartmentId");
+                        .WithMany("Users")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Department");
                 });
@@ -359,7 +371,8 @@ namespace UIM.DAL.Data.Migrations
                 {
                     b.HasOne("UIM.Model.Entities.Idea", "Idea")
                         .WithMany("Attachments")
-                        .HasForeignKey("IdeaId");
+                        .HasForeignKey("IdeaId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Idea");
                 });
@@ -378,16 +391,20 @@ namespace UIM.DAL.Data.Migrations
             modelBuilder.Entity("UIM.Model.Entities.Idea", b =>
                 {
                     b.HasOne("UIM.Model.Entities.Category", "Category")
-                        .WithMany("Idea")
-                        .HasForeignKey("CategoryId");
+                        .WithMany("Ideas")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.HasOne("UIM.Model.Entities.Submission", "Submission")
-                        .WithMany("Idea")
-                        .HasForeignKey("SubmissionId");
+                        .WithMany("Ideas")
+                        .HasForeignKey("SubmissionId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("UIM.Model.Entities.AppUser", "User")
                         .WithMany("Ideas")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Category");
 
@@ -401,13 +418,13 @@ namespace UIM.DAL.Data.Migrations
                     b.HasOne("UIM.Model.Entities.Idea", "Idea")
                         .WithMany("Likes")
                         .HasForeignKey("IdeaId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("UIM.Model.Entities.AppUser", "User")
                         .WithMany("Likes")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Idea");
@@ -420,13 +437,13 @@ namespace UIM.DAL.Data.Migrations
                     b.HasOne("UIM.Model.Entities.Idea", "Idea")
                         .WithMany("Views")
                         .HasForeignKey("IdeaId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("UIM.Model.Entities.AppUser", "User")
                         .WithMany("Views")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Idea");
@@ -445,12 +462,12 @@ namespace UIM.DAL.Data.Migrations
 
             modelBuilder.Entity("UIM.Model.Entities.Category", b =>
                 {
-                    b.Navigation("Idea");
+                    b.Navigation("Ideas");
                 });
 
             modelBuilder.Entity("UIM.Model.Entities.Department", b =>
                 {
-                    b.Navigation("User");
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("UIM.Model.Entities.Idea", b =>
@@ -466,7 +483,7 @@ namespace UIM.DAL.Data.Migrations
 
             modelBuilder.Entity("UIM.Model.Entities.Submission", b =>
                 {
-                    b.Navigation("Idea");
+                    b.Navigation("Ideas");
                 });
 #pragma warning restore 612, 618
         }

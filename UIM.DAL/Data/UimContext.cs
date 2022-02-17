@@ -26,58 +26,91 @@ namespace UIM.DAL.Data
             builder.Ignore<IdentityUserToken<string>>();
             builder.Ignore<IdentityRoleClaim<string>>();
 
-            builder.Entity<AppUser>().Property(_ => _.DateOfBirth).HasColumnType("date");
+            builder.Entity<AppUser>(conf =>
+            {
+                conf.Property(_ => _.DateOfBirth).HasColumnType("date");
+                conf.Property(_ => _.FullName).HasMaxLength(450);
 
-            builder.Entity<Like>().HasKey(_ => new { _.UserId, _.IdeaId });
-            builder.Entity<Like>().Property(_ => _.IsLike).IsRequired();
+                conf.HasOne(_ => _.Department).WithMany(_ => _.Users)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
 
-            builder.Entity<Comment>().Property(_ => _.IdeaId).IsRequired();
-            builder.Entity<Comment>().Property(_ => _.Content).IsRequired();
+            builder.Entity<Like>(conf =>
+            {
+                conf.HasKey(_ => new { _.UserId, _.IdeaId });
+                conf.Property(_ => _.IsLike).IsRequired();
 
-            builder.Entity<Submission>().Property(_ => _.InitialDate).IsRequired();
-            builder.Entity<Submission>().Property(_ => _.FinalDate).IsRequired();
-            builder.Entity<Submission>().Property(_ => _.Title).IsRequired();
+                conf.HasOne(_ => _.User).WithMany(_ => _.Likes)
+                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<Department>().Property(_ => _.Name).IsRequired();
+                conf.HasOne(_ => _.Idea).WithMany(_ => _.Likes)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<View>(conf =>
+            {
+                conf.HasKey(_ => new { _.UserId, _.IdeaId });
+
+                conf.HasOne(_ => _.User).WithMany(_ => _.Views)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                conf.HasOne(_ => _.Idea).WithMany(_ => _.Views)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<Idea>(conf =>
+            {
+                conf.Property(_ => _.Id).HasMaxLength(450)
+                    .ValueGeneratedOnAdd();
+
+                conf.HasOne(_ => _.User).WithMany(_ => _.Ideas)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                conf.HasOne(_ => _.Category).WithMany(_ => _.Ideas)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                conf.HasOne(_ => _.Submission).WithMany(_ => _.Ideas)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<Comment>(conf =>
+            {
+                conf.Property(_ => _.IdeaId).IsRequired();
+                conf.Property(_ => _.Content).IsRequired();
+                
+                conf.Property(_ => _.Id).HasMaxLength(450)
+                    .ValueGeneratedOnAdd();
+
+                conf.HasOne(_ => _.Idea).WithMany(_ => _.Comments)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<Submission>(conf =>
+            {
+                conf.Property(_ => _.InitialDate).IsRequired();
+                conf.Property(_ => _.FinalDate).IsRequired();
+                conf.Property(_ => _.Title).IsRequired();
+                conf.Property(_ => _.Id).HasMaxLength(450)
+                    .ValueGeneratedOnAdd();
+            });
+
+            builder.Entity<Department>(conf =>
+            {
+                conf.Property(_ => _.Name).IsRequired();
+                conf.Property(_ => _.Id).HasMaxLength(450)
+                    .ValueGeneratedOnAdd();
+            });
 
             builder.Entity<Category>().Property(_ => _.Name).IsRequired();
 
-            // Relationships
-            // Likes - User
-            builder.Entity<Like>()
-                .HasOne(_ => _.User)
-                .WithMany(_ => _.Likes)
-                .HasForeignKey(_ => _.UserId)
-                .OnDelete(DeleteBehavior.ClientCascade);
-
-            // Likes - Idea
-            builder.Entity<Like>()
-                .HasOne(_ => _.Idea)
-                .WithMany(_ => _.Likes)
-                .HasForeignKey(_ => _.IdeaId)
-                .OnDelete(DeleteBehavior.ClientCascade);
-
-            // View
-            builder.Entity<View>()
-                .HasKey(_ => new { _.UserId, _.IdeaId });
-
-            // Views - User
-            builder.Entity<View>()
-                .HasOne(_ => _.User)
-                .WithMany(_ => _.Views)
-                .HasForeignKey(_ => _.UserId)
-                .OnDelete(DeleteBehavior.ClientCascade);
-
-            // Views - Idea
-            builder.Entity<View>()
-                .HasOne(_ => _.Idea)
-                .WithMany(_ => _.Views)
-                .HasForeignKey(_ => _.IdeaId)
-                .OnDelete(DeleteBehavior.ClientCascade);
-
+            builder.Entity<Attachment>()
+                .HasOne(_ => _.Idea).WithMany(_ => _.Attachments)
+                .OnDelete(DeleteBehavior.Cascade);
+                
             builder.Entity<RefreshToken>(conf =>
             {
                 conf.HasOne(_ => _.User).WithMany(_ => _.RefreshTokens);
+                
                 conf.Property(_ => _.Token).HasMaxLength(100);
                 conf.Property(_ => _.UserId).IsRequired();
                 conf.Property(_ => _.ReplacedByToken).HasMaxLength(100);
