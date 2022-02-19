@@ -28,10 +28,12 @@ namespace UIM.API
             }
             app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseCors("DevelopmentPolicy");
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseExceptionHandlingExt();
-
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
@@ -41,8 +43,10 @@ namespace UIM.API
         {
             services.AddDbContextExt(Configuration.GetConnectionString("uimdb"));
             services.AddIdentityExt();
+            services.AddAuthenticationExt();
             services.AddMapsterExt();
             services.AddDIContainerExt();
+            services.AddCorsExt();
             services.AddControllers();
             services.AddSwaggerExt();
         }
