@@ -9,4 +9,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="5.0.14" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\UIM.Common\UIM.Common.csproj" />
+  </ItemGroup>
+
 </Project>

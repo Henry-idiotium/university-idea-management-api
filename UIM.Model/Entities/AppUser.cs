@@ -17,6 +17,6 @@ namespace UIM.Model.Entities
         public ICollection<Like> Likes { get; set; }
         public ICollection<View> Views { get; set; }
         public ICollection<Idea> Ideas { get; set; }
-        public ICollection<RefreshToken> RefreshTokens { get; set; }
+        public List<RefreshToken> RefreshTokens { get; set; }
     }
 }

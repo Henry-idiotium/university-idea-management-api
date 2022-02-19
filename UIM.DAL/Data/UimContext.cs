@@ -17,14 +17,11 @@ namespace UIM.DAL.Data
         public DbSet<Attachment> Attachments { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            builder.Ignore<IdentityUserLogin<string>>();
-            builder.Ignore<IdentityUserClaim<string>>();
-            builder.Ignore<IdentityUserToken<string>>();
-            builder.Ignore<IdentityRoleClaim<string>>();
 
             builder.Entity<AppUser>(conf =>
             {
@@ -77,7 +74,7 @@ namespace UIM.DAL.Data
             {
                 conf.Property(_ => _.IdeaId).IsRequired();
                 conf.Property(_ => _.Content).IsRequired();
-                
+
                 conf.Property(_ => _.Id).HasMaxLength(450)
                     .ValueGeneratedOnAdd();
 
@@ -103,18 +100,21 @@ namespace UIM.DAL.Data
 
             builder.Entity<Category>().Property(_ => _.Name).IsRequired();
 
-            builder.Entity<Attachment>()
-                .HasOne(_ => _.Idea).WithMany(_ => _.Attachments)
-                .OnDelete(DeleteBehavior.Cascade);
-                
+            builder.Entity<Attachment>(conf =>
+            {
+                conf.HasOne(_ => _.Idea).WithMany(_ => _.Attachments)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
             builder.Entity<RefreshToken>(conf =>
             {
-                conf.HasOne(_ => _.User).WithMany(_ => _.RefreshTokens);
-                
+                conf.Property(_ => _.Id).ValueGeneratedOnAdd();
                 conf.Property(_ => _.Token).HasMaxLength(100);
                 conf.Property(_ => _.UserId).IsRequired();
                 conf.Property(_ => _.ReplacedByToken).HasMaxLength(100);
                 conf.Property(_ => _.ReasonRevoked).HasMaxLength(500);
+                conf.HasOne(_ => _.User).WithMany(_ => _.RefreshTokens)
+                    .HasForeignKey(_ => _.UserId);
             });
         }
     }
