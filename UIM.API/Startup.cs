@@ -41,6 +41,8 @@ namespace UIM.API
         {
             services.AddDbContextExt(Configuration.GetConnectionString("uimdb"));
             services.AddIdentityExt();
+            services.AddMapsterExt();
+            services.AddDIContainerExt();
             services.AddControllers();
             services.AddSwaggerExt();
         }

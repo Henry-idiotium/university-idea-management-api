@@ -4,6 +4,7 @@ namespace UIM.Common.ResponseMessages
     {
         public const string FailedLogin = "Email or password is incorrect.";
         public const string BadRequest = "Invalid request.";
+        public const string Forbidden = "Request rejected.";
         public const string PasswordNotMatch = "Submitted passwords didn't match.";
         public const string Unauthenticated = "Failed to authenticate with this resource.";
         public const string Unauthorized = "Unauthorized to access this resource.";
