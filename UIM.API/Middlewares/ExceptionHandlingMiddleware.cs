@@ -60,7 +60,8 @@ namespace UIM.API.Middlewares
             var response = JsonConvert.SerializeObject(new GenericResponse
             (
                 message: (exception.Message != null) && (exception is HttpException) ?
-                          exception.Message : ErrorResponseMessages.UnexpectedError
+                          exception.Message : ErrorResponseMessages.UnexpectedError,
+                succeeded: false
             ));
 
             await context.Response.WriteAsync(response);

@@ -10,6 +10,7 @@ namespace UIM.Model.Entities
         public string Description { get; set; }
         public DateTime InitialDate { get; set; }
         public DateTime FinalDate { get; set; }
+        public DateTime LastModifiedAt { get; set; }
         public DateTime CreatedAt { get; set; }
 
         // Referential Integrity

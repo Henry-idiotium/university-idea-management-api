@@ -41,8 +41,7 @@ namespace UIM.Common.Controllers
                 throw new HttpException(HttpStatusCode.BadRequest,
                                         ErrorResponseMessages.BadRequest);
 
-            return Ok(new GenericResponse(
-                data: await _authService.LoginAsync(request.Email, request.Password)));
+            return Ok(new GenericResponse(await _authService.LoginAsync(request.Email, request.Password)));
         }
 
         [HttpPut, Authorize]

@@ -56,6 +56,7 @@ namespace UIM.DAL.Data.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     InitialDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FinalDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -92,7 +93,6 @@ namespace UIM.DAL.Data.Migrations
                     FullName = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
                     DepartmentId = table.Column<int>(type: "int", nullable: true),
                     DateOfBirth = table.Column<DateTime>(type: "date", nullable: true),
-                    ProfileImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -215,8 +215,9 @@ namespace UIM.DAL.Data.Migrations
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsAnonymous = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    CategoryId = table.Column<int>(type: "int", nullable: false),
+                    CategoryId = table.Column<int>(type: "int", nullable: true),
                     SubmissionId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    LastModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -248,8 +249,8 @@ namespace UIM.DAL.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Token = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Expires = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Revoked = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -258,7 +259,7 @@ namespace UIM.DAL.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.PrimaryKey("PK_RefreshTokens", x => new { x.UserId, x.Id });
                     table.ForeignKey(
                         name: "FK_RefreshTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -301,7 +302,7 @@ namespace UIM.DAL.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.PrimaryKey("PK_Comments", x => new { x.IdeaId, x.Id });
                     table.ForeignKey(
                         name: "FK_Comments_Ideas_IdeaId",
                         column: x => x.IdeaId,
@@ -411,11 +412,6 @@ namespace UIM.DAL.Data.Migrations
                 column: "IdeaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_IdeaId",
-                table: "Comments",
-                column: "IdeaId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Ideas_CategoryId",
                 table: "Ideas",
                 column: "CategoryId");
@@ -434,11 +430,6 @@ namespace UIM.DAL.Data.Migrations
                 name: "IX_Likes_IdeaId",
                 table: "Likes",
                 column: "IdeaId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RefreshTokens_UserId",
-                table: "RefreshTokens",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Views_IdeaId",

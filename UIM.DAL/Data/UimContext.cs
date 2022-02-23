@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using UIM.Model.Entities;
@@ -25,9 +24,18 @@ namespace UIM.DAL.Data
 
             builder.Entity<AppUser>(conf =>
             {
+                conf.OwnsMany(_ => _.RefreshTokens, r =>
+                {
+                    r.Property(_ => _.Id).ValueGeneratedOnAdd();
+                    r.Property(_ => _.Token).HasMaxLength(100);
+                    r.Property(_ => _.UserId).IsRequired();
+                    r.Property(_ => _.ReplacedByToken).HasMaxLength(100);
+                    r.Property(_ => _.ReasonRevoked).HasMaxLength(500);
+                });
+
                 conf.Property(_ => _.DateOfBirth).HasColumnType("date");
                 conf.Property(_ => _.FullName).HasMaxLength(450);
-
+                conf.Property(_ => _.CreatedAt).ValueGeneratedOnAdd();
                 conf.HasOne(_ => _.Department).WithMany(_ => _.Users)
                     .OnDelete(DeleteBehavior.SetNull);
             });
@@ -57,6 +65,17 @@ namespace UIM.DAL.Data
 
             builder.Entity<Idea>(conf =>
             {
+                conf.OwnsMany(_ => _.Comments, c =>
+                {
+                    c.Property(_ => _.IdeaId).IsRequired();
+                    c.Property(_ => _.Content).IsRequired();
+                    c.Property(_ => _.Id).HasMaxLength(450)
+                        .ValueGeneratedOnAdd();
+                });
+
+                conf.Property(_ => _.LastModifiedAt).ValueGeneratedOnAddOrUpdate();
+                conf.Property(_ => _.CreatedAt).ValueGeneratedOnAdd();
+
                 conf.Property(_ => _.Id).HasMaxLength(450)
                     .ValueGeneratedOnAdd();
 
@@ -70,20 +89,10 @@ namespace UIM.DAL.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            builder.Entity<Comment>(conf =>
-            {
-                conf.Property(_ => _.IdeaId).IsRequired();
-                conf.Property(_ => _.Content).IsRequired();
-
-                conf.Property(_ => _.Id).HasMaxLength(450)
-                    .ValueGeneratedOnAdd();
-
-                conf.HasOne(_ => _.Idea).WithMany(_ => _.Comments)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-
             builder.Entity<Submission>(conf =>
             {
+                conf.Property(_ => _.LastModifiedAt).ValueGeneratedOnAddOrUpdate();
+                conf.Property(_ => _.CreatedAt).ValueGeneratedOnAdd();
                 conf.Property(_ => _.InitialDate).IsRequired();
                 conf.Property(_ => _.FinalDate).IsRequired();
                 conf.Property(_ => _.Title).IsRequired();
@@ -98,23 +107,19 @@ namespace UIM.DAL.Data
                     .ValueGeneratedOnAdd();
             });
 
-            builder.Entity<Category>().Property(_ => _.Name).IsRequired();
+            builder.Entity<Category>(conf =>
+            {
+                conf.Property(_ => _.Id).ValueGeneratedOnAdd();
+                conf.Property(_ => _.Name).IsRequired();
+            });
 
             builder.Entity<Attachment>(conf =>
             {
+                conf.Property(_ => _.Id).ValueGeneratedOnAdd();
+                conf.Property(_ => _.CreatedAt).ValueGeneratedOnAdd();
+                conf.Property(_ => _.LastModifiedAt).ValueGeneratedOnAddOrUpdate();
                 conf.HasOne(_ => _.Idea).WithMany(_ => _.Attachments)
                     .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            builder.Entity<RefreshToken>(conf =>
-            {
-                conf.Property(_ => _.Id).ValueGeneratedOnAdd();
-                conf.Property(_ => _.Token).HasMaxLength(100);
-                conf.Property(_ => _.UserId).IsRequired();
-                conf.Property(_ => _.ReplacedByToken).HasMaxLength(100);
-                conf.Property(_ => _.ReasonRevoked).HasMaxLength(500);
-                conf.HasOne(_ => _.User).WithMany(_ => _.RefreshTokens)
-                    .HasForeignKey(_ => _.UserId);
             });
         }
     }

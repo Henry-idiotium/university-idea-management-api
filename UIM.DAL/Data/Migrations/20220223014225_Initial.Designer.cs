@@ -10,7 +10,7 @@ using UIM.DAL.Data;
 namespace UIM.DAL.Data.Migrations
 {
     [DbContext(typeof(UimContext))]
-    [Migration("20220218151825_Initial")]
+    [Migration("20220223014225_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -165,6 +165,7 @@ namespace UIM.DAL.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateOfBirth")
@@ -207,9 +208,6 @@ namespace UIM.DAL.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<byte[]>("ProfileImage")
-                        .HasColumnType("varbinary(max)");
-
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -243,12 +241,14 @@ namespace UIM.DAL.Data.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("IdeaId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("LastModifiedAt")
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Url")
@@ -277,34 +277,6 @@ namespace UIM.DAL.Data.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("UIM.Model.Entities.Comment", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("IdeaId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Parrent")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdeaId");
-
-                    b.ToTable("Comments");
-                });
-
             modelBuilder.Entity("UIM.Model.Entities.Department", b =>
                 {
                     b.Property<int>("Id")
@@ -329,13 +301,14 @@ namespace UIM.DAL.Data.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("CategoryId")
+                    b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -343,6 +316,10 @@ namespace UIM.DAL.Data.Migrations
 
                     b.Property<bool>("IsAnonymous")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("SubmissionId")
                         .HasColumnType("nvarchar(450)");
@@ -385,45 +362,6 @@ namespace UIM.DAL.Data.Migrations
                     b.ToTable("Likes");
                 });
 
-            modelBuilder.Entity("UIM.Model.Entities.RefreshToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("Expires")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ReasonRevoked")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ReplacedByToken")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("Revoked")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Token")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RefreshTokens");
-                });
-
             modelBuilder.Entity("UIM.Model.Entities.Submission", b =>
                 {
                     b.Property<string>("Id")
@@ -432,6 +370,7 @@ namespace UIM.DAL.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -441,6 +380,10 @@ namespace UIM.DAL.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("InitialDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastModifiedAt")
+                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Title")
@@ -528,7 +471,50 @@ namespace UIM.DAL.Data.Migrations
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.OwnsMany("UIM.Model.Entities.RefreshToken", "RefreshTokens", b1 =>
+                        {
+                            b1.Property<string>("UserId")
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int")
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                            b1.Property<DateTime>("Created")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<DateTime>("Expires")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<string>("ReasonRevoked")
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar(500)");
+
+                            b1.Property<string>("ReplacedByToken")
+                                .HasMaxLength(100)
+                                .HasColumnType("nvarchar(100)");
+
+                            b1.Property<DateTime?>("Revoked")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<string>("Token")
+                                .HasMaxLength(100)
+                                .HasColumnType("nvarchar(100)");
+
+                            b1.HasKey("UserId", "Id");
+
+                            b1.ToTable("RefreshTokens");
+
+                            b1.WithOwner("User")
+                                .HasForeignKey("UserId");
+
+                            b1.Navigation("User");
+                        });
+
                     b.Navigation("Department");
+
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("UIM.Model.Entities.Attachment", b =>
@@ -541,24 +527,12 @@ namespace UIM.DAL.Data.Migrations
                     b.Navigation("Idea");
                 });
 
-            modelBuilder.Entity("UIM.Model.Entities.Comment", b =>
-                {
-                    b.HasOne("UIM.Model.Entities.Idea", "Idea")
-                        .WithMany("Comments")
-                        .HasForeignKey("IdeaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Idea");
-                });
-
             modelBuilder.Entity("UIM.Model.Entities.Idea", b =>
                 {
                     b.HasOne("UIM.Model.Entities.Category", "Category")
                         .WithMany("Ideas")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("UIM.Model.Entities.Submission", "Submission")
                         .WithMany("Ideas")
@@ -570,7 +544,39 @@ namespace UIM.DAL.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.OwnsMany("UIM.Model.Entities.Comment", "Comments", b1 =>
+                        {
+                            b1.Property<string>("IdeaId")
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<string>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasMaxLength(450)
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<string>("Content")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<DateTime>("CreatedAt")
+                                .HasColumnType("datetime2");
+
+                            b1.Property<string>("Parrent")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("IdeaId", "Id");
+
+                            b1.ToTable("Comments");
+
+                            b1.WithOwner("Idea")
+                                .HasForeignKey("IdeaId");
+
+                            b1.Navigation("Idea");
+                        });
+
                     b.Navigation("Category");
+
+                    b.Navigation("Comments");
 
                     b.Navigation("Submission");
 
@@ -592,17 +598,6 @@ namespace UIM.DAL.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Idea");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("UIM.Model.Entities.RefreshToken", b =>
-                {
-                    b.HasOne("UIM.Model.Entities.AppUser", "User")
-                        .WithMany("RefreshTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -632,8 +627,6 @@ namespace UIM.DAL.Data.Migrations
 
                     b.Navigation("Likes");
 
-                    b.Navigation("RefreshTokens");
-
                     b.Navigation("Views");
                 });
 
@@ -650,8 +643,6 @@ namespace UIM.DAL.Data.Migrations
             modelBuilder.Entity("UIM.Model.Entities.Idea", b =>
                 {
                     b.Navigation("Attachments");
-
-                    b.Navigation("Comments");
 
                     b.Navigation("Likes");
 

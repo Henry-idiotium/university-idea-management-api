@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UIM.DAL.Data;
@@ -47,8 +46,7 @@ namespace UIM.DAL.Repositories
             string replacedByToken = null)
         {
             var user = await _context.Users.FindAsync(token.UserId);
-            if (user == null)
-                return false;
+            if (user == null) return false;
 
             RevokeToken(token, reason, replacedByToken);
             _context.Update(user);

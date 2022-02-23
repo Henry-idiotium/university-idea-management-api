@@ -1,3 +1,4 @@
+using UIM.Model.Dtos.User;
 using UIM.Model.Dtos.Token;
 
 namespace UIM.Model.Dtos.Auth

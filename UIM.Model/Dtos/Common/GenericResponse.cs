@@ -1,29 +1,32 @@
 using System;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using UIM.Common.ResponseMessages;
 
 namespace UIM.Model.Dtos.Common
 {
     public class GenericResponse
     {
-        public GenericResponse(string message = SuccessResponseMessages.RequestSucceeded)
+        public GenericResponse(bool succeeded = true, string message = SuccessResponseMessages.RequestSucceeded)
         {
             Message = message;
+            Succeeded = succeeded;
             TimeStamp = ConvertDateTime(DateTime.UtcNow);
         }
 
-        public GenericResponse(object data, string message = SuccessResponseMessages.RequestSucceeded)
+        public GenericResponse(object result, bool succeeded = true, string message = SuccessResponseMessages.RequestSucceeded)
         {
-            Data = data;
+            Result = result;
             Message = message;
+            Succeeded = succeeded;
             TimeStamp = ConvertDateTime(DateTime.UtcNow);
         }
 
+        public bool Succeeded { get; }
         public string Message { get; }
         public string TimeStamp { get; }
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public object Data { get; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public object Result { get; }
 
         static string ConvertDateTime(DateTime time) => time.ToString("yyyy-MM-dd HH:mm:ss tt");
     }
