@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Mapster;
@@ -8,6 +9,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Sieve.Services;
+using UIM.BAL.Helpers.SieveExtensions;
 using UIM.BAL.Services;
 using UIM.BAL.Services.Interfaces;
 using UIM.Common;
@@ -16,7 +19,7 @@ using UIM.Common.ResponseMessages;
 using UIM.DAL.Data;
 using UIM.DAL.Repositories;
 using UIM.DAL.Repositories.Interfaces;
-using UIM.Model.Dtos;
+using UIM.Model.Dtos.User;
 using UIM.Model.Entities;
 
 namespace UIM.API.Helpers
@@ -73,22 +76,25 @@ namespace UIM.API.Helpers
 
         public static void AddDIContainerExt(this IServiceCollection services)
         {
+            // others
+            services.AddScoped<SieveProcessor>();
+            services.AddScoped<ISieveProcessor, AppSieveProcessor>();
+            services.AddScoped<IMapper, ServiceMapper>();
             // Repositories
             services.AddScoped<IIdeaRepository, IdeaRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IDepartmentRepository, DepartmentRepository>();
             // Services
             services.AddScoped<IIdeaService, IdeaService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtService, JwtService>();
-            // others
-            services.AddScoped<IMapper, ServiceMapper>();
+            services.AddScoped<IDepartmentService, DepartmentService>();
         }
 
         public static void AddDbContextExt(this IServiceCollection services, string localDbConnectionString)
         {
-            var isDev = EnvVars.AspNetCore.Environment.ToLower() == "development";
-            if (isDev)
+            if (EnvVars.CoreEnv == "development")
                 services.AddDbContext<UimContext>(_ => _.UseSqlServer(localDbConnectionString));
             else
                 services.AddDbContext<UimContext>(_ =>
@@ -107,7 +113,7 @@ namespace UIM.API.Helpers
 
         public static void AddIdentityExt(this IServiceCollection services)
         {
-            if (EnvVars.AspNetCore.Environment.ToLower() == "development")
+            if (EnvVars.CoreEnv == "development")
             {
                 services
                     .AddIdentity<AppUser, IdentityRole>(_ =>
@@ -157,8 +163,21 @@ namespace UIM.API.Helpers
             var config = new TypeAdapterConfig();
 
             config.NewConfig<AppUser, UserDetailsResponse>()
-                .Map(dest => dest.Id, src => EncryptHelpers.EncodeBase64Url(src.Id))
-                .Map(dest => dest.DateOfBirth, src => src.DateOfBirth.ToString("yy-MM-dd"));
+                .Map(dest => dest.Id, src => EncryptHelpers.EncodeBase64Url(src.Id));
+
+            config.NewConfig<CreateUserRequest, AppUser>()
+                .Map(dest => dest.Email, src => src.Email)
+                .Map(dest => dest.FullName, src => src.FullName)
+                .Map(dest => dest.UserName, src => src.UserName)
+                .Map(dest => dest.DateOfBirth, src => src.DateOfBirth)
+                .Map(dest => dest.CreatedAt, src => DateTime.UtcNow)
+                .IgnoreNonMapped(true);
+
+            config.NewConfig<UpdateUserInfoRequest, AppUser>()
+                .Map(dest => dest.FullName, src => src.FullName)
+                .Map(dest => dest.UserName, src => src.UserName)
+                .Map(dest => dest.DateOfBirth, src => src.DateOfBirth)
+                .IgnoreNonMapped(true);
 
             services.AddSingleton(config);
         }

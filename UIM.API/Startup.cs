@@ -46,8 +46,13 @@ namespace UIM.API
             services.AddAuthenticationExt();
             services.AddMapsterExt();
             services.AddDIContainerExt();
+
+            // option patterns
+            services.Configure<SieveOptions>(Configuration.GetSection("Sieve"));
+
             services.AddCorsExt();
-            services.AddControllers();
+            services.AddControllers()
+                    .AddJsonOptions(options => options.JsonSerializerOptions.WriteIndented = true);
             services.AddSwaggerExt();
         }
     }
