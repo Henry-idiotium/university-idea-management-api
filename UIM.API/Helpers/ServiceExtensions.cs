@@ -42,8 +42,8 @@ namespace UIM.API.Helpers
                         ValidateIssuerSigningKey = true,
 
                         ClockSkew = TimeSpan.Zero,
-                        ValidIssuers = EnvVars.Auth.ValidLocations.Split(';'),
-                        ValidAudiences = EnvVars.Auth.ValidLocations.Split(';'),
+                        ValidIssuers = EnvVars.ValidLocations,
+                        ValidAudiences = EnvVars.ValidLocations,
                         IssuerSigningKey = new SymmetricSecurityKey(
                             EncryptHelpers.EncodeASCII(EnvVars.Jwt.Secret)),
                     };
@@ -65,7 +65,14 @@ namespace UIM.API.Helpers
         {
             services.AddCors(_ =>
             {
-                _.AddPolicy("DevelopmentPolicy", conf =>
+                _.AddPolicy("dev", conf =>
+                    conf.AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .WithOrigins("http://localhost:3000",
+                                    "https://localhost:7024",
+                                    "http://localhost:5251"));
+
+                _.AddPolicy("prod", conf =>
                     conf.AllowAnyMethod()
                         .AllowAnyHeader()
                         .WithOrigins("http://localhost:3000",
@@ -190,6 +197,46 @@ namespace UIM.API.Helpers
                     Title = "UIM",
                     Version = "v1"
                 }));
+        }
+
+        public static async Task CreateRolesAndPwdUser(IServiceProvider serviceProvider, bool disable)
+        {
+            if (!disable)
+            {
+                var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                var userManager = serviceProvider.GetRequiredService<UserManager<AppUser>>();
+
+                // Initializing custom roles
+                var roleNames = new List<string>
+                {
+                    EnvVars.System.Role.PwrUser,
+                    EnvVars.System.Role.Manager,
+                    EnvVars.System.Role.Supervisor,
+                    EnvVars.System.Role.Staff
+                };
+                foreach (var roleName in roleNames)
+                {
+                    var roleExist = await roleManager.RoleExistsAsync(roleName);
+                    if (!roleExist)
+                        await roleManager.CreateAsync(new IdentityRole(roleName));
+                }
+
+                // Create a super user who will maintain the system
+                var poweruser = new AppUser
+                {
+                    Email = EnvVars.System.PwrUserAuth.Email,
+                    EmailConfirmed = true,
+                    FullName = "Henry David",
+                    CreatedAt = DateTime.UtcNow,
+                    UserName = EnvVars.System.PwrUserAuth.UserName,
+                };
+                if (await userManager.FindByEmailAsync(EnvVars.System.PwrUserAuth.Email) == null)
+                {
+                    var createPowerUser = await userManager.CreateAsync(poweruser, EnvVars.System.PwrUserAuth.Password);
+                    if (createPowerUser.Succeeded)
+                        await userManager.AddToRoleAsync(poweruser, EnvVars.System.Role.PwrUser);
+                }
+            }
         }
     }
 }
