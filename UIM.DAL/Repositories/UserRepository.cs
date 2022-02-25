@@ -37,7 +37,7 @@ namespace UIM.DAL.Repositories
 
         public async Task<bool> RemoveOutdatedRefreshTokensAsync(AppUser user)
         {
-            user.RefreshTokens.RemoveAll(t => !t.IsActive && t.Expires <= DateTime.UtcNow);
+            user.RefreshTokens.RemoveAll(t => !t.IsActive && t.ExpiredAt <= DateTime.UtcNow);
             var removed = await _context.SaveChangesAsync();
             return removed > 0;
         }
@@ -87,7 +87,7 @@ namespace UIM.DAL.Repositories
         private static void RevokeToken(RefreshToken token, string reason = null,
             string replacedByToken = null)
         {
-            token.Revoked = DateTime.UtcNow;
+            token.RevokedAt = DateTime.UtcNow;
             token.ReasonRevoked = reason;
             token.ReplacedByToken = replacedByToken;
         }

@@ -61,8 +61,8 @@ namespace UIM.BAL.Services
             var refreshToken = new RefreshToken
             {
                 Token = Convert.ToBase64String(randomBytes),
-                Expires = DateTime.UtcNow.AddDays(int.Parse(EnvVars.Jwt.RefreshExpiredDate)),
-                Created = DateTime.UtcNow,
+                ExpiredAt = DateTime.UtcNow.AddDays(EnvVars.Jwt.RefreshExpiredDate),
+                CreatedAt = DateTime.UtcNow,
                 UserId = userId
             };
             return refreshToken;
