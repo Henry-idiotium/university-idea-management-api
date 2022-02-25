@@ -15,14 +15,12 @@ namespace UIM.BAL.Services
     {
         private readonly IDepartmentRepository _departmentRepository;
 
-        public DepartmentService(IDepartmentRepository departmentRepository)
-        {
+        public DepartmentService(IDepartmentRepository departmentRepository) =>
             _departmentRepository = departmentRepository;
-        }
 
         public async Task AddAsync(string name)
         {
-            if (name == null)
+            if (string.IsNullOrEmpty(name))
                 throw new ArgumentNullException(string.Empty);
 
             if (await _departmentRepository.GetByNameAsync(name) != null)
@@ -37,7 +35,7 @@ namespace UIM.BAL.Services
 
         public Department Edit(int id, string newName)
         {
-            if (newName == null)
+            if (string.IsNullOrEmpty(newName))
                 throw new ArgumentNullException(string.Empty);
 
             throw new System.NotImplementedException();

@@ -80,7 +80,7 @@ namespace UIM.BAL.Services
 
         public async Task DeleteAsync(string userId)
         {
-            if (userId == null)
+            if (string.IsNullOrEmpty(userId))
                 throw new ArgumentNullException(string.Empty);
 
             var user = await _userManager.FindByIdAsync(userId);
@@ -93,10 +93,14 @@ namespace UIM.BAL.Services
 
         public async Task<UserDetailsResponse> GetByIdAsync(string userId)
         {
-            if (userId == null)
+            if (string.IsNullOrEmpty(userId))
                 throw new ArgumentNullException(string.Empty);
 
             var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new HttpException(HttpStatusCode.BadRequest,
+                                        ErrorResponseMessages.BadRequest);
+
             return _mapper.Map<UserDetailsResponse>(user);
         }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -21,8 +22,7 @@ namespace UIM.BAL.Services
         public async Task CreateAsync(Idea idea)
         {
             if (idea == null)
-                throw new HttpException(HttpStatusCode.BadRequest,
-                    ErrorResponseMessages.BadRequest);
+                throw new ArgumentNullException(string.Empty);
 
             var succeeded = await _ideaRepository.AddAsync(idea);
             if (!succeeded)
@@ -32,6 +32,9 @@ namespace UIM.BAL.Services
 
         public Task DeleteAsync(Idea idea)
         {
+            if (idea == null)
+                throw new ArgumentNullException(string.Empty);
+
             throw new System.NotImplementedException();
         }
 

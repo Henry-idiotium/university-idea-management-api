@@ -27,11 +27,10 @@ namespace UIM.BAL.Services
 
         public AccessToken GenerateAccessToken(IEnumerable<Claim> claims)
         {
-            if (claims is null)
-                throw new HttpException(HttpStatusCode.InternalServerError,
-                    ErrorResponseMessages.UnexpectedError);
+            if (claims == null)
+                throw new ArgumentNullException(string.Empty);
 
-            var expireAt = DateTime.UtcNow.AddDays(int.Parse(EnvVars.Jwt.AccessExpiredDate));
+            var expireAt = DateTime.UtcNow.AddDays(EnvVars.Jwt.AccessExpiredDate);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Issuer = EnvVars.Jwt.Issuer,
@@ -51,9 +50,8 @@ namespace UIM.BAL.Services
 
         public RefreshToken GenerateRefreshToken(string userId)
         {
-            if (userId == null)
-                throw new HttpException(HttpStatusCode.BadRequest,
-                                        ErrorResponseMessages.BadRequest);
+            if (string.IsNullOrEmpty(userId))
+                throw new ArgumentNullException(string.Empty);
 
             using var cryptoProvider = new RNGCryptoServiceProvider();
             var randomBytes = new byte[64];
@@ -74,7 +72,7 @@ namespace UIM.BAL.Services
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadToken(token);
-                if (jwtToken is null) return null;
+                if (jwtToken == null) return null;
 
                 var validationParameters = new TokenValidationParameters()
                 {
@@ -83,8 +81,8 @@ namespace UIM.BAL.Services
                     ValidateAudience = true,
                     ValidateLifetime = false,
 
-                    ValidIssuers = EnvVars.Auth.ValidLocations.Split(';'),
-                    ValidAudiences = EnvVars.Auth.ValidLocations.Split(';'),
+                    ValidIssuers = EnvVars.ValidLocations,
+                    ValidAudiences = EnvVars.ValidLocations,
                     IssuerSigningKey = new SymmetricSecurityKey(_jwtEncodedSecret)
                 };
 
