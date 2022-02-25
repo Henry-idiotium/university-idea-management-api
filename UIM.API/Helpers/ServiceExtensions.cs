@@ -9,13 +9,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Serialization;
 using Sieve.Services;
 using UIM.BAL.Helpers.SieveExtensions;
 using UIM.BAL.Services;
 using UIM.BAL.Services.Interfaces;
 using UIM.Common;
 using UIM.Common.Helpers;
-using UIM.Common.ResponseMessages;
 using UIM.DAL.Data;
 using UIM.DAL.Repositories;
 using UIM.DAL.Repositories.Interfaces;
@@ -29,7 +30,11 @@ namespace UIM.API.Helpers
         public static void AddAuthenticationExt(this IServiceCollection services)
         {
             services
-                .AddAuthentication()
+                .AddAuthentication(_ =>
+                {
+                    _.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    _.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
                 .AddJwtBearer(_ =>
                 {
                     _.RequireHttpsMetadata = true;
@@ -47,18 +52,18 @@ namespace UIM.API.Helpers
                         IssuerSigningKey = new SymmetricSecurityKey(
                             EncryptHelpers.EncodeASCII(EnvVars.Jwt.Secret)),
                     };
-                    _.Events = new JwtBearerEvents
-                    {
-                        OnAuthenticationFailed = (context) =>
-                        {
-                            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
-                                throw new HttpException(HttpStatusCode.Unauthorized,
-                                    ErrorResponseMessages.Unauthorized);
-
-                            return Task.CompletedTask;
-                        }
-                    };
                 });
+        }
+
+        public static void AddControllersExt(this IServiceCollection services)
+        {
+            services.AddControllers().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new SnakeCaseNamingStrategy()
+                };
+            });
         }
 
         public static void AddCorsExt(this IServiceCollection services)
@@ -192,11 +197,36 @@ namespace UIM.API.Helpers
         public static void AddSwaggerExt(this IServiceCollection services)
         {
             services.AddSwaggerGen(_ =>
-                _.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+            {
+                _.SwaggerDoc("v1", new OpenApiInfo { Title = "UIM", Version = "v1" });
+                _.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Title = "UIM",
-                    Version = "v1"
-                }));
+                    Description = "JWT Authorization header using the Bearer scheme." +
+                                  "\nEnter 'Bearer' [space] and then your token in the text input below." +
+                                  "\nExample: 'Bearer 12345abcdef'",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+                _.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                            Scheme = "oauth2",
+                            Name = "Bearer",
+                            In = ParameterLocation.Header,
+                        },
+                        new List<string>()
+                    }
+                });
+            });
         }
 
         public static async Task CreateRolesAndPwdUser(IServiceProvider serviceProvider, bool disable)

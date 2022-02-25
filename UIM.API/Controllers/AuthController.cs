@@ -55,6 +55,17 @@ namespace UIM.Common.Controllers
             return Ok(new GenericResponse(SuccessResponseMessages.TokenRevoked));
         }
 
+        [HttpGet("{id}"), Authorize]
+        public async Task<IActionResult> Validate(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                throw new HttpException(HttpStatusCode.Forbidden,
+                                        ErrorResponseMessages.Forbidden);
+
+            var user = await _userService.GetByIdAsync(id);
+            return Ok(new GenericResponse(user));
+        }
+
 
         [HttpPut]
         public async Task<IActionResult> Rotate(RotateTokenRequest request)

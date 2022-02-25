@@ -56,8 +56,7 @@ namespace UIM.API
             services.Configure<SieveOptions>(Configuration.GetSection("Sieve"));
 
             services.AddCorsExt();
-            services.AddControllers()
-                    .AddJsonOptions(options => options.JsonSerializerOptions.WriteIndented = true);
+            services.AddControllersExt();
             services.AddSwaggerExt();
         }
     }
