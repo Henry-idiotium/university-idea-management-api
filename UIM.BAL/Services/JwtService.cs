@@ -46,7 +46,7 @@ namespace UIM.BAL.Services
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return new AccessToken(tokenHandler.WriteToken(token), expireAt.ToString("o"));
+            return new AccessToken("Bearer", tokenHandler.WriteToken(token), expireAt.ToString("o"));
         }
 
         public RefreshToken GenerateRefreshToken(string userId)
