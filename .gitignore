@@ -360,3 +360,6 @@ FodyWeavers.xsd
 # vscode addons
 .history/
 .vscode/
+
+# An ASP.NET build file that specify where and which project to build 
+build.proj
