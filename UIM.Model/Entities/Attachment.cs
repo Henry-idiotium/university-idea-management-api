@@ -5,7 +5,6 @@ namespace UIM.Model.Entities
 {
     public class Attachment
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string IdeaId { get; set; }
         public string Url { get; set; }

@@ -5,6 +5,7 @@ namespace UIM.BAL.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<AuthResponse> LoginAsync(LoginRequest request);
+        Task<AuthResponse> ExternalLoginAsync(string provider, string idToken);
+        Task<AuthResponse> LoginAsync(string email, string password);
     }
 }

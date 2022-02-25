@@ -12,8 +12,9 @@ namespace UIM.Model.Entities
         public string Content { get; set; }
         public bool IsAnonymous { get; set; }
         public string UserId { get; set; }
-        public int CategoryId { get; set; }
+        public int? CategoryId { get; set; }
         public string SubmissionId { get; set; }
+        public DateTime LastModifiedAt { get; set; }
         public DateTime CreatedAt { get; set; }
 
         // Referential Integrities
@@ -23,6 +24,6 @@ namespace UIM.Model.Entities
         public ICollection<Attachment> Attachments { get; set; }
         public ICollection<Like> Likes { get; set; }
         public ICollection<View> Views { get; set; }
-        public ICollection<Comment> Comments { get; set; }
+        public List<Comment> Comments { get; set; }
     }
 }

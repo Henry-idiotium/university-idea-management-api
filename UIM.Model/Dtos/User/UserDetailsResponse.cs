@@ -1,4 +1,6 @@
-namespace UIM.Model.Dtos
+using System;
+
+namespace UIM.Model.Dtos.User
 {
     public class UserDetailsResponse
     {
@@ -8,6 +10,7 @@ namespace UIM.Model.Dtos
         public string Email { get; set; }
         public string Department { get; set; }
         public string Role { get; set; }
-        public string DateOfBirth { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

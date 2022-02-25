@@ -4,14 +4,14 @@ using System.Net;
 
 namespace UIM.Common
 {
-    public class HttpStatusException : Exception
+    public class HttpException : Exception
     {
-        public HttpStatusException(HttpStatusCode status, string message = null) : base(message)
+        public HttpException(HttpStatusCode status, string message = null) : base(message)
         {
             Status = status;
         }
 
-        public HttpStatusException(HttpStatusCode status, string message = null, params object[] args)
+        public HttpException(HttpStatusCode status, string message = null, params object[] args)
             : base(string.Format(CultureInfo.CurrentCulture, message, args))
         {
             Status = status;

@@ -1,10 +1,13 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sieve.Models;
 using UIM.API.Helpers;
 using UIM.API.Middlewares;
+using UIM.Common;
 
 namespace UIM.API
 {
@@ -18,7 +21,7 @@ namespace UIM.API
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -28,12 +31,16 @@ namespace UIM.API
             }
             app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseCors(env.IsDevelopment() ? "dev" : "prod");
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseExceptionHandlingExt();
 
-            app.UseAuthorization();
-
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            ServiceExtensions.CreateRolesAndPwdUser(
+                serviceProvider, EnvVars.DisableInitRolePwrUser).Wait();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -41,7 +48,15 @@ namespace UIM.API
         {
             services.AddDbContextExt(Configuration.GetConnectionString("uimdb"));
             services.AddIdentityExt();
-            services.AddControllers();
+            services.AddAuthenticationExt();
+            services.AddMapsterExt();
+            services.AddDIContainerExt();
+
+            // option patterns
+            services.Configure<SieveOptions>(Configuration.GetSection("Sieve"));
+
+            services.AddCorsExt();
+            services.AddControllersExt();
             services.AddSwaggerExt();
         }
     }

@@ -37,7 +37,7 @@ namespace UIM.API.Middlewares
             }
             catch (Exception ex)
             {
-                if (ex is not HttpStatusException)
+                if (ex is not HttpException)
                     _logger.LogError(ex.Message);
 
                 await HandleExceptionAsync(context, ex);
@@ -47,7 +47,7 @@ namespace UIM.API.Middlewares
         private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             var code = (int)HttpStatusCode.InternalServerError; // Internal Server Error by default
-            if (exception is HttpStatusException httpException)
+            if (exception is HttpException httpException)
             {
                 code = (int)httpException.Status;
                 context.Response.Headers.Add("X-Log-Status-Code", httpException.Status.ToString());
@@ -57,8 +57,9 @@ namespace UIM.API.Middlewares
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = code;
 
-            var response = JsonConvert.SerializeObject(new GenericResponse<Inanis>(
-                message: (exception.Message != null) && (exception is HttpStatusException) ?
+            var response = JsonConvert.SerializeObject(new GenericResponse
+            (
+                message: (exception.Message != null) && (exception is HttpException) ?
                           exception.Message : ErrorResponseMessages.UnexpectedError,
                 succeeded: false
             ));

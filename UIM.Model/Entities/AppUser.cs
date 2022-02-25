@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
 
 namespace UIM.Model.Entities
@@ -9,7 +10,6 @@ namespace UIM.Model.Entities
         public string FullName { get; set; }
         public int? DepartmentId { get; set; }
         public DateTime? DateOfBirth { get; set; }
-        public byte[] ProfileImage { get; set; }
         public DateTime CreatedAt { get; set; }
 
         // Referential Integrities
@@ -17,6 +17,6 @@ namespace UIM.Model.Entities
         public ICollection<Like> Likes { get; set; }
         public ICollection<View> Views { get; set; }
         public ICollection<Idea> Ideas { get; set; }
-        public ICollection<RefreshToken> RefreshTokens { get; set; }
+        public List<RefreshToken> RefreshTokens { get; set; }
     }
 }

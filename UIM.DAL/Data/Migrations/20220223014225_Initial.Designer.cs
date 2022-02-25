@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UIM.DAL.Data;
 
 namespace UIM.DAL.Data.Migrations
 {
     [DbContext(typeof(UimContext))]
-    partial class UimContextModelSnapshot : ModelSnapshot
+    [Migration("20220223014225_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -479,10 +481,10 @@ namespace UIM.DAL.Data.Migrations
                                 .HasColumnType("int")
                                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                            b1.Property<DateTime>("CreatedAt")
+                            b1.Property<DateTime>("Created")
                                 .HasColumnType("datetime2");
 
-                            b1.Property<DateTime>("ExpiredAt")
+                            b1.Property<DateTime>("Expires")
                                 .HasColumnType("datetime2");
 
                             b1.Property<string>("ReasonRevoked")
@@ -493,7 +495,7 @@ namespace UIM.DAL.Data.Migrations
                                 .HasMaxLength(100)
                                 .HasColumnType("nvarchar(100)");
 
-                            b1.Property<DateTime?>("RevokedAt")
+                            b1.Property<DateTime?>("Revoked")
                                 .HasColumnType("datetime2");
 
                             b1.Property<string>("Token")
