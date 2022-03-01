@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using UIM.Common;
 using UIM.Common.ResponseMessages;
 using UIM.Model.Dtos.Common;
@@ -62,7 +63,15 @@ namespace UIM.API.Middlewares
                 message: (exception.Message != null) && (exception is HttpException) ?
                           exception.Message : ErrorResponseMessages.UnexpectedError,
                 succeeded: false
-            ));
+            ),
+            new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new SnakeCaseNamingStrategy()
+                }
+            });
 
             await context.Response.WriteAsync(response);
         }
