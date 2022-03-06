@@ -34,7 +34,7 @@ namespace UIM.Core.Controllers
 
             var userId = _jwtService.Validate(token);
             if (userId == null)
-                throw new HttpException(HttpStatusCode.Unauthorized,
+                throw new HttpException(HttpStatusCode.OK,
                                         ErrorResponseMessages.Unauthorized);
 
             var user = await _userService.FindByIdAsync(userId);
@@ -52,7 +52,7 @@ namespace UIM.Core.Controllers
         }
 
         [HttpPost("login-ex")]
-        public async Task<IActionResult> LoginExternal([FromQuery] ExternalAuthRequest request)
+        public async Task<IActionResult> LoginExternal([FromBody] ExternalAuthRequest request)
         {
             if (!ModelState.IsValid)
                 throw new HttpException(HttpStatusCode.BadRequest,
