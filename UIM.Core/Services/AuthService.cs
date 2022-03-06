@@ -54,9 +54,6 @@ namespace UIM.Core.Services
         public async Task<AuthResponse> LoginAsync(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user.DepartmentId == null)
-                throw new ArgumentNullException(user.DepartmentId.ToString());
-
             var pwdCorrect = await _userManager.CheckPasswordAsync(user, password);
             if (!pwdCorrect)
                 throw new HttpException(HttpStatusCode.Unauthorized,
@@ -87,9 +84,6 @@ namespace UIM.Core.Services
 
         public async Task<AuthResponse> RotateTokensAsync(RotateTokenRequest request)
         {
-            if (request == null)
-                throw new ArgumentNullException(string.Empty);
-
             var user = _unitOfWork.Users.GetByRefreshToken(request.RefreshToken);
             var ownedRefreshToken = _unitOfWork.Users.GetRefreshToken(request.RefreshToken);
             if (ownedRefreshToken == null)

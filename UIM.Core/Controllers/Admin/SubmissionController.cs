@@ -1,7 +1,6 @@
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Sieve.Models;
 using UIM.Core.Helpers;
 using UIM.Core.ResponseMessages;
 using UIM.Core.Services.Interfaces;

@@ -5,8 +5,8 @@ using UIM.Core.Models.Dtos.Department;
 
 namespace UIM.Core.Controllers
 {
-    [Route("api/department-management")]
     [ApiController]
+    [Route("api/department-management")]
     public class DepartmentController : UimController<IDepartmentService, int,
         CreateDepartmentRequest,
         UpdateDepartmentRequest,

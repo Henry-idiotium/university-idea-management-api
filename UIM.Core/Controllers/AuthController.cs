@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UIM.Core.Helpers;
+using UIM.Core.Models.Dtos;
+using UIM.Core.Models.Dtos.Auth;
+using UIM.Core.Models.Dtos.Token;
 using UIM.Core.ResponseMessages;
 using UIM.Core.Services.Interfaces;
-using UIM.Core.Models.Dtos.Auth;
-using UIM.Core.Models.Dtos;
-using UIM.Core.Models.Dtos.Token;
 
 namespace UIM.Core.Controllers
 {
@@ -27,17 +27,6 @@ namespace UIM.Core.Controllers
             _jwtService = jwtService;
         }
 
-        [HttpPost("login-ex")]
-        public async Task<IActionResult> ExternalLogin(ExternalAuthRequest request)
-        {
-            if (!ModelState.IsValid)
-                throw new HttpException(HttpStatusCode.BadRequest,
-                                        ErrorResponseMessages.BadRequest);
-
-            return Ok(new GenericResponse(
-                await _authService.ExternalLoginAsync(request.Provider, request.IdToken)));
-        }
-
         [HttpGet("info")]
         public async Task<IActionResult> GetMeData()
         {
@@ -53,13 +42,24 @@ namespace UIM.Core.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromQuery] LoginRequest request)
         {
             if (!ModelState.IsValid)
                 throw new HttpException(HttpStatusCode.BadRequest,
                                         ErrorResponseMessages.BadRequest);
 
             return Ok(new GenericResponse(await _authService.LoginAsync(request.Email, request.Password)));
+        }
+
+        [HttpPost("login-ex")]
+        public async Task<IActionResult> LoginExternal([FromQuery] ExternalAuthRequest request)
+        {
+            if (!ModelState.IsValid)
+                throw new HttpException(HttpStatusCode.BadRequest,
+                                        ErrorResponseMessages.BadRequest);
+
+            return Ok(new GenericResponse(
+                await _authService.ExternalLoginAsync(request.Provider, request.IdToken)));
         }
 
         [Authorize]
@@ -75,7 +75,7 @@ namespace UIM.Core.Controllers
         }
 
         [HttpPut("token/rotate")]
-        public async Task<IActionResult> Rotate(RotateTokenRequest request)
+        public async Task<IActionResult> Rotate([FromQuery] RotateTokenRequest request)
         {
             if (!ModelState.IsValid)
                 throw new HttpException(HttpStatusCode.BadRequest,

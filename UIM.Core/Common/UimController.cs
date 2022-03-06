@@ -20,7 +20,7 @@ namespace UIM.Core.Common
         protected TService _service;
 
         public UimController(TService service) => _service = service;
-        
+
         [HttpPost]
         public async Task<IActionResult> Create([FromQuery] TCreate request)
         {
@@ -68,8 +68,8 @@ namespace UIM.Core.Common
                 throw new HttpException(HttpStatusCode.BadRequest,
                                         ErrorResponseMessages.BadRequest);
 
-            var ideas = await _service.FindAsync(request);
-            return Ok(new GenericResponse(ideas));
+            var result = await _service.FindAsync(request);
+            return Ok(new GenericResponse(result));
         }
 
         [HttpGet("[controller]/{id}")]
@@ -82,8 +82,8 @@ namespace UIM.Core.Common
             if (id is string)
                 id = (TIdentity)Convert.ChangeType(EncryptHelpers.DecodeBase64Url(id.ToString()), typeof(TIdentity));
 
-            var idea = await _service.FindByIdAsync(id);
-            return Ok(new GenericResponse(idea));
+            var result = await _service.FindByIdAsync(id);
+            return Ok(new GenericResponse(result));
         }
     }
 }

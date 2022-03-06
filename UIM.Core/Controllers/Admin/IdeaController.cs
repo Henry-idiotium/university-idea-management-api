@@ -5,8 +5,8 @@ using UIM.Core.Services.Interfaces;
 
 namespace Namespace
 {
-    [Route("api/idea-management")]
     [ApiController]
+    [Route("api/idea-management")]
     public class IdeaController : UimController<IIdeaService, string,
         CreateIdeaRequest,
         UpdateIdeaRequest,

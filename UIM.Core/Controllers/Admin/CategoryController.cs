@@ -5,8 +5,8 @@ using UIM.Core.Models.Dtos.Category;
 
 namespace UIM.Core.Controllers
 {
-    [Route("api/department-management")]
     [ApiController]
+    [Route("api/category-management")]
     public class CategoryController : UimController<ICategoryService, int,
         CreateCategoryRequest,
         UpdateCategoryRequest,
