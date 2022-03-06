@@ -16,6 +16,7 @@ using UIM.Core.Services;
 using UIM.Core.Services.Interfaces;
 using UIM.Core.Models.Entities;
 using UIM.Core.Common;
+using System.Linq;
 
 namespace UIM.Core.Helpers
 {
@@ -171,6 +172,7 @@ namespace UIM.Core.Helpers
             {
                 _.DocumentFilter<LowercaseDocumentFilter>();
                 _.SwaggerDoc("v1", new OpenApiInfo { Title = "UIM", Version = "v1" });
+                _.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
                 _.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme." +

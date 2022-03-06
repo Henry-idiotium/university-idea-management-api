@@ -20,8 +20,8 @@ namespace UIM.Core.Common
         protected TService _service;
 
         public UimController(TService service) => _service = service;
+        
         [HttpPost]
-
         public async Task<IActionResult> Create([FromQuery] TCreate request)
         {
             if (!ModelState.IsValid)
