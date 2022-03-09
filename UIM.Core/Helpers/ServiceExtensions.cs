@@ -5,23 +5,22 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using Sieve.Services;
+using UIM.Core.Common;
 using UIM.Core.Data;
 using UIM.Core.Helpers.Mappers;
 using UIM.Core.Helpers.SieveExtensions;
+using UIM.Core.Models.Entities;
 using UIM.Core.Services;
 using UIM.Core.Services.Interfaces;
-using UIM.Core.Models.Entities;
-using UIM.Core.Common;
-using System.Linq;
 
 namespace UIM.Core.Helpers
 {
     public static class ServiceExtensions
     {
+        // Vanilla authorize attribute cannot obtain role claims
         public static void AddAuthenticationExt(this IServiceCollection services)
         {
             services
@@ -29,24 +28,6 @@ namespace UIM.Core.Helpers
                 {
                     _.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     _.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(_ =>
-                {
-                    _.RequireHttpsMetadata = true;
-                    _.SaveToken = true;
-                    _.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateLifetime = true,
-                        ValidateAudience = true,
-                        ValidateIssuerSigningKey = true,
-
-                        ClockSkew = TimeSpan.Zero,
-                        ValidIssuers = EnvVars.ValidLocations,
-                        ValidAudiences = EnvVars.ValidLocations,
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            EncryptHelpers.EncodeASCII(EnvVars.Jwt.Secret)),
-                    };
                 });
         }
 

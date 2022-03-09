@@ -1,7 +1,9 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using UIM.Core.Services.Interfaces;
+using Sieve.Models;
 using UIM.Core.Common;
 using UIM.Core.Models.Dtos.Category;
+using UIM.Core.Services.Interfaces;
 
 namespace UIM.Core.Controllers
 {
@@ -16,5 +18,8 @@ namespace UIM.Core.Controllers
         {
 
         }
+
+        [HttpGet("categories")]
+        public override async Task<IActionResult> Get([FromQuery] SieveModel request) => await base.Get(request);
     }
 }
