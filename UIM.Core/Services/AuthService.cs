@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using UIM.Core.Common;
@@ -39,14 +37,9 @@ namespace UIM.Core.Services
             if (user == null)
                 throw new ArgumentNullException(string.Empty);
 
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-            };
             var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
             await _unitOfWork.Users.AddRefreshTokenAsync(user, refreshToken);
-            var accessToken = _jwtService.GenerateAccessToken(claims);
+            var accessToken = await _jwtService.GenerateAccessTokenAsync(user.Id);
 
             return new(accessToken, refreshToken.Token);
         }
@@ -59,13 +52,7 @@ namespace UIM.Core.Services
                 throw new HttpException(HttpStatusCode.Unauthorized,
                                         ErrorResponseMessages.Unauthorized);
 
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.UserName),
-            };
-            var accessToken = _jwtService.GenerateAccessToken(claims);
+            var accessToken = await _jwtService.GenerateAccessTokenAsync(user.Id);
             var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
             await _unitOfWork.Users.AddRefreshTokenAsync(user, refreshToken);
 

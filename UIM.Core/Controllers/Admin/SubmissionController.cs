@@ -1,12 +1,12 @@
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using UIM.Core.Common;
 using UIM.Core.Helpers;
-using UIM.Core.ResponseMessages;
-using UIM.Core.Services.Interfaces;
 using UIM.Core.Models.Dtos;
 using UIM.Core.Models.Dtos.Submission;
-using UIM.Core.Common;
+using UIM.Core.ResponseMessages;
+using UIM.Core.Services.Interfaces;
 
 namespace UIM.Core.Controllers.Admin
 {
@@ -22,7 +22,7 @@ namespace UIM.Core.Controllers.Admin
         }
 
         [HttpPost("[controller]/idea")]
-        public async Task<IActionResult> AddIdea([FromQuery] AddIdeaRequest request)
+        public async Task<IActionResult> AddIdea([FromBody] AddIdeaRequest request)
         {
             if (!ModelState.IsValid)
                 throw new HttpException(HttpStatusCode.BadRequest,

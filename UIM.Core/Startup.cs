@@ -34,8 +34,8 @@ namespace UIM.Core
 
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseExceptionHandlingExt();
+            app.UseJwtExt();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
             ServiceExtensions.CreateRolesAndPwdUser(
