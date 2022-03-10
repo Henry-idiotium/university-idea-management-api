@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UIM.Core.Helpers;
+using UIM.Core.Helpers.Attributes;
 using UIM.Core.Models.Dtos;
 using UIM.Core.Models.Dtos.Auth;
 using UIM.Core.Models.Dtos.Token;
@@ -12,6 +13,7 @@ using UIM.Core.Services.Interfaces;
 
 namespace UIM.Core.Controllers
 {
+    [JwtAuthorize]
     [ApiController]
     [Route("api/auth")]
     public class AuthController : ControllerBase
@@ -41,18 +43,21 @@ namespace UIM.Core.Controllers
             return Ok(new GenericResponse(user));
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromQuery] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             if (!ModelState.IsValid)
                 throw new HttpException(HttpStatusCode.BadRequest,
                                         ErrorResponseMessages.BadRequest);
 
-            return Ok(new GenericResponse(await _authService.LoginAsync(request.Email, request.Password)));
+            var response = await _authService.LoginAsync(request.Email, request.Password);
+            return Ok(new GenericResponse(response));
         }
 
+        [AllowAnonymous]
         [HttpPost("login-ex")]
-        public async Task<IActionResult> LoginExternal([FromQuery] ExternalAuthRequest request)
+        public async Task<IActionResult> LoginExternal([FromBody] ExternalAuthRequest request)
         {
             if (!ModelState.IsValid)
                 throw new HttpException(HttpStatusCode.BadRequest,
@@ -62,7 +67,6 @@ namespace UIM.Core.Controllers
                 await _authService.ExternalLoginAsync(request.Provider, request.IdToken)));
         }
 
-        [Authorize]
         [HttpPut("token/revoke")]
         public IActionResult Revoke(string refreshToken)
         {
@@ -75,7 +79,7 @@ namespace UIM.Core.Controllers
         }
 
         [HttpPut("token/rotate")]
-        public async Task<IActionResult> Rotate([FromQuery] RotateTokenRequest request)
+        public async Task<IActionResult> Rotate([FromBody] RotateTokenRequest request)
         {
             if (!ModelState.IsValid)
                 throw new HttpException(HttpStatusCode.BadRequest,

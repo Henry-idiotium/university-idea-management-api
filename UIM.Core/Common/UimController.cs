@@ -10,7 +10,7 @@ using UIM.Core.ResponseMessages;
 
 namespace UIM.Core.Common
 {
-    [Authorize("admin")]
+    [JwtAuthorize("admin")]
     [ApiController]
     public abstract class UimController<TService, TIdentity, TCreate, TUpdate, TDetails> : ControllerBase
         where TService : IService<TIdentity, TCreate, TUpdate, TDetails>
