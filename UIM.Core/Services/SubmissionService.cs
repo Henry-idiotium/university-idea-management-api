@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -71,7 +72,9 @@ namespace UIM.Core.Services
                                         ErrorResponseMessages.BadRequest);
 
             var subs = await _unitOfWork.Submissions.GetAllAsync();
-            var sortedSubs = _sieveProcessor.Apply(model, subs.AsQueryable());
+            var sortedSubs = _mapper.Map<IEnumerable<SubmissionDetailsResponse>>(
+                _sieveProcessor.Apply(model, subs.AsQueryable())
+            );
 
             var pageSize = model.PageSize ?? _sieveOptions.DefaultPageSize;
 
