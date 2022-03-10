@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using UIM.Core.Models.Dtos;
-using UIM.Core.Models.Entities;
 using UIM.Core.ResponseMessages;
 
 namespace UIM.Core.Helpers.Attributes
@@ -16,11 +16,11 @@ namespace UIM.Core.Helpers.Attributes
         AttributeTargets.Class | AttributeTargets.Method,
         Inherited = true,
         AllowMultiple = true)]
-    public class AuthorizeAttribute : Attribute, IAuthorizationFilter
+    public class JwtAuthorizeAttribute : Attribute, IAuthorizationFilter
     {
         private readonly IList<string> _roles;
 
-        public AuthorizeAttribute(params string[] roles)
+        public JwtAuthorizeAttribute(params string[] roles)
         {
             _roles = roles ?? Array.Empty<string>();
         }

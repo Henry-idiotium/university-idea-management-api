@@ -143,6 +143,8 @@ namespace UIM.Core.Helpers
             services.AddAutoMapper(
                 typeof(UserProfile),
                 typeof(IdeaProfile),
+                typeof(CategoryProfile),
+                typeof(DepartmentProfile),
                 typeof(SubmissionProfile)
             );
         }

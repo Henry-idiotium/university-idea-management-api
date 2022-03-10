@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using UIM.Core.Services.Interfaces;
 using UIM.Core.Common;
 using UIM.Core.Models.Dtos.Department;
+using UIM.Core.Services.Interfaces;
 
 namespace UIM.Core.Controllers
 {

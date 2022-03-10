@@ -9,12 +9,6 @@ namespace UIM.Core.Common
     {
         private readonly UimContext _context;
 
-        public ICategoryRepository Categories { get; private set; }
-        public IDepartmentRepository Departments { get; private set; }
-        public IIdeaRepository Ideas { get; private set; }
-        public ISubmissionRepository Submissions { get; private set; }
-        public IUserRepository Users { get; private set; }
-
         public UnitOfWork(UimContext context)
         {
             _context = context;
@@ -25,6 +19,12 @@ namespace UIM.Core.Common
             Submissions = new SubmissionRepository(context);
             Users = new UserRepository(context);
         }
+
+        public ICategoryRepository Categories { get; private set; }
+        public IDepartmentRepository Departments { get; private set; }
+        public IIdeaRepository Ideas { get; private set; }
+        public ISubmissionRepository Submissions { get; private set; }
+        public IUserRepository Users { get; private set; }
 
         public void Dispose()
         {

@@ -31,11 +31,11 @@ namespace UIM.Core.Services
         public async Task<AuthResponse> ExternalLoginAsync(string provider, string idToken)
         {
             var payload = await _jwtService.VerifyGoogleToken(idToken);
-            var info = new UserLoginInfo(provider, payload.Subject, provider);
 
-            var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+            var user = await _userManager.FindByEmailAsync(payload.Email);
             if (user == null)
-                throw new ArgumentNullException(string.Empty);
+                throw new HttpException(HttpStatusCode.BadRequest,
+                                        ErrorResponseMessages.BadRequest);
 
             var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
             await _unitOfWork.Users.AddRefreshTokenAsync(user, refreshToken);
@@ -48,9 +48,9 @@ namespace UIM.Core.Services
         {
             var user = await _userManager.FindByEmailAsync(email);
             var pwdCorrect = await _userManager.CheckPasswordAsync(user, password);
-            if (!pwdCorrect)
-                throw new HttpException(HttpStatusCode.Unauthorized,
-                                        ErrorResponseMessages.Unauthorized);
+            if (user != null || !pwdCorrect)
+                throw new HttpException(HttpStatusCode.BadRequest,
+                                        ErrorResponseMessages.BadRequest);
 
             var accessToken = await _jwtService.GenerateAccessTokenAsync(user.Id);
             var refreshToken = _jwtService.GenerateRefreshToken(user.Id);

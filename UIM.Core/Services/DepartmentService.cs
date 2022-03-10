@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -63,7 +64,9 @@ namespace UIM.Core.Services
                                         ErrorResponseMessages.BadRequest);
 
             var departments = await _unitOfWork.Departments.GetAllAsync();
-            var sortedDepartments = _sieveProcessor.Apply(model, departments.AsQueryable());
+            var sortedDepartments = _mapper.Map<IEnumerable<DepartmentDetailsResponse>>(
+                _sieveProcessor.Apply(model, departments.AsQueryable())
+            );
 
             var pageSize = model.PageSize ?? _sieveOptions.DefaultPageSize;
 

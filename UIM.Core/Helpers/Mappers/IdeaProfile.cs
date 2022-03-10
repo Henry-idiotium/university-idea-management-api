@@ -9,8 +9,6 @@ namespace UIM.Core.Helpers.Mappers
     {
         public IdeaProfile()
         {
-            CreateMap<UpdateIdeaRequest, Idea>();
-
             CreateMap<Idea, IdeaDetailsResponse>()
                 .ForMember(
                     dest => dest.Id,
@@ -20,6 +18,8 @@ namespace UIM.Core.Helpers.Mappers
                 .ForMember(
                     dest => dest.Id,
                     opt => opt.MapFrom(src => EncryptHelpers.DecodeBase64Url(src.Id)));
+
+            CreateMap<UpdateIdeaRequest, Idea>();
 
             CreateMap<CreateIdeaRequest, Idea>()
                 .ForMember(
