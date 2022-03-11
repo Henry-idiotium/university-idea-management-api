@@ -1,13 +1,11 @@
-using UIM.Core.Data.Repositories.Interfaces;
 
-namespace UIM.Core.Common
+namespace UIM.Core.Common;
+
+public interface IUnitOfWork
 {
-    public interface IUnitOfWork
-    {
-        ICategoryRepository Categories { get; }
-        IDepartmentRepository Departments { get; }
-        IIdeaRepository Ideas { get; }
-        ISubmissionRepository Submissions { get; }
-        IUserRepository Users { get; }
-    }
+    ICategoryRepository Categories { get; }
+    IDepartmentRepository Departments { get; }
+    IIdeaRepository Ideas { get; }
+    ISubmissionRepository Submissions { get; }
+    IUserRepository Users { get; }
 }

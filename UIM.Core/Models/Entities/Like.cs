@@ -1,16 +1,11 @@
-using UIM.Core.Common;
-using UIM.Core.Models.Dtos;
+namespace UIM.Core.Models.Entities;
 
-namespace UIM.Core.Models.Entities
+public class Like : Entity
 {
-    public class Like : Entity
-    {
-        public string UserId { get; set; }
-        public string IdeaId { get; set; }
-        public bool IsLike { get; set; }
+    public string UserId { get; set; } = default!;
+    public string IdeaId { get; set; } = default!;
+    public bool IsLike { get; set; }
 
-        // Referential Integrities
-        public AppUser User { get; set; }
-        public Idea Idea { get; set; }
-    }
+    public virtual AppUser User { get; set; } = default!;
+    public virtual Idea Idea { get; set; } = default!;
 }

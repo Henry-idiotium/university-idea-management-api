@@ -1,8 +1,7 @@
-namespace UIM.Core.Models.Dtos.Submission
+namespace UIM.Core.Models.Dtos.Submission;
+
+public class AddIdeaRequest
 {
-    public class AddIdeaRequest
-    {
-        public string SubmissionId { get; set; }
-        public string IdeaId { get; set; }
-    }
+    [Required] public string SubmissionId { get; set; } = default!;
+    [Required] public string IdeaId { get; set; } = default!;
 }

@@ -1,9 +1,8 @@
-namespace UIM.Core.ResponseMessages
+namespace UIM.Core.ResponseMessages;
+
+public static class SuccessResponseMessages
 {
-    public static class SuccessResponseMessages
-    {
-        public const string RequestSucceeded = "Request succeeded";
-        public const string UserRegistered = "User registered";
-        public const string TokenRevoked = "Token revoked";
-    }
+    public const string RequestSucceeded = "Request succeeded";
+    public const string UserRegistered = "User registered";
+    public const string TokenRevoked = "Token revoked";
 }

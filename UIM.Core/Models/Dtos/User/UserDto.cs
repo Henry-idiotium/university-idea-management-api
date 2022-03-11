@@ -1,12 +1,8 @@
-using System;
-using System.ComponentModel.DataAnnotations;
+namespace UIM.Core.Models.Dtos.User;
 
-namespace UIM.Core.Models.Dtos.User
+public abstract class UserDto
 {
-    public abstract class UserDto
-    {
-        [Required] public string UserName { get; set; }
-        [Required] public string FullName { get; set; }
-        public DateTime? DateOfBirth { get; set; }
-    }
+    [Required] public string UserName { get; set; } = default!;
+    [Required] public string FullName { get; set; } = default!;
+    public DateTime? DateOfBirth { get; set; }
 }

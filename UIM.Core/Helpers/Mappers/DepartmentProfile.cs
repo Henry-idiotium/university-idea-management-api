@@ -1,16 +1,11 @@
-using AutoMapper;
-using UIM.Core.Models.Dtos.Department;
-using UIM.Core.Models.Entities;
+namespace UIM.Core.Helpers.Mappers;
 
-namespace UIM.Core.Helpers.Mappers
+public class DepartmentProfile : Profile
 {
-    public class DepartmentProfile : Profile
+    public DepartmentProfile()
     {
-        public DepartmentProfile()
-        {
-            CreateMap<Department, DepartmentDetailsResponse>();
-            CreateMap<CreateDepartmentRequest, Department>();
-            CreateMap<UpdateDepartmentRequest, Department>();
-        }
+        CreateMap<Department, DepartmentDetailsResponse>();
+        CreateMap<CreateDepartmentRequest, Department>();
+        CreateMap<UpdateDepartmentRequest, Department>();
     }
 }

@@ -1,9 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+namespace UIM.Core.Models.Dtos.Category;
 
-namespace UIM.Core.Models.Dtos.Category
+public abstract class CategoryDto
 {
-    public abstract class CategoryDto
-    {
-        [Required] public string Name { get; set; }
-    }
+    [Required] public string Name { get; set; } = default!;
 }

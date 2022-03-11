@@ -1,12 +1,8 @@
-using System;
-using UIM.Core.Common;
+namespace UIM.Core.Models.Dtos.Category;
 
-namespace UIM.Core.Models.Dtos.Category
+public class CategoryDetailsResponse : CategoryDto, IResponse
 {
-    public class CategoryDetailsResponse : CategoryDto, IResponse
-    {
-        public int Id { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime ModifiedDate { get; set; }
-    }
+    public int Id { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public DateTime ModifiedDate { get; set; }
 }

@@ -1,10 +1,9 @@
-namespace UIM.Core.ResponseMessages
+namespace UIM.Core.ResponseMessages;
+
+public static class ErrorResponseMessages
 {
-    public static class ErrorResponseMessages
-    {
-        public const string BadRequest = "Invalid request";
-        public const string Forbidden = "Request rejected";
-        public const string Unauthorized = "Unauthorized to access this resource";
-        public const string UnexpectedError = "Something went wrong";
-    }
+    public const string BadRequest = "Invalid request";
+    public const string Forbidden = "Request rejected";
+    public const string Unauthorized = "Unauthorized to access this resource";
+    public const string UnexpectedError = "Something went wrong";
 }

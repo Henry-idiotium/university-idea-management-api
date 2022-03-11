@@ -1,6 +1,4 @@
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using DataType = System.ComponentModel.DataAnnotations.DataType;
 
 namespace UIM.Core.Common
 {
@@ -16,15 +14,15 @@ namespace UIM.Core.Common
 
         [DataType(DataType.DateTime)]
         public DateTime ModifiedDate { get; set; } = DateTime.UtcNow;
-        public string CreatedBy { get; set; }
-        public string ModifiedBy { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? ModifiedBy { get; set; }
     }
 
     public abstract class Entity<T> : IEntity<T>
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public T Id { get; set; }
+        public T Id { get; set; } = default!;
 
         private DateTime? createdDate;
         [DataType(DataType.DateTime)]
@@ -37,7 +35,7 @@ namespace UIM.Core.Common
         [DataType(DataType.DateTime)]
         public DateTime ModifiedDate { get; set; } = DateTime.UtcNow;
 
-        public string CreatedBy { get; set; }
-        public string ModifiedBy { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? ModifiedBy { get; set; }
     }
 }

@@ -1,9 +1,3 @@
-using UIM.Core.Common;
+namespace UIM.Core.Models.Dtos.Department;
 
-namespace UIM.Core.Models.Dtos.Department
-{
-    public class CreateDepartmentRequest : DepartmentDto, ICreateRequest
-    {
-
-    }
-}
+public class CreateDepartmentRequest : DepartmentDto, ICreateRequest { }

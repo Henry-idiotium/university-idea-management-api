@@ -1,13 +1,8 @@
-using System.Collections.Generic;
-using UIM.Core.Common;
+namespace UIM.Core.Models.Entities;
 
-namespace UIM.Core.Models.Entities
+public class Department : Entity<int>
 {
-    public class Department : Entity<int>
-    {
-        public string Name { get; set; }
+    public string Name { get; set; } = default!;
 
-        // Referential Integrity
-        public ICollection<AppUser> Users { get; set; }
-    }
+    public virtual ICollection<AppUser>? Users { get; set; }
 }

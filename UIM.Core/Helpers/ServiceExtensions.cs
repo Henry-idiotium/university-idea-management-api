@@ -1,82 +1,64 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
-using Newtonsoft.Json.Serialization;
-using Sieve.Services;
-using UIM.Core.Common;
-using UIM.Core.Data;
-using UIM.Core.Helpers.Mappers;
-using UIM.Core.Helpers.SieveExtensions;
-using UIM.Core.Models.Entities;
-using UIM.Core.Services;
-using UIM.Core.Services.Interfaces;
+namespace UIM.Core.Helpers;
 
-namespace UIM.Core.Helpers
+public static class ServiceExtensions
 {
-    public static class ServiceExtensions
+    // Vanilla authorize attribute cannot obtain role claims
+    public static void AddAuthenticationExt(this IServiceCollection services)
     {
-        // Vanilla authorize attribute cannot obtain role claims
-        public static void AddAuthenticationExt(this IServiceCollection services)
-        {
-            services
-                .AddAuthentication(_ =>
-                {
-                    _.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    _.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                });
-        }
-
-        public static void AddControllersExt(this IServiceCollection services)
-        {
-            services.AddControllers().AddNewtonsoftJson(options =>
+        services
+            .AddAuthentication(_ =>
             {
-                options.SerializerSettings.ContractResolver = new DefaultContractResolver
-                {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
-                };
+                _.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                _.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             });
-        }
+    }
 
-        public static void AddCorsExt(this IServiceCollection services)
+    public static void AddControllersExt(this IServiceCollection services)
+    {
+        services.AddControllers().AddNewtonsoftJson(options =>
         {
-            services.AddCors(_ =>
+            options.SerializerSettings.ContractResolver = new DefaultContractResolver
             {
-                _.AddPolicy("default", conf =>
-                    conf.AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .WithOrigins(EnvVars.ValidLocations));
-            });
-        }
+                NamingStrategy = new SnakeCaseNamingStrategy()
+            };
+        });
+    }
 
-        public static void AddDIContainerExt(this IServiceCollection services)
+    public static void AddCorsExt(this IServiceCollection services)
+    {
+        services.AddCors(_ =>
         {
-            services.AddScoped<SieveProcessor>();
-            services.AddScoped<ISieveProcessor, AppSieveProcessor>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-            // Services
-            services.AddScoped<IJwtService, JwtService>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IIdeaService, IdeaService>();
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<IDepartmentService, DepartmentService>();
-            services.AddScoped<ISubmissionService, SubmissionService>();
-        }
+            _.AddPolicy("default", conf =>
+                conf.AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .WithOrigins(EnvVars.ValidLocations));
+        });
+    }
 
-        public static void AddDbContextExt(this IServiceCollection services, string localDbConnectionString)
+    public static void AddDIContainerExt(this IServiceCollection services)
+    {
+        services.AddScoped<SieveProcessor>();
+        services.AddScoped<ISieveProcessor, AppSieveProcessor>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        // Services
+        services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IIdeaService, IdeaService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<IDepartmentService, DepartmentService>();
+        services.AddScoped<ISubmissionService, SubmissionService>();
+    }
+
+    public static void AddDbContextExt(this IServiceCollection services, string localDbConnectionString)
+    {
+        if (EnvVars.CoreEnv == "development")
+            services.AddDbContextPool<UimContext>(_ => _.UseSqlServer(localDbConnectionString));
+        else
         {
-            if (EnvVars.CoreEnv == "development")
-                services.AddDbContextPool<UimContext>(_ => _.UseSqlServer(localDbConnectionString));
-            else
+            services.AddDbContextPool<UimContext>(_ =>
             {
-                services.AddDbContextPool<UimContext>(_ =>
-                {
-                    _.UseNpgsql($@"
+                _.UseNpgsql($@"
 						Port={EnvVars.Pgsql.Port};
 						Server={EnvVars.Pgsql.Host};
 						Database={EnvVars.Pgsql.Db};
@@ -87,86 +69,86 @@ namespace UIM.Core.Helpers
 						Trust Server Certificate={EnvVars.Pgsql.TrustServer};
 						Integrated Security={EnvVars.Pgsql.IntegratedSecurity};
 					");
-                });
-            }
+            });
         }
+    }
 
-        public static void AddIdentityExt(this IServiceCollection services)
+    public static void AddIdentityExt(this IServiceCollection services)
+    {
+        if (EnvVars.CoreEnv == "development")
         {
-            if (EnvVars.CoreEnv == "development")
-            {
-                services
-                    .AddIdentity<AppUser, IdentityRole>(_ =>
-                    {
-                        _.SignIn.RequireConfirmedEmail = false;
-                        _.SignIn.RequireConfirmedAccount = false;
-                        _.SignIn.RequireConfirmedPhoneNumber = false;
-                    })
-                    .AddEntityFrameworkStores<UimContext>()
-                    .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
-
-                services.Configure<IdentityOptions>(_ =>
+            services
+                .AddIdentity<AppUser, IdentityRole>(_ =>
                 {
-                    _.Password.RequiredLength = 0;
-                    _.Password.RequireDigit = false;
-                    _.Password.RequiredUniqueChars = 0;
-                    _.Password.RequireUppercase = false;
-                    _.Password.RequireLowercase = false;
-                    _.Password.RequireNonAlphanumeric = false;
-                });
-            }
-            else
-            {
-                services
-                    .AddIdentity<AppUser, IdentityRole>(_ =>
-                    {
-                        _.SignIn.RequireConfirmedEmail = false;
-                        _.SignIn.RequireConfirmedAccount = true;
-                        _.SignIn.RequireConfirmedPhoneNumber = false;
-                    })
-                    .AddEntityFrameworkStores<UimContext>()
-                    .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
+                    _.SignIn.RequireConfirmedEmail = false;
+                    _.SignIn.RequireConfirmedAccount = false;
+                    _.SignIn.RequireConfirmedPhoneNumber = false;
+                })
+                .AddEntityFrameworkStores<UimContext>()
+                .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
 
-                services.Configure<IdentityOptions>(_ =>
-                {
-                    _.Password.RequireDigit = true;
-                    _.Password.RequiredUniqueChars = 0;
-                    _.Password.RequireUppercase = false;
-                    _.Password.RequireLowercase = false;
-                    _.Password.RequiredLength = default;
-                });
-            }
+            services.Configure<IdentityOptions>(_ =>
+            {
+                _.Password.RequiredLength = 0;
+                _.Password.RequireDigit = false;
+                _.Password.RequiredUniqueChars = 0;
+                _.Password.RequireUppercase = false;
+                _.Password.RequireLowercase = false;
+                _.Password.RequireNonAlphanumeric = false;
+            });
         }
-
-        public static void AddMapperExt(this IServiceCollection services)
+        else
         {
-            services.AddAutoMapper(
-                typeof(UserProfile),
-                typeof(IdeaProfile),
-                typeof(CategoryProfile),
-                typeof(DepartmentProfile),
-                typeof(SubmissionProfile)
-            );
-        }
+            services
+                .AddIdentity<AppUser, IdentityRole>(_ =>
+                {
+                    _.SignIn.RequireConfirmedEmail = false;
+                    _.SignIn.RequireConfirmedAccount = true;
+                    _.SignIn.RequireConfirmedPhoneNumber = false;
+                })
+                .AddEntityFrameworkStores<UimContext>()
+                .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
 
-        public static void AddSwaggerExt(this IServiceCollection services)
-        {
-            services.AddSwaggerGen(_ =>
+            services.Configure<IdentityOptions>(_ =>
             {
-                _.DocumentFilter<LowercaseDocumentFilter>();
-                _.SwaggerDoc("v1", new OpenApiInfo { Title = "UIM", Version = "v1" });
-                _.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Description = "JWT Authorization header using the Bearer scheme." +
-                                  "\nEnter 'Bearer' [space] and then your token in the text input below." +
-                                  "\nExample: 'Bearer 12345abcdef'",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
-                });
-                _.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                {
+                _.Password.RequireDigit = true;
+                _.Password.RequiredUniqueChars = 0;
+                _.Password.RequireUppercase = false;
+                _.Password.RequireLowercase = false;
+                _.Password.RequiredLength = default;
+            });
+        }
+    }
+
+    public static void AddMapperExt(this IServiceCollection services)
+    {
+        services.AddAutoMapper(
+            typeof(UserProfile),
+            typeof(IdeaProfile),
+            typeof(CategoryProfile),
+            typeof(DepartmentProfile),
+            typeof(SubmissionProfile)
+        );
+    }
+
+    public static void AddSwaggerExt(this IServiceCollection services)
+    {
+        services.AddSwaggerGen(_ =>
+        {
+            _.DocumentFilter<LowercaseDocumentFilter>();
+            _.SwaggerDoc("v1", new OpenApiInfo { Title = "UIM", Version = "v1" });
+            _.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme." +
+                              "\nEnter 'Bearer' [space] and then your token in the text input below." +
+                              "\nExample: 'Bearer 12345abcdef'",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "Bearer"
+            });
+            _.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            {
                     {
                         new OpenApiSecurityScheme
                         {
@@ -181,50 +163,49 @@ namespace UIM.Core.Helpers
                         },
                         new List<string>()
                     }
-                });
             });
-        }
+        });
+    }
 
-        public static async Task CreateRolesAndPwdUser(IServiceProvider serviceProvider, bool disable)
+    public static async Task CreateRolesAndPwdUser(IServiceScope scope, bool disable)
+    {
+        if (!disable)
         {
-            if (!disable)
-            {
-                var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                var userManager = serviceProvider.GetRequiredService<UserManager<AppUser>>();
+            var userManager = (UserManager<AppUser>)scope.ServiceProvider.GetService(typeof(UserManager<AppUser>))!;
+            var roleManager = (RoleManager<IdentityRole>)scope.ServiceProvider.GetService(typeof(RoleManager<IdentityRole>))!;
 
-                // Initializing custom roles
-                var roleNames = new List<string>
+            // Initializing custom roles
+            var roleNames = new List<string>
                 {
                     EnvVars.System.Role.Staff,
                     EnvVars.System.Role.PwrUser,
                     EnvVars.System.Role.Manager,
                     EnvVars.System.Role.Supervisor,
                 };
-                foreach (var name in roleNames)
-                {
-                    var roleExist = await roleManager.RoleExistsAsync(name);
-                    if (!roleExist)
-                        await roleManager.CreateAsync(new IdentityRole(name));
-                }
+            foreach (var name in roleNames)
+            {
+                var roleExist = await roleManager.RoleExistsAsync(name);
+                if (!roleExist)
+                    await roleManager.CreateAsync(new IdentityRole(name));
+            }
 
-                // Create a super user who will maintain the system
-                var existingPwrUser = await userManager.FindByEmailAsync(EnvVars.System.PwrUserAuth.Email);
-                if (existingPwrUser == null)
+            // Create a super user who will maintain the system
+            var existingPwrUser = await userManager.FindByEmailAsync(EnvVars.System.PwrUserAuth.Email);
+            if (existingPwrUser == null)
+            {
+                var pwrUser = new AppUser
                 {
-                    var pwrUser = new AppUser
-                    {
-                        EmailConfirmed = true,
-                        FullName = "Henry David",
-                        Email = EnvVars.System.PwrUserAuth.Email,
-                        UserName = EnvVars.System.PwrUserAuth.UserName,
-                        CreatedDate = DateTime.UtcNow,
-                    };
-                    var createPowerUser = await userManager.CreateAsync(pwrUser,
-                        EnvVars.System.PwrUserAuth.Password);
+                    EmailConfirmed = true,
+                    FullName = "Henry David",
+                    Email = EnvVars.System.PwrUserAuth.Email,
+                    UserName = EnvVars.System.PwrUserAuth.UserName,
+                    CreatedDate = DateTime.UtcNow,
+                };
+                var createPowerUser = await userManager.CreateAsync(pwrUser,
+                    EnvVars.System.PwrUserAuth.Password);
 
-                    if (createPowerUser.Succeeded)
-                        await userManager.AddToRoleAsync(pwrUser, EnvVars.System.Role.PwrUser);
-                }
+                if (createPowerUser.Succeeded)
+                    await userManager.AddToRoleAsync(pwrUser, EnvVars.System.Role.PwrUser);
             }
         }
     }

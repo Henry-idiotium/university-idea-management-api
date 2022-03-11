@@ -1,9 +1,6 @@
-using UIM.Core.Common;
+namespace UIM.Core.Models.Dtos.Submission;
 
-namespace UIM.Core.Models.Dtos.Submission
+public class UpdateSubmissionRequest : SubmissionDto, IUpdateRequest
 {
-    public class UpdateSubmissionRequest : SubmissionDto, IUpdateRequest
-    {
-        public string ModifiedBy { get; set; }
-    }
+    public string? ModifiedBy { get; set; }
 }

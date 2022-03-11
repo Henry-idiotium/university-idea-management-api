@@ -1,9 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+namespace UIM.Core.Models.Dtos.Department;
 
-namespace UIM.Core.Models.Dtos.Department
+public class DepartmentDto
 {
-    public class DepartmentDto
-    {
-        [Required] public string Name { get; set; }
-    }
+    [Required] public string Name { get; set; } = default!;
 }

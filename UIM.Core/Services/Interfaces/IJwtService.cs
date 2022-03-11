@@ -1,19 +1,11 @@
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Google.Apis.Auth;
-using UIM.Core.Models.Dtos.Token;
-using UIM.Core.Models.Entities;
+namespace UIM.Core.Services.Interfaces;
 
-namespace UIM.Core.Services.Interfaces
+public interface IJwtService
 {
-    public interface IJwtService
-    {
-        AccessToken GenerateAccessToken(IEnumerable<Claim> claims);
-        Task<AccessToken> GenerateAccessTokenAsync(string userId);
-        RefreshToken GenerateRefreshToken(string userId);
-        ClaimsPrincipal GetClaimsPrincipal(string token);
-        string Validate(string token);
-        Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(string idToken);
-    }
+    AccessToken GenerateAccessToken(IEnumerable<Claim> claims);
+    Task<AccessToken> GenerateAccessTokenAsync(string userId);
+    RefreshToken GenerateRefreshToken(string userId);
+    ClaimsPrincipal? GetClaimsPrincipal(string? token);
+    string? Validate(string? token);
+    Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(string idToken);
 }

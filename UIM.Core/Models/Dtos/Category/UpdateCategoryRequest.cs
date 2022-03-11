@@ -1,6 +1,3 @@
-using UIM.Core.Common;
+namespace UIM.Core.Models.Dtos.Category;
 
-namespace UIM.Core.Models.Dtos.Category
-{
-    public class UpdateCategoryRequest : CategoryDto, IUpdateRequest { }
-}
+public class UpdateCategoryRequest : CategoryDto, IUpdateRequest { }

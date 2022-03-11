@@ -1,14 +1,10 @@
-using UIM.Core.Common;
+namespace UIM.Core.Models.Entities;
 
-namespace UIM.Core.Models.Entities
+public class Comment : Entity<string>
 {
-    public class Comment : Entity<string>
-    {
-        public string IdeaId { get; set; }
-        public string Parrent { get; set; }
-        public string Content { get; set; }
+    public string IdeaId { get; set; } = default!;
+    public string? Parrent { get; set; }
+    public string Content { get; set; } = default!;
 
-        // Referential Integrity
-        public Idea Idea { get; set; }
-    }
+    public virtual Idea Idea { get; set; } = default!;
 }
