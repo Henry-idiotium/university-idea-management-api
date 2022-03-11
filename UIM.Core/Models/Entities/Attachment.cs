@@ -1,14 +1,9 @@
-using System;
-using UIM.Core.Common;
+namespace UIM.Core.Models.Entities;
 
-namespace UIM.Core.Models.Entities
+public class Attachment : Entity<int>
 {
-    public class Attachment : Entity<int>
-    {
-        public string IdeaId { get; set; }
-        public string Url { get; set; }
+    public string IdeaId { get; set; } = default!;
+    public string Url { get; set; } = default!;
 
-        // Referential Integrity
-        public Idea Idea { get; set; }
-    }
+    public virtual Idea Idea { get; set; } = default!;
 }

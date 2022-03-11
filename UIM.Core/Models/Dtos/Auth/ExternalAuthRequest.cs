@@ -1,8 +1,7 @@
-namespace UIM.Core.Models.Dtos.Auth
+namespace UIM.Core.Models.Dtos.Auth;
+
+public class ExternalAuthRequest
 {
-    public class ExternalAuthRequest
-    {
-        public string Provider { get; set; }
-        public string IdToken { get; set; }
-    }
+    [Required] public string Provider { get; set; } = default!;
+    [Required] public string IdToken { get; set; } = default!;
 }

@@ -1,99 +1,88 @@
-using System;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Sieve.Models;
-using UIM.Core.Helpers;
-using UIM.Core.Helpers.Attributes;
-using UIM.Core.Models.Dtos;
-using UIM.Core.ResponseMessages;
+namespace UIM.Core.Common;
 
-namespace UIM.Core.Common
+[JwtAuthorize("admin")]
+[ApiController]
+public abstract class UimController<TService, TIdentity, TCreate, TUpdate, TDetails> : ControllerBase
+    where TService : IService<TIdentity, TCreate, TUpdate, TDetails>
+    where TCreate : ICreateRequest
+    where TUpdate : IUpdateRequest
+    where TDetails : IResponse
+    where TIdentity : IConvertible
 {
-    [JwtAuthorize("admin")]
-    [ApiController]
-    public abstract class UimController<TService, TIdentity, TCreate, TUpdate, TDetails> : ControllerBase
-        where TService : IService<TIdentity, TCreate, TUpdate, TDetails>
-        where TCreate : ICreateRequest
-        where TUpdate : IUpdateRequest
-        where TDetails : IResponse
-        where TIdentity : IConvertible
+    protected TService _service;
+
+    public UimController(TService service) => _service = service;
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] TCreate request)
     {
-        protected TService _service;
+        if (!ModelState.IsValid)
+            throw new HttpException(HttpStatusCode.BadRequest,
+                                    ErrorResponseMessages.BadRequest);
 
-        public UimController(TService service) => _service = service;
+        await _service.CreateAsync(request);
+        return Ok(new GenericResponse());
+    }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] TCreate request)
+    [HttpDelete("[controller]/{id}")]
+    public async Task<IActionResult> Delete(TIdentity id)
+    {
+        if (!ModelState.IsValid)
+            throw new HttpException(HttpStatusCode.BadRequest,
+                                    ErrorResponseMessages.BadRequest);
+
+        var entityId = DecodeGenericIdentity(id);
+
+        await _service.RemoveAsync(entityId);
+
+        return Ok(new GenericResponse());
+    }
+
+    [HttpPut("[controller]/{id}")]
+    public async Task<IActionResult> Edit([FromBody] TUpdate request, TIdentity id)
+    {
+        if (!ModelState.IsValid)
+            throw new HttpException(HttpStatusCode.BadRequest,
+                                    ErrorResponseMessages.BadRequest);
+
+        var entityId = DecodeGenericIdentity(id);
+
+        await _service.EditAsync(entityId, request);
+        return Ok(new GenericResponse());
+    }
+
+    [HttpGet("[controller]s")]
+    public virtual async Task<IActionResult> Get([FromQuery] SieveModel request)
+    {
+        if (!ModelState.IsValid)
+            throw new HttpException(HttpStatusCode.BadRequest,
+                                    ErrorResponseMessages.BadRequest);
+
+        var result = await _service.FindAsync(request);
+        return Ok(new GenericResponse(result));
+    }
+
+    [HttpGet("[controller]/{id}")]
+    public async Task<IActionResult> Get(TIdentity id)
+    {
+        if (!ModelState.IsValid)
+            throw new HttpException(HttpStatusCode.BadRequest,
+                                    ErrorResponseMessages.BadRequest);
+
+        var entityId = DecodeGenericIdentity(id);
+
+        var result = await _service.FindByIdAsync(entityId);
+        return Ok(new GenericResponse(result));
+    }
+
+    private static TIdentity DecodeGenericIdentity(TIdentity id)
+    {
+        if (id is string)
         {
-            if (!ModelState.IsValid)
-                throw new HttpException(HttpStatusCode.BadRequest,
-                                        ErrorResponseMessages.BadRequest);
-
-            await _service.CreateAsync(request);
-            return Ok(new GenericResponse());
+            id = (TIdentity)Convert.ChangeType(
+                value: EncryptHelpers.DecodeBase64Url(id.ToString()),
+                conversionType: typeof(TIdentity));
         }
-
-        [HttpDelete("[controller]/{id}")]
-        public async Task<IActionResult> Delete(TIdentity id)
-        {
-            if (!ModelState.IsValid)
-                throw new HttpException(HttpStatusCode.BadRequest,
-                                        ErrorResponseMessages.BadRequest);
-
-            var entityId = DecodeGenericIdentity(id);
-
-            await _service.RemoveAsync(entityId);
-
-            return Ok(new GenericResponse());
-        }
-
-        [HttpPut("[controller]/{id}")]
-        public async Task<IActionResult> Edit([FromBody] TUpdate request, TIdentity id)
-        {
-            if (!ModelState.IsValid)
-                throw new HttpException(HttpStatusCode.BadRequest,
-                                        ErrorResponseMessages.BadRequest);
-
-            var entityId = DecodeGenericIdentity(id);
-
-            await _service.EditAsync(entityId, request);
-            return Ok(new GenericResponse());
-        }
-
-        [HttpGet("[controller]s")]
-        public virtual async Task<IActionResult> Get([FromQuery] SieveModel request)
-        {
-            if (!ModelState.IsValid)
-                throw new HttpException(HttpStatusCode.BadRequest,
-                                        ErrorResponseMessages.BadRequest);
-
-            var result = await _service.FindAsync(request);
-            return Ok(new GenericResponse(result));
-        }
-
-        [HttpGet("[controller]/{id}")]
-        public async Task<IActionResult> Get(TIdentity id)
-        {
-            if (!ModelState.IsValid)
-                throw new HttpException(HttpStatusCode.BadRequest,
-                                        ErrorResponseMessages.BadRequest);
-
-            var entityId = DecodeGenericIdentity(id);
-
-            var result = await _service.FindByIdAsync(entityId);
-            return Ok(new GenericResponse(result));
-        }
-
-        private static TIdentity DecodeGenericIdentity(TIdentity id)
-        {
-            if (id is string)
-            {
-                id = (TIdentity)Convert.ChangeType(
-                    value: EncryptHelpers.DecodeBase64Url(id.ToString()),
-                    conversionType: typeof(TIdentity));
-            }
-            return id;
-        }
+        return id;
     }
 }

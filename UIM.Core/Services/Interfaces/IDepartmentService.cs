@@ -1,14 +1,10 @@
-using UIM.Core.Common;
-using UIM.Core.Models.Dtos.Department;
+namespace UIM.Core.Services.Interfaces;
 
-namespace UIM.Core.Services.Interfaces
+public interface IDepartmentService
+    : IService<int,
+        CreateDepartmentRequest,
+        UpdateDepartmentRequest,
+        DepartmentDetailsResponse>
 {
-    public interface IDepartmentService
-        : IService<int,
-            CreateDepartmentRequest,
-            UpdateDepartmentRequest,
-            DepartmentDetailsResponse>
-    {
 
-    }
 }

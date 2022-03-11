@@ -1,19 +1,16 @@
-using Microsoft.Extensions.Options;
-using Sieve.Models;
-using Sieve.Services;
-using UIM.Core.Helpers.SieveExtensions.Configurations;
+namespace UIM.Core.Helpers.SieveExtensions;
 
-namespace UIM.Core.Helpers.SieveExtensions
+public class AppSieveProcessor : SieveProcessor
 {
-    public class AppSieveProcessor : SieveProcessor
-    {
-        public AppSieveProcessor(IOptions<SieveOptions> options) : base(options) { }
+    public AppSieveProcessor(IOptions<SieveOptions> options) : base(options) { }
 
-        protected override SievePropertyMapper MapProperties(SievePropertyMapper mapper)
-        {
-            return mapper
-                .ApplyConfiguration<UserSieveConfig>()
-                .ApplyConfiguration<SubmissionSieveConfig>();
-        }
+    protected override SievePropertyMapper MapProperties(SievePropertyMapper mapper)
+    {
+        return mapper
+            .ApplyConfiguration<UserSieveConfig>()
+            .ApplyConfiguration<IdeaSieveConfig>()
+            .ApplyConfiguration<CategorySieveConfig>()
+            .ApplyConfiguration<DepartmentSieveConfig>()
+            .ApplyConfiguration<SubmissionSieveConfig>();
     }
 }

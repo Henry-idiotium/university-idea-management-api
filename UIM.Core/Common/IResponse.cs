@@ -1,4 +1,3 @@
-namespace UIM.Core.Common
-{
-    public interface IResponse { }
-}
+namespace UIM.Core.Common;
+
+public interface IResponse { }
