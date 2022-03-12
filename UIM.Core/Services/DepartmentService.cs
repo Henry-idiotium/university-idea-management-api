@@ -6,15 +6,15 @@ public class DepartmentService : Service, IDepartmentService
         IOptions<SieveOptions> sieveOptions,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork)
-        : base(mapper,
-            sieveOptions,
-            sieveProcessor,
-            unitOfWork)
+        : base(mapper, sieveOptions, sieveProcessor, unitOfWork)
     {
     }
 
     public async Task CreateAsync(CreateDepartmentRequest request)
     {
+        if (request == null)
+            throw new ArgumentNullException(string.Empty);
+
         if (await _unitOfWork.Departments.GetByNameAsync(request.Name) != null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
@@ -28,6 +28,9 @@ public class DepartmentService : Service, IDepartmentService
 
     public async Task EditAsync(int departmentId, UpdateDepartmentRequest request)
     {
+        if (request == null)
+            throw new ArgumentNullException(string.Empty);
+
         var department = await _unitOfWork.Departments.GetByIdAsync(departmentId);
         if (department == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -42,24 +45,25 @@ public class DepartmentService : Service, IDepartmentService
 
     public async Task<TableResponse> FindAsync(SieveModel model)
     {
+        if (model == null)
+            throw new ArgumentNullException(string.Empty);
+
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        var departments = await _unitOfWork.Departments.GetAllAsync();
-        if (departments == null)
+        var sortedDeps = _sieveProcessor.Apply(model, _unitOfWork.Departments.Set);
+        if (sortedDeps == null)
             throw new HttpException(HttpStatusCode.InternalServerError,
                                     ErrorResponseMessages.UnexpectedError);
 
-        var sortedDepartments = _mapper.Map<IEnumerable<DepartmentDetailsResponse>>(
-            _sieveProcessor.Apply(model, departments.AsQueryable())
-        );
-
+        var mappedDeps = _mapper.Map<List<DepartmentDetailsResponse>>(sortedDeps);
         var pageSize = model?.PageSize ?? _sieveOptions.DefaultPageSize;
+        var total = await _unitOfWork.Departments.CountAsync();
 
-        return new(sortedDepartments, sortedDepartments.Count(),
+        return new(mappedDeps, total,
             currentPage: model?.Page ?? 1,
-            totalPages: (int)Math.Ceiling((float)departments.Count() / pageSize));
+            totalPages: (int)Math.Ceiling((float)sortedDeps.Count() / pageSize));
     }
 
     public async Task<DepartmentDetailsResponse> FindByIdAsync(int departmentId)

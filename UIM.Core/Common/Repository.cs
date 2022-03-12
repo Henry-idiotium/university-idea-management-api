@@ -4,37 +4,37 @@ public abstract class Repository<TEntity, TIdentity> : IRepository<TEntity, TIde
     where TEntity : class, IEntity<TIdentity>
 {
     protected UimContext _context;
-    protected DbSet<TEntity> _set;
 
     public Repository(UimContext context)
     {
         _context = context;
-        _set = context.Set<TEntity>();
+        Set = context.Set<TEntity>();
     }
+
+    public DbSet<TEntity> Set { get; private set; }
 
     public async Task<bool> AddAsync(TEntity entity)
     {
-        await _set.AddAsync(entity);
+        await Set.AddAsync(entity);
         var added = await _context.SaveChangesAsync();
         return added > 0;
     }
 
+    public async Task<int> CountAsync() => await Set.CountAsync();
+
     public async Task<bool> DeleteAsync(TIdentity entityId)
     {
-        var entity = await _set.FindAsync(entityId);
+        var entity = await Set.FindAsync(entityId);
         if (entity == null) return false;
 
-        _set.Remove(entity);
+        Set.Remove(entity);
         var deleted = await _context.SaveChangesAsync();
 
         return deleted > 0;
     }
 
-    public async Task<IEnumerable<TEntity>?> GetAllAsync() =>
-        await _set.ToListAsync();
-
     public async Task<TEntity?> GetByIdAsync(TIdentity entityId) =>
-        await _set.FindAsync(entityId);
+        await Set.FindAsync(entityId);
 
     public async Task<bool> UpdateAsync(TEntity entity)
     {

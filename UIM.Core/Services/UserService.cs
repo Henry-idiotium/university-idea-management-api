@@ -12,10 +12,7 @@ public class UserService : Service, IUserService
         IUnitOfWork unitOfWork,
         RoleManager<IdentityRole> roleManager,
         UserManager<AppUser> userManager)
-        : base(mapper,
-            sieveOptions,
-            sieveProcessor,
-            unitOfWork)
+        : base(mapper, sieveOptions, sieveProcessor, unitOfWork)
     {
         _roleManager = roleManager;
         _userManager = userManager;
@@ -23,6 +20,9 @@ public class UserService : Service, IUserService
 
     public async Task CreateAsync(CreateUserRequest request)
     {
+        if (request == null)
+            throw new ArgumentNullException(string.Empty);
+
         if (request.Password != request.ConfirmPassword)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
@@ -50,6 +50,10 @@ public class UserService : Service, IUserService
 
     public async Task EditAsync(string userId, UpdateUserRequest request)
     {
+        if (request == null
+            || string.IsNullOrEmpty(userId))
+            throw new ArgumentNullException(string.Empty);
+
         userId = EncryptHelpers.DecodeBase64Url(userId);
         var user = await _userManager.FindByIdAsync(EncryptHelpers.DecodeBase64Url(userId));
 
@@ -84,20 +88,24 @@ public class UserService : Service, IUserService
 
     public async Task<TableResponse> FindAsync(SieveModel model)
     {
+        if (model == null)
+            throw new ArgumentNullException(string.Empty);
+
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        var users = _userManager.Users;
-        var sortedUsers = _sieveProcessor.Apply(model, users.AsQueryable());
+        var sortedUsers = _sieveProcessor.Apply(model, _userManager.Users);
+        if (sortedUsers == null)
+            throw new HttpException(HttpStatusCode.BadRequest,
+                                    ErrorResponseMessages.BadRequest);
 
         var mappedUsers = new List<UserDetailsResponse>();
         foreach (var user in sortedUsers)
         {
+            var role = await _userManager.GetRolesAsync(user);
             var department = user.DepartmentId == null ? null
                 : await _unitOfWork.Departments.GetByIdAsync((int)user.DepartmentId);
-
-            var role = await _userManager.GetRolesAsync(user);
 
             mappedUsers.Add(_mapper.Map<UserDetailsResponse>(user, opt =>
                 opt.AfterMap((src, dest) =>
@@ -108,14 +116,18 @@ public class UserService : Service, IUserService
         }
 
         var pageSize = model?.PageSize ?? _sieveOptions.DefaultPageSize;
+        var total = await _userManager.Users.CountAsync();
 
         return new(mappedUsers, mappedUsers.Count,
             currentPage: model?.Page ?? 1,
-            totalPages: (int)Math.Ceiling((float)users.Count() / pageSize));
+            totalPages: (int)Math.Ceiling((float)(total / pageSize)));
     }
 
     public async Task<UserDetailsResponse> FindByIdAsync(string userId)
     {
+        if (string.IsNullOrEmpty(userId))
+            throw new ArgumentNullException(string.Empty);
+
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -138,6 +150,9 @@ public class UserService : Service, IUserService
 
     public async Task RemoveAsync(string userId)
     {
+        if (string.IsNullOrEmpty(userId))
+            throw new ArgumentNullException(string.Empty);
+
         userId = EncryptHelpers.DecodeBase64Url(userId);
         var user = await _userManager.FindByIdAsync(userId);
 

@@ -6,15 +6,15 @@ public class CategoryService : Service, ICategoryService
         IOptions<SieveOptions> sieveOptions,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork)
-        : base(mapper,
-            sieveOptions,
-            sieveProcessor,
-            unitOfWork)
+        : base(mapper, sieveOptions, sieveProcessor, unitOfWork)
     {
     }
 
     public async Task CreateAsync(CreateCategoryRequest request)
     {
+        if (request == null)
+            throw new ArgumentNullException(string.Empty);
+
         if (await _unitOfWork.Categories.GetByNameAsync(request.Name) != null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
@@ -28,6 +28,9 @@ public class CategoryService : Service, ICategoryService
 
     public async Task EditAsync(int categoryId, UpdateCategoryRequest request)
     {
+        if (request == null)
+            throw new ArgumentNullException(string.Empty);
+
         var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
         if (category == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -42,24 +45,26 @@ public class CategoryService : Service, ICategoryService
 
     public async Task<TableResponse> FindAsync(SieveModel model)
     {
+        if (model == null)
+            throw new ArgumentNullException(string.Empty);
+
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        var categories = await _unitOfWork.Categories.GetAllAsync();
-        if (categories == null)
+        var sortedCategories = _sieveProcessor.Apply(model, _unitOfWork.Categories.Set);
+        if (sortedCategories == null)
             throw new HttpException(HttpStatusCode.InternalServerError,
                                     ErrorResponseMessages.UnexpectedError);
 
-        var sortedCategories = _mapper.Map<IEnumerable<CategoryDetailsResponse>>(
-            _sieveProcessor.Apply(model, categories.AsQueryable())
-        );
+        var mappedCategories = _mapper.Map<List<CategoryDetailsResponse>>(sortedCategories);
 
         var pageSize = model?.PageSize ?? _sieveOptions.DefaultPageSize;
+        var total = await _unitOfWork.Ideas.CountAsync();
 
-        return new(sortedCategories, sortedCategories.Count(),
+        return new(mappedCategories, mappedCategories.Count,
             currentPage: model?.Page ?? 1,
-            totalPages: (int)Math.Ceiling((float)categories.Count() / pageSize));
+            totalPages: (int)Math.Ceiling((float)(total / pageSize)));
     }
 
     public async Task<CategoryDetailsResponse> FindByIdAsync(int categoryId)

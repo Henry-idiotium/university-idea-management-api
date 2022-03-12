@@ -9,13 +9,16 @@ public class IdeaService : Service, IIdeaService
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork,
         UserManager<AppUser> userManager)
-        : base(mapper,
-            sieveOptions,
-            sieveProcessor,
-            unitOfWork) => _userManager = userManager;
+        : base(mapper, sieveOptions, sieveProcessor, unitOfWork)
+    {
+        _userManager = userManager;
+    }
 
     public async Task CreateAsync(CreateIdeaRequest request)
     {
+        if (request == null)
+            throw new ArgumentNullException(string.Empty);
+
         if (await _userManager.FindByIdAsync(request.UserId) == null
             || await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -35,6 +38,10 @@ public class IdeaService : Service, IIdeaService
 
     public async Task EditAsync(string ideaId, UpdateIdeaRequest request)
     {
+        if (request == null
+            || string.IsNullOrEmpty(ideaId))
+            throw new ArgumentNullException(string.Empty);
+
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         if (idea == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -65,12 +72,10 @@ public class IdeaService : Service, IIdeaService
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        var ideas = await _unitOfWork.Ideas.GetAllAsync();
-        if (ideas == null)
+        var sortedIdeas = _sieveProcessor.Apply(model, _unitOfWork.Ideas.Set);
+        if (sortedIdeas == null)
             throw new HttpException(HttpStatusCode.InternalServerError,
                                     ErrorResponseMessages.UnexpectedError);
-
-        var sortedIdeas = _sieveProcessor.Apply(model, ideas.AsQueryable());
 
         var mappedIdeas = new List<IdeaDetailsResponse>();
         foreach (var idea in sortedIdeas)
@@ -81,17 +86,17 @@ public class IdeaService : Service, IIdeaService
         }
 
         var pageSize = model?.PageSize ?? _sieveOptions.DefaultPageSize;
+        var total = await _unitOfWork.Ideas.CountAsync();
 
-        return new(mappedIdeas, ideas.Count(),
+        return new(mappedIdeas, mappedIdeas.Count,
             currentPage: model?.Page ?? 1,
-            totalPages: (int)Math.Ceiling((float)ideas.Count() / pageSize));
+            totalPages: (int)Math.Ceiling((float)(total / pageSize)));
     }
 
     public async Task<IdeaDetailsResponse> FindByIdAsync(string? ideaId)
     {
-        if (ideaId == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+        if (string.IsNullOrEmpty(ideaId))
+            throw new ArgumentNullException(string.Empty);
 
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         if (idea == null)
@@ -111,6 +116,9 @@ public class IdeaService : Service, IIdeaService
 
     public async Task RemoveAsync(string ideaId)
     {
+        if (string.IsNullOrEmpty(ideaId))
+            throw new ArgumentNullException(string.Empty);
+
         var succeeded = await _unitOfWork.Ideas.DeleteAsync(ideaId);
         if (!succeeded)
             throw new HttpException(HttpStatusCode.BadRequest,
