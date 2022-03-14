@@ -1,6 +1,6 @@
 namespace UIM.Core.Controllers;
 
-[JwtAuthorize]
+[JwtAuthorize(RoleNames.Admin)]
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
