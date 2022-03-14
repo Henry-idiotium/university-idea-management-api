@@ -69,18 +69,6 @@ public class UserRepository : IUserRepository
         return revoked > 0;
     }
 
-    public bool ValidateExistence(AppUser user)
-    {
-        var existingUsers = _context.Users.Where(_ =>
-            _.Email == user.Email
-            || _.UserName == user.UserName).ToList();
-
-        if (existingUsers.Count > 1)
-            throw new Exception("There are more than one user with similar auth identity");
-
-        return existingUsers != null;
-    }
-
     private static void RevokeToken(RefreshToken token, string? reason = null,
         string? replacedByToken = null)
     {

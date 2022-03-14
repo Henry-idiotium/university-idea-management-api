@@ -9,7 +9,7 @@ public class UimContext : IdentityDbContext<AppUser>
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<Like> Likes => Set<Like>();
     public DbSet<View> Views => Set<View>();
-    public DbSet<Attachment> Attachments => Set<Attachment>();
+    public DbSet<Models.Entities.Attachment> Attachments => Set<Models.Entities.Attachment>();
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();

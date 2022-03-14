@@ -34,7 +34,9 @@ public abstract class Repository<TEntity, TIdentity> : IRepository<TEntity, TIde
     }
 
     public async Task<TEntity?> GetByIdAsync(TIdentity entityId) =>
-        await Set.FindAsync(entityId);
+        (entityId != null)
+            ? await Set.FindAsync(entityId)
+            : null;
 
     public async Task<bool> UpdateAsync(TEntity entity)
     {
