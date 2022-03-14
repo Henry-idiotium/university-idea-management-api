@@ -1,8 +1,8 @@
 namespace UIM.Core.Common;
 
-[JwtAuthorize("admin")]
+[JwtAuthorize(RoleNames.Admin)]
 [ApiController]
-public abstract class UimController<TService, TIdentity, TCreate, TUpdate, TDetails> : ControllerBase
+public abstract class AdminController<TService, TIdentity, TCreate, TUpdate, TDetails> : ControllerBase
     where TService : IService<TIdentity, TCreate, TUpdate, TDetails>
     where TCreate : ICreateRequest
     where TUpdate : IUpdateRequest
@@ -11,7 +11,7 @@ public abstract class UimController<TService, TIdentity, TCreate, TUpdate, TDeta
 {
     protected TService _service;
 
-    public UimController(TService service) => _service = service;
+    public AdminController(TService service) => _service = service;
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TCreate request)

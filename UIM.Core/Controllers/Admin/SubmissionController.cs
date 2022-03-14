@@ -2,7 +2,7 @@ namespace UIM.Core.Controllers.Admin;
 
 [ApiController]
 [Route("api/submission-management")]
-public class SubmissionController : UimController<ISubmissionService, string,
+public class SubmissionController : AdminController<ISubmissionService, string,
     CreateSubmissionRequest,
     UpdateSubmissionRequest,
     SubmissionDetailsResponse>

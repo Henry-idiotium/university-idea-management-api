@@ -2,7 +2,7 @@ namespace Namespace;
 
 [ApiController]
 [Route("api/idea-management")]
-public class IdeaController : UimController<IIdeaService, string,
+public class IdeaController : AdminController<IIdeaService, string,
     CreateIdeaRequest,
     UpdateIdeaRequest,
     IdeaDetailsResponse>
