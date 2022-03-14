@@ -30,6 +30,24 @@ public class AuthController : ControllerBase
         return Ok(new GenericResponse(user));
     }
 
+    [HttpPost("update-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] UpdatePasswordRequest request)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest,
+                                    ErrorResponseMessages.BadRequest);
+
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized,
+                                    ErrorResponseMessages.Unauthorized);
+
+        await _authService.UpdatePasswordAsync(userId, request);
+        return Ok(new GenericResponse());
+    }
+
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)

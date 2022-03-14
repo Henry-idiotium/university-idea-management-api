@@ -2,6 +2,9 @@ namespace UIM.Core.Helpers;
 
 public static class EnvVars
 {
+
+    public static string ClientDomain => GetEnvVar("CLIENT_DOMAIN");
+    public static string EmailDomain => GetEnvVar("EMAIL_DOMAIN");
     public static string CoreEnv => GetEnvVar("ASPNETCORE_ENVIRONMENT").ToLower();
     public static bool InitRolesPwrUser => bool.Parse(GetEnvVar("INIT_ROLES_PWRUSER"));
     public static string[] ValidOrigins
@@ -21,6 +24,17 @@ public static class EnvVars
             throw new ArgumentNullException(result, "EnvVars");
 
         return result;
+    }
+
+    public static class ExternalProvider
+    {
+        public static class SendGrid
+        {
+            public static string ApiKey => GetEnvVar("SENDGRID_API_KEY");
+            public static string SenderEmail => GetEnvVar("SENDGRID_SENDER_EMAIL");
+            public static string SenderName => GetEnvVar("SENDGRID_SENDER_NAME");
+            public static string TemplateId => GetEnvVar("SENDGRID_TEMPLATE_ID");
+        }
     }
 
     public static class Jwt

@@ -16,9 +16,9 @@ public class AuthService : IAuthService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<AuthResponse> ExternalLoginAsync(string provider, string idToken)
+    public async Task<AuthResponse> ExternalLoginAsync(ExternalAuthRequest request)
     {
-        var payload = await _jwtService.VerifyGoogleToken(idToken);
+        var payload = await _jwtService.VerifyGoogleToken(request.IdToken);
 
         var user = await _userManager.FindByEmailAsync(payload.Email);
         if (user == null)
@@ -27,24 +27,45 @@ public class AuthService : IAuthService
 
         var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
         await _unitOfWork.Users.AddRefreshTokenAsync(user, refreshToken);
-        var accessToken = await _jwtService.GenerateAccessTokenAsync(user.Id);
+        var accessToken = await _jwtService.GenerateAccessTokenAsync(user);
 
         return new(accessToken, refreshToken.Token);
     }
 
-    public async Task<AuthResponse> LoginAsync(string email, string password)
+    public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(email);
-        var pwdCorrect = await _userManager.CheckPasswordAsync(user, password);
+        var user = await _userManager.FindByEmailAsync(request?.Email);
+        var pwdCorrect = await _userManager.CheckPasswordAsync(user, request?.Password);
         if (user == null || !pwdCorrect)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        var accessToken = await _jwtService.GenerateAccessTokenAsync(user.Id);
+        var accessToken = await _jwtService.GenerateAccessTokenAsync(user);
         var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
         await _unitOfWork.Users.AddRefreshTokenAsync(user, refreshToken);
 
         return new(accessToken, refreshToken.Token);
+    }
+
+    public async Task UpdatePasswordAsync(string userId, UpdatePasswordRequest request)
+    {
+        if (request?.Password != request?.ConfirmPassword)
+            throw new HttpException(HttpStatusCode.BadRequest,
+                                    ErrorResponseMessages.BadRequest);
+
+        var user = await _userManager.FindByIdAsync(userId);
+        var pwdCorrect = await _userManager.CheckPasswordAsync(user, request?.Password);
+        if (!pwdCorrect)
+            throw new HttpException(HttpStatusCode.BadRequest,
+                                    ErrorResponseMessages.BadRequest);
+
+        var resetResult = await _userManager.ResetPasswordAsync(user,
+            request?.PasswordResetToken,
+            request?.Password);
+
+        if (!resetResult.Succeeded)
+            throw new HttpException(HttpStatusCode.BadRequest,
+                                    ErrorResponseMessages.BadRequest);
     }
 
     public async Task RevokeRefreshToken(string token)
@@ -62,7 +83,7 @@ public class AuthService : IAuthService
         var user = _unitOfWork.Users.GetByRefreshToken(request.RefreshToken);
         var ownedRefreshToken = _unitOfWork.Users.GetRefreshToken(request.RefreshToken);
         if (ownedRefreshToken == null)
-            throw new ArgumentNullException(string.Empty);
+            throw new HttpException(HttpStatusCode.Unauthorized);
 
         if (ownedRefreshToken.IsRevoked)
             // revoke all descendant tokens in case this token has been compromised
@@ -84,7 +105,7 @@ public class AuthService : IAuthService
         // Get principal from expired token
         var principal = _jwtService.GetClaimsPrincipal(request.AccessToken);
         if (principal == null)
-            throw new ArgumentNullException(string.Empty);
+            throw new HttpException(HttpStatusCode.Unauthorized);
 
         var accessToken = _jwtService.GenerateAccessToken(principal.Claims);
         return new(accessToken, refreshToken.Token);

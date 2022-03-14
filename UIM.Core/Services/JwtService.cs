@@ -13,8 +13,7 @@ public class JwtService : IJwtService
 
     public AccessToken GenerateAccessToken(IEnumerable<Claim> claims)
     {
-        if (claims == null)
-            throw new ArgumentNullException(string.Empty);
+        if (claims == null) throw new ArgumentNullException(null);
 
         var expireAt = DateTime.UtcNow.AddDays(EnvVars.Jwt.AccessExpiredDate);
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -34,23 +33,19 @@ public class JwtService : IJwtService
         return new AccessToken("Bearer", tokenHandler.WriteToken(token), expireAt.ToString("o"));
     }
 
-    public async Task<AccessToken> GenerateAccessTokenAsync(string userId)
+    public async Task<AccessToken> GenerateAccessTokenAsync(AppUser user)
     {
-        var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
-            throw new ArgumentNullException(string.Empty);
+            throw new ArgumentNullException(null);
 
-        var role = (await _userManager.GetRolesAsync(user)).FirstOrDefault();
+        var roles = await _userManager.GetRolesAsync(user);
         var claims = new List<Claim>
             {
                 new Claim(UimClaimTypes.Id, user.Id),
                 new Claim(UimClaimTypes.Name, user.UserName),
                 new Claim(UimClaimTypes.Email, user.Email),
-                new Claim(UimClaimTypes.Role, role!)
+                new Claim(UimClaimTypes.Role, roles.First())
             };
-
-        if (claims == null)
-            throw new ArgumentNullException(string.Empty);
 
         var expireAt = DateTime.UtcNow.AddDays(EnvVars.Jwt.AccessExpiredDate!);
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -73,7 +68,7 @@ public class JwtService : IJwtService
     public RefreshToken GenerateRefreshToken(string userId)
     {
         if (string.IsNullOrEmpty(userId))
-            throw new ArgumentNullException(string.Empty);
+            throw new ArgumentNullException(null);
 
         using var rng = RandomNumberGenerator.Create();
         var randomBytes = new byte[64];
@@ -118,7 +113,6 @@ public class JwtService : IJwtService
 
     public string? Validate(string? token)
     {
-        if (token == null) return null;
         var tokenHandler = new JwtSecurityTokenHandler();
         try
         {
