@@ -31,7 +31,7 @@ public static class ServiceExtensions
             _.AddPolicy("default", conf =>
                 conf.AllowAnyMethod()
                     .AllowAnyHeader()
-                    .WithOrigins(EnvVars.ValidLocations));
+                    .WithOrigins(EnvVars.ValidOrigins));
         });
     }
 

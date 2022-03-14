@@ -3,8 +3,16 @@ namespace UIM.Core.Helpers;
 public static class EnvVars
 {
     public static string CoreEnv => GetEnvVar("ASPNETCORE_ENVIRONMENT").ToLower();
-    public static bool DisableInitRolePwrUser => bool.Parse(GetEnvVar("SYSTEM_INITIALIZE_ROLE_PWRUSER_DISABLE"));
-    public static string[] ValidLocations => GetEnvVar("AUTH_VALID_LOCATIONS").Split(';');
+    public static bool InitRolesPwrUser => bool.Parse(GetEnvVar("INIT_ROLES_PWRUSER"));
+    public static string[] ValidOrigins
+    {
+        get
+        {
+            var origins = GetEnvVar("VALID_ORIGINS").Split(';').ToList();
+            origins.Add(GetEnvVar("CLIENT_DOMAIN"));
+            return origins.ToArray();
+        }
+    }
 
     private static string GetEnvVar(string variable)
     {

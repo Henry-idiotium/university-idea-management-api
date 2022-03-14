@@ -102,8 +102,8 @@ public class JwtService : IJwtService
                 ValidateAudience = true,
                 ValidateLifetime = false,
 
-                ValidIssuers = EnvVars.ValidLocations,
-                ValidAudiences = EnvVars.ValidLocations,
+                ValidIssuers = EnvVars.ValidOrigins,
+                ValidAudiences = EnvVars.ValidOrigins,
                 IssuerSigningKey = new SymmetricSecurityKey(_jwtEncodedSecret)
             };
 
@@ -130,8 +130,8 @@ public class JwtService : IJwtService
                 ValidateIssuerSigningKey = true,
 
                 ClockSkew = TimeSpan.Zero,
-                ValidIssuers = EnvVars.ValidLocations,
-                ValidAudiences = EnvVars.ValidLocations,
+                ValidIssuers = EnvVars.ValidOrigins,
+                ValidAudiences = EnvVars.ValidOrigins,
                 IssuerSigningKey = new SymmetricSecurityKey(_jwtEncodedSecret),
             }, out SecurityToken validatedToken);
 
