@@ -16,7 +16,7 @@ public abstract class UimController<TService, TIdentity, TCreate, TUpdate, TDeta
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TCreate request)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
@@ -27,21 +27,15 @@ public abstract class UimController<TService, TIdentity, TCreate, TUpdate, TDeta
     [HttpDelete("[controller]/{id}")]
     public async Task<IActionResult> Delete(TIdentity id)
     {
-        if (!ModelState.IsValid)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
-
         var entityId = DecodeGenericIdentity(id);
-
         await _service.RemoveAsync(entityId);
-
         return Ok(new GenericResponse());
     }
 
     [HttpPut("[controller]/{id}")]
     public async Task<IActionResult> Edit([FromBody] TUpdate request, TIdentity id)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
@@ -54,7 +48,7 @@ public abstract class UimController<TService, TIdentity, TCreate, TUpdate, TDeta
     [HttpGet("[controller]s")]
     public virtual async Task<IActionResult> Get([FromQuery] SieveModel request)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
@@ -65,12 +59,7 @@ public abstract class UimController<TService, TIdentity, TCreate, TUpdate, TDeta
     [HttpGet("[controller]/{id}")]
     public async Task<IActionResult> Get(TIdentity id)
     {
-        if (!ModelState.IsValid)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
-
         var entityId = DecodeGenericIdentity(id);
-
         var result = await _service.FindByIdAsync(entityId);
         return Ok(new GenericResponse(result));
     }

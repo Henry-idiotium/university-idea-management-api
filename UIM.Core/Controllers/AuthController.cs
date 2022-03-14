@@ -34,11 +34,11 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        var response = await _authService.LoginAsync(request.Email, request.Password);
+        var response = await _authService.LoginAsync(request);
         return Ok(new GenericResponse(response));
     }
 
@@ -46,21 +46,17 @@ public class AuthController : ControllerBase
     [HttpPost("login-ex")]
     public async Task<IActionResult> LoginExternal([FromBody] ExternalAuthRequest request)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        return Ok(new GenericResponse(
-            await _authService.ExternalLoginAsync(request.Provider, request.IdToken)));
+        var response = await _authService.ExternalLoginAsync(request);
+        return Ok(new GenericResponse(response));
     }
 
     [HttpPut("token/revoke")]
     public IActionResult Revoke(string refreshToken)
     {
-        if (string.IsNullOrEmpty(refreshToken))
-            throw new HttpException(HttpStatusCode.Forbidden,
-                                    ErrorResponseMessages.Forbidden);
-
         _authService.RevokeRefreshToken(refreshToken);
         return Ok(new GenericResponse(SuccessResponseMessages.TokenRevoked));
     }
@@ -68,7 +64,7 @@ public class AuthController : ControllerBase
     [HttpPut("token/rotate")]
     public async Task<IActionResult> Rotate([FromBody] RotateTokenRequest request)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 

@@ -14,7 +14,7 @@ public class SubmissionController : UimController<ISubmissionService, string,
     [HttpPost("[controller]/idea")]
     public async Task<IActionResult> AddIdea([FromBody] AddIdeaRequest request)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
