@@ -1,20 +1,21 @@
 namespace UIM.Core.Services;
 
-public class CategoryService : Service, ICategoryService
+public class CategoryService
+    : Service<int,
+        CreateCategoryRequest,
+        UpdateCategoryRequest,
+        CategoryDetailsResponse>,
+    ICategoryService
 {
     public CategoryService(IMapper mapper,
-        IOptions<SieveOptions> sieveOptions,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork)
-        : base(mapper, sieveOptions, sieveProcessor, unitOfWork)
+        : base(mapper, sieveProcessor, unitOfWork)
     {
     }
 
-    public async Task CreateAsync(CreateCategoryRequest request)
+    public override async Task CreateAsync(CreateCategoryRequest request)
     {
-        if (request == null)
-            throw new ArgumentNullException(string.Empty);
-
         if (await _unitOfWork.Categories.GetByNameAsync(request.Name) != null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
@@ -26,11 +27,8 @@ public class CategoryService : Service, ICategoryService
                                     ErrorResponseMessages.UnexpectedError);
     }
 
-    public async Task EditAsync(int categoryId, UpdateCategoryRequest request)
+    public override async Task EditAsync(int categoryId, UpdateCategoryRequest request)
     {
-        if (request == null)
-            throw new ArgumentNullException(string.Empty);
-
         var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
         if (category == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -43,11 +41,8 @@ public class CategoryService : Service, ICategoryService
                                     ErrorResponseMessages.UnexpectedError);
     }
 
-    public async Task<TableResponse> FindAsync(SieveModel model)
+    public override async Task<TableResponse> FindAsync(SieveModel model)
     {
-        if (model == null)
-            throw new ArgumentNullException(string.Empty);
-
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
@@ -59,22 +54,19 @@ public class CategoryService : Service, ICategoryService
 
         var mappedCategories = _mapper.Map<List<CategoryDetailsResponse>>(sortedCategories);
 
-        var pageSize = model?.PageSize ?? _sieveOptions.DefaultPageSize;
-        var total = await _unitOfWork.Ideas.CountAsync();
-
-        return new(mappedCategories, mappedCategories.Count,
-            currentPage: model?.Page ?? 1,
-            totalPages: (int)Math.Ceiling((float)(total / pageSize)));
+        return new(rows: mappedCategories,
+            index: model?.Page,
+            total: await _unitOfWork.Ideas.CountAsync());
     }
 
-    public async Task<CategoryDetailsResponse> FindByIdAsync(int categoryId)
+    public override async Task<CategoryDetailsResponse> FindByIdAsync(int categoryId)
     {
         var category = _mapper.Map<CategoryDetailsResponse>(
             await _unitOfWork.Categories.GetByIdAsync(categoryId));
         return category;
     }
 
-    public async Task RemoveAsync(int categoryId)
+    public override async Task RemoveAsync(int categoryId)
     {
         var succeeded = await _unitOfWork.Categories.DeleteAsync(categoryId);
         if (!succeeded)

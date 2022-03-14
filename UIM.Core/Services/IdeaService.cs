@@ -1,24 +1,25 @@
 namespace UIM.Core.Services;
 
-public class IdeaService : Service, IIdeaService
+public class IdeaService
+    : Service<string,
+        CreateIdeaRequest,
+        UpdateIdeaRequest,
+        IdeaDetailsResponse>,
+    IIdeaService
 {
     private readonly UserManager<AppUser> _userManager;
 
     public IdeaService(IMapper mapper,
-        IOptions<SieveOptions> sieveOptions,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork,
         UserManager<AppUser> userManager)
-        : base(mapper, sieveOptions, sieveProcessor, unitOfWork)
+        : base(mapper, sieveProcessor, unitOfWork)
     {
         _userManager = userManager;
     }
 
-    public async Task CreateAsync(CreateIdeaRequest request)
+    public override async Task CreateAsync(CreateIdeaRequest request)
     {
-        if (request == null)
-            throw new ArgumentNullException(string.Empty);
-
         if (await _userManager.FindByIdAsync(request.UserId) == null
             || await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -36,12 +37,8 @@ public class IdeaService : Service, IIdeaService
                                     ErrorResponseMessages.UnexpectedError);
     }
 
-    public async Task EditAsync(string ideaId, UpdateIdeaRequest request)
+    public override async Task EditAsync(string ideaId, UpdateIdeaRequest request)
     {
-        if (request == null
-            || string.IsNullOrEmpty(ideaId))
-            throw new ArgumentNullException(string.Empty);
-
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         if (idea == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -63,11 +60,8 @@ public class IdeaService : Service, IIdeaService
                                     ErrorResponseMessages.UnexpectedError);
     }
 
-    public async Task<TableResponse> FindAsync(SieveModel model)
+    public override async Task<TableResponse> FindAsync(SieveModel model)
     {
-        if (model == null)
-            throw new ArgumentNullException(string.Empty);
-
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
@@ -85,19 +79,13 @@ public class IdeaService : Service, IIdeaService
                     dest.User = _mapper.Map<UserDetailsResponse>(idea.User))));
         }
 
-        var pageSize = model?.PageSize ?? _sieveOptions.DefaultPageSize;
-        var total = await _unitOfWork.Ideas.CountAsync();
-
-        return new(mappedIdeas, mappedIdeas.Count,
-            currentPage: model?.Page ?? 1,
-            totalPages: (int)Math.Ceiling((float)(total / pageSize)));
+        return new(rows: mappedIdeas,
+            index: model?.Page,
+            total: await _unitOfWork.Ideas.CountAsync());
     }
 
-    public async Task<IdeaDetailsResponse> FindByIdAsync(string? ideaId)
+    public override async Task<IdeaDetailsResponse> FindByIdAsync(string ideaId)
     {
-        if (string.IsNullOrEmpty(ideaId))
-            throw new ArgumentNullException(string.Empty);
-
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         if (idea == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -114,11 +102,8 @@ public class IdeaService : Service, IIdeaService
         return mappedIdea;
     }
 
-    public async Task RemoveAsync(string ideaId)
+    public override async Task RemoveAsync(string ideaId)
     {
-        if (string.IsNullOrEmpty(ideaId))
-            throw new ArgumentNullException(string.Empty);
-
         var succeeded = await _unitOfWork.Ideas.DeleteAsync(ideaId);
         if (!succeeded)
             throw new HttpException(HttpStatusCode.BadRequest,

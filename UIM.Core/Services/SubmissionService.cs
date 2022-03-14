@@ -1,20 +1,21 @@
 namespace UIM.Core.Services;
 
-public class SubmissionService : Service, ISubmissionService
+public class SubmissionService
+    : Service<string,
+        CreateSubmissionRequest,
+        UpdateSubmissionRequest,
+        SubmissionDetailsResponse>,
+    ISubmissionService
 {
     public SubmissionService(IMapper mapper,
-        IOptions<SieveOptions> sieveOptions,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork)
-        : base(mapper, sieveOptions, sieveProcessor, unitOfWork)
+        : base(mapper, sieveProcessor, unitOfWork)
     {
     }
 
     public async Task AddIdeaToSubmissionAsync(AddIdeaRequest request)
     {
-        if (request == null)
-            throw new ArgumentNullException(string.Empty);
-
         var submission = await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId);
         var idea = await _unitOfWork.Ideas.GetByIdAsync(request.SubmissionId);
         if (submission == null || idea == null)
@@ -28,11 +29,8 @@ public class SubmissionService : Service, ISubmissionService
                                     ErrorResponseMessages.UnexpectedError);
     }
 
-    public async Task CreateAsync(CreateSubmissionRequest request)
+    public override async Task CreateAsync(CreateSubmissionRequest request)
     {
-        if (request == null)
-            throw new ArgumentNullException(string.Empty);
-
         var submission = _mapper.Map<Submission>(request);
         var isCreated = await _unitOfWork.Submissions.AddAsync(submission);
         if (!isCreated)
@@ -40,12 +38,8 @@ public class SubmissionService : Service, ISubmissionService
                                     ErrorResponseMessages.BadRequest);
     }
 
-    public async Task EditAsync(string submissionId, UpdateSubmissionRequest request)
+    public override async Task EditAsync(string submissionId, UpdateSubmissionRequest request)
     {
-        if (request == null
-            || string.IsNullOrEmpty(submissionId))
-            throw new ArgumentNullException(string.Empty);
-
         var oldSubmission = await _unitOfWork.Submissions.GetByIdAsync(submissionId);
         if (oldSubmission == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -58,11 +52,8 @@ public class SubmissionService : Service, ISubmissionService
                                     ErrorResponseMessages.BadRequest);
     }
 
-    public async Task<TableResponse> FindAsync(SieveModel model)
+    public override async Task<TableResponse> FindAsync(SieveModel model)
     {
-        if (model == null)
-            throw new ArgumentNullException(string.Empty);
-
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
@@ -74,28 +65,19 @@ public class SubmissionService : Service, ISubmissionService
 
         var mappedSubs = _mapper.Map<List<SubmissionDetailsResponse>>(sortedSubs);
 
-        var pageSize = model?.PageSize ?? _sieveOptions.DefaultPageSize;
-        var total = await _unitOfWork.Submissions.CountAsync();
-
-        return new(mappedSubs, mappedSubs.Count,
-            currentPage: model?.Page ?? 1,
-            totalPages: (int)Math.Ceiling((float)(total / pageSize)));
+        return new(rows: mappedSubs,
+            index: model?.Page,
+            total: await _unitOfWork.Ideas.CountAsync());
     }
 
-    public async Task<SubmissionDetailsResponse> FindByIdAsync(string submissionId)
+    public override async Task<SubmissionDetailsResponse> FindByIdAsync(string submissionId)
     {
-        if (string.IsNullOrEmpty(submissionId))
-            throw new ArgumentNullException(string.Empty);
-
         var submission = await _unitOfWork.Submissions.GetByIdAsync(submissionId);
         return _mapper.Map<SubmissionDetailsResponse>(submission);
     }
 
-    public async Task RemoveAsync(string submissionId)
+    public override async Task RemoveAsync(string submissionId)
     {
-        if (string.IsNullOrEmpty(submissionId))
-            throw new ArgumentNullException(string.Empty);
-
         var subExists = await _unitOfWork.Submissions.GetByIdAsync(submissionId);
         if (subExists == null)
             throw new HttpException(HttpStatusCode.BadRequest,
