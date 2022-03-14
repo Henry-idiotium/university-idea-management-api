@@ -1,12 +1,12 @@
 namespace UIM.Core.Controllers.Shared;
 
 [Route("api/[controller]")]
-[ApiController]
-public class RoleController : ControllerBase
+public class RoleController : SharedController<IRoleService>
 {
-    private readonly IRoleService _roleService;
+    public RoleController(IRoleService service) : base(service)
+    {
 
-    public RoleController(IRoleService roleService) => _roleService = roleService;
+    }
 
     [HttpGet("[controller]s")]
     public async Task<IActionResult> Get([FromQuery] SieveModel request)
@@ -15,14 +15,14 @@ public class RoleController : ControllerBase
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        var result = await _roleService.FindAsync(request);
+        var result = await _service.FindAsync(request);
         return Ok(new GenericResponse(result));
     }
 
     [HttpGet("[controller]/{id}")]
     public async Task<IActionResult> Get(string id)
     {
-        var result = await _roleService.FindByIdAsync(EncryptHelpers.DecodeBase64Url(id));
+        var result = await _service.FindByIdAsync(EncryptHelpers.DecodeBase64Url(id));
         return Ok(new GenericResponse(result));
     }
 }
