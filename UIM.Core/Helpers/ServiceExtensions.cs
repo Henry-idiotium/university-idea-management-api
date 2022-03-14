@@ -45,6 +45,7 @@ public static class ServiceExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IIdeaService, IdeaService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<ISubmissionService, SubmissionService>();

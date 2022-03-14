@@ -11,6 +11,7 @@ public class AppSieveProcessor : SieveProcessor
             .ApplyConfiguration<IdeaSieveConfig>()
             .ApplyConfiguration<CategorySieveConfig>()
             .ApplyConfiguration<DepartmentSieveConfig>()
+            .ApplyConfiguration<RoleSieveConfig>()
             .ApplyConfiguration<SubmissionSieveConfig>();
     }
 }
