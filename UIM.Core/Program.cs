@@ -40,6 +40,6 @@ var serviceProvider = app.Services;
 
     app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
     ServiceExtensions.CreateRolesAndPwdUser(
-        serviceProvider.CreateScope(), EnvVars.DisableInitRolePwrUser).Wait();
+        serviceProvider.CreateScope(), EnvVars.InitRolesPwrUser).Wait();
 }
 app.Run();

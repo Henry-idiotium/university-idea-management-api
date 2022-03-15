@@ -1,6 +1,6 @@
 namespace UIM.Core.Controllers;
 
-[JwtAuthorize]
+[JwtAuthorize(RoleNames.Admin)]
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
@@ -27,52 +27,66 @@ public class AuthController : ControllerBase
                                     ErrorResponseMessages.Unauthorized);
 
         var user = await _userService.FindByIdAsync(userId);
-        return Ok(new GenericResponse(user));
+        return new ActionResponse(user);
+    }
+
+    [HttpPost("update-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] UpdatePasswordRequest request)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest,
+                                    ErrorResponseMessages.BadRequest);
+
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized,
+                                    ErrorResponseMessages.Unauthorized);
+
+        await _authService.UpdatePasswordAsync(userId, request);
+        return new ActionResponse();
     }
 
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        var response = await _authService.LoginAsync(request.Email, request.Password);
-        return Ok(new GenericResponse(response));
+        var response = await _authService.LoginAsync(request);
+        return new ActionResponse(response);
     }
 
     [AllowAnonymous]
     [HttpPost("login-ex")]
     public async Task<IActionResult> LoginExternal([FromBody] ExternalAuthRequest request)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        return Ok(new GenericResponse(
-            await _authService.ExternalLoginAsync(request.Provider, request.IdToken)));
+        var response = await _authService.ExternalLoginAsync(request);
+        return new ActionResponse(response);
     }
 
     [HttpPut("token/revoke")]
     public IActionResult Revoke(string refreshToken)
     {
-        if (string.IsNullOrEmpty(refreshToken))
-            throw new HttpException(HttpStatusCode.Forbidden,
-                                    ErrorResponseMessages.Forbidden);
-
         _authService.RevokeRefreshToken(refreshToken);
-        return Ok(new GenericResponse(SuccessResponseMessages.TokenRevoked));
+        return new ActionResponse(SuccessResponseMessages.TokenRevoked);
     }
 
     [HttpPut("token/rotate")]
     public async Task<IActionResult> Rotate([FromBody] RotateTokenRequest request)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
         var response = await _authService.RotateTokensAsync(request);
-        return Ok(new GenericResponse(response));
+        return new ActionResponse(response);
     }
 }

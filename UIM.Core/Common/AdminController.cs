@@ -1,8 +1,8 @@
 namespace UIM.Core.Common;
 
-[JwtAuthorize("admin")]
+[JwtAuthorize(RoleNames.Admin)]
 [ApiController]
-public abstract class UimController<TService, TIdentity, TCreate, TUpdate, TDetails> : ControllerBase
+public abstract class AdminController<TService, TIdentity, TCreate, TUpdate, TDetails> : ControllerBase
     where TService : IService<TIdentity, TCreate, TUpdate, TDetails>
     where TCreate : ICreateRequest
     where TUpdate : IUpdateRequest
@@ -11,68 +11,57 @@ public abstract class UimController<TService, TIdentity, TCreate, TUpdate, TDeta
 {
     protected TService _service;
 
-    public UimController(TService service) => _service = service;
+    public AdminController(TService service) => _service = service;
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TCreate request)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
         await _service.CreateAsync(request);
-        return Ok(new GenericResponse());
+        return new ActionResponse();
     }
 
     [HttpDelete("[controller]/{id}")]
     public async Task<IActionResult> Delete(TIdentity id)
     {
-        if (!ModelState.IsValid)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
-
         var entityId = DecodeGenericIdentity(id);
-
         await _service.RemoveAsync(entityId);
-
-        return Ok(new GenericResponse());
+        return new ActionResponse();
     }
 
     [HttpPut("[controller]/{id}")]
     public async Task<IActionResult> Edit([FromBody] TUpdate request, TIdentity id)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
         var entityId = DecodeGenericIdentity(id);
 
         await _service.EditAsync(entityId, request);
-        return Ok(new GenericResponse());
+        return new ActionResponse();
     }
 
     [HttpGet("[controller]s")]
     public virtual async Task<IActionResult> Get([FromQuery] SieveModel request)
     {
-        if (!ModelState.IsValid)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
         var result = await _service.FindAsync(request);
-        return Ok(new GenericResponse(result));
+        return new ActionResponse(result);
     }
 
     [HttpGet("[controller]/{id}")]
     public async Task<IActionResult> Get(TIdentity id)
     {
-        if (!ModelState.IsValid)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
-
         var entityId = DecodeGenericIdentity(id);
-
         var result = await _service.FindByIdAsync(entityId);
-        return Ok(new GenericResponse(result));
+        return new ActionResponse(result);
     }
 
     private static TIdentity DecodeGenericIdentity(TIdentity id)

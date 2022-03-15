@@ -1,20 +1,21 @@
 namespace UIM.Core.Services;
 
-public class DepartmentService : Service, IDepartmentService
+public class DepartmentService
+    : Service<int,
+        CreateDepartmentRequest,
+        UpdateDepartmentRequest,
+        DepartmentDetailsResponse>,
+    IDepartmentService
 {
     public DepartmentService(IMapper mapper,
-        IOptions<SieveOptions> sieveOptions,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork)
-        : base(mapper, sieveOptions, sieveProcessor, unitOfWork)
+        : base(mapper, sieveProcessor, unitOfWork)
     {
     }
 
-    public async Task CreateAsync(CreateDepartmentRequest request)
+    public override async Task CreateAsync(CreateDepartmentRequest request)
     {
-        if (request == null)
-            throw new ArgumentNullException(string.Empty);
-
         if (await _unitOfWork.Departments.GetByNameAsync(request.Name) != null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
@@ -26,11 +27,8 @@ public class DepartmentService : Service, IDepartmentService
                                     ErrorResponseMessages.UnexpectedError);
     }
 
-    public async Task EditAsync(int departmentId, UpdateDepartmentRequest request)
+    public override async Task EditAsync(int departmentId, UpdateDepartmentRequest request)
     {
-        if (request == null)
-            throw new ArgumentNullException(string.Empty);
-
         var department = await _unitOfWork.Departments.GetByIdAsync(departmentId);
         if (department == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -43,11 +41,8 @@ public class DepartmentService : Service, IDepartmentService
                                     ErrorResponseMessages.UnexpectedError);
     }
 
-    public async Task<TableResponse> FindAsync(SieveModel model)
+    public override async Task<TableResponse> FindAsync(SieveModel model)
     {
-        if (model == null)
-            throw new ArgumentNullException(string.Empty);
-
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
@@ -58,22 +53,20 @@ public class DepartmentService : Service, IDepartmentService
                                     ErrorResponseMessages.UnexpectedError);
 
         var mappedDeps = _mapper.Map<List<DepartmentDetailsResponse>>(sortedDeps);
-        var pageSize = model?.PageSize ?? _sieveOptions.DefaultPageSize;
-        var total = await _unitOfWork.Departments.CountAsync();
 
-        return new(mappedDeps, total,
-            currentPage: model?.Page ?? 1,
-            totalPages: (int)Math.Ceiling((float)sortedDeps.Count() / pageSize));
+        return new(rows: mappedDeps,
+            index: model?.Page,
+            total: await _unitOfWork.Departments.CountAsync());
     }
 
-    public async Task<DepartmentDetailsResponse> FindByIdAsync(int departmentId)
+    public override async Task<DepartmentDetailsResponse> FindByIdAsync(int departmentId)
     {
         var department = _mapper.Map<DepartmentDetailsResponse>(
             await _unitOfWork.Departments.GetByIdAsync(departmentId));
         return department;
     }
 
-    public async Task RemoveAsync(int departmentId)
+    public override async Task RemoveAsync(int departmentId)
     {
         var succeeded = await _unitOfWork.Departments.DeleteAsync(departmentId);
         if (!succeeded)

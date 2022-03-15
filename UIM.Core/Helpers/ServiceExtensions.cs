@@ -1,3 +1,5 @@
+using Init = UIM.Core.Helpers.EnvVars.System;
+
 namespace UIM.Core.Helpers;
 
 public static class ServiceExtensions
@@ -31,7 +33,7 @@ public static class ServiceExtensions
             _.AddPolicy("default", conf =>
                 conf.AllowAnyMethod()
                     .AllowAnyHeader()
-                    .WithOrigins(EnvVars.ValidLocations));
+                    .WithOrigins(EnvVars.ValidOrigins));
         });
     }
 
@@ -45,6 +47,8 @@ public static class ServiceExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IIdeaService, IdeaService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<ISubmissionService, SubmissionService>();
@@ -59,16 +63,16 @@ public static class ServiceExtensions
             services.AddDbContextPool<UimContext>(_ =>
             {
                 _.UseNpgsql($@"
-						Port={EnvVars.Pgsql.Port};
-						Server={EnvVars.Pgsql.Host};
-						Database={EnvVars.Pgsql.Db};
-						User Id={EnvVars.Pgsql.UserId};
-						Pooling={EnvVars.Pgsql.Pooling}
-						sslmode={EnvVars.Pgsql.SslMode};
-						Password={EnvVars.Pgsql.Password};
-						Trust Server Certificate={EnvVars.Pgsql.TrustServer};
-						Integrated Security={EnvVars.Pgsql.IntegratedSecurity};
-					");
+                    Port={EnvVars.Pgsql.Port};
+                    Server={EnvVars.Pgsql.Host};
+                    Database={EnvVars.Pgsql.Db};
+                    User Id={EnvVars.Pgsql.UserId};
+                    Pooling={EnvVars.Pgsql.Pooling}
+                    sslmode={EnvVars.Pgsql.SslMode};
+                    Password={EnvVars.Pgsql.Password};
+                    Trust Server Certificate={EnvVars.Pgsql.TrustServer};
+                    Integrated Security={EnvVars.Pgsql.IntegratedSecurity};
+                ");
             });
         }
     }
@@ -167,9 +171,9 @@ public static class ServiceExtensions
         });
     }
 
-    public static async Task CreateRolesAndPwdUser(IServiceScope scope, bool disable)
+    public static async Task CreateRolesAndPwdUser(IServiceScope scope, bool enable)
     {
-        if (!disable)
+        if (enable)
         {
             var userManager = (UserManager<AppUser>)scope.ServiceProvider.GetService(typeof(UserManager<AppUser>))!;
             var roleManager = (RoleManager<IdentityRole>)scope.ServiceProvider.GetService(typeof(RoleManager<IdentityRole>))!;
@@ -177,10 +181,10 @@ public static class ServiceExtensions
             // Initializing custom roles
             var roleNames = new List<string>
                 {
-                    EnvVars.System.Role.Staff,
-                    EnvVars.System.Role.PwrUser,
-                    EnvVars.System.Role.Manager,
-                    EnvVars.System.Role.Supervisor,
+                    Init.Role.Staff,
+                    Init.Role.PwrUser,
+                    Init.Role.Manager,
+                    Init.Role.Supervisor,
                 };
             foreach (var name in roleNames)
             {
@@ -190,23 +194,28 @@ public static class ServiceExtensions
             }
 
             // Create a super user who will maintain the system
-            var existingPwrUser = await userManager.FindByEmailAsync(EnvVars.System.PwrUserAuth.Email);
+            var existingPwrUser = await userManager.FindByEmailAsync(Init.PwrUserAuth.Email);
             if (existingPwrUser == null)
             {
                 var pwrUser = new AppUser
                 {
                     EmailConfirmed = true,
                     FullName = "Henry David",
-                    Email = EnvVars.System.PwrUserAuth.Email,
-                    UserName = EnvVars.System.PwrUserAuth.UserName,
+                    Email = Init.PwrUserAuth.Email,
+                    UserName = Init.PwrUserAuth.UserName,
                     CreatedDate = DateTime.UtcNow,
                 };
-                var createPowerUser = await userManager.CreateAsync(pwrUser,
-                    EnvVars.System.PwrUserAuth.Password);
 
+                var createPowerUser = await userManager.CreateAsync(pwrUser, Init.PwrUserAuth.Password);
                 if (createPowerUser.Succeeded)
-                    await userManager.AddToRoleAsync(pwrUser, EnvVars.System.Role.PwrUser);
+                    await userManager.AddToRoleAsync(pwrUser, Init.Role.PwrUser);
+
+                return;
             }
+            // Add add poweruser to admin role if not 
+            var pwrUserRoles = await userManager.GetRolesAsync(existingPwrUser);
+            if (pwrUserRoles.Count == 0)
+                await userManager.AddToRoleAsync(existingPwrUser, Init.Role.PwrUser);
         }
     }
 }

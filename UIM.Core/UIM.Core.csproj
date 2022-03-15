@@ -37,4 +37,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="SendGrid" Version="9.26.0"/>
+    <PackageReference Include="SendGrid.Extensions.DependencyInjection" Version="1.0.1"/>  
+  </ItemGroup>
+
 </Project>

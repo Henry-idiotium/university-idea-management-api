@@ -1,96 +1,100 @@
 namespace UIM.Core.Services;
 
-public class UserService : Service, IUserService
+public class UserService
+    : Service<string,
+        CreateUserRequest,
+        UpdateUserRequest,
+        UserDetailsResponse>,
+    IUserService
 {
+    private readonly IEmailService _emailService;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly UserManager<AppUser> _userManager;
 
     public UserService(
         IMapper mapper,
-        IOptions<SieveOptions> sieveOptions,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork,
         RoleManager<IdentityRole> roleManager,
-        UserManager<AppUser> userManager)
-        : base(mapper, sieveOptions, sieveProcessor, unitOfWork)
+        UserManager<AppUser> userManager,
+        IEmailService emailService)
+        : base(mapper, sieveProcessor, unitOfWork)
     {
         _roleManager = roleManager;
         _userManager = userManager;
+        _emailService = emailService;
     }
 
-    public async Task CreateAsync(CreateUserRequest request)
+    public override async Task CreateAsync(CreateUserRequest request)
     {
-        if (request == null)
-            throw new ArgumentNullException(string.Empty);
-
-        if (request.Password != request.ConfirmPassword)
+        var dep = await _unitOfWork.Departments.GetByIdAsync(request.DepartmentId);
+        var role = await _roleManager.FindByIdAsync(EncryptHelpers.DecodeBase64Url(request.RoleId));
+        if (dep == null || role == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
         request.UserName ??= request.Email;
         var newUser = _mapper.Map<AppUser>(request);
 
-        var userExist = _unitOfWork.Users.ValidateExistence(newUser);
-        if (userExist)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
-
-        var depExists = await _unitOfWork.Departments.GetByIdAsync(request.DepartmentId) != null;
-        var roleExists = _roleManager.Roles.Where(_ => _.Id == request.RoleId).Any();
-
-        if (!depExists || !roleExists)
+        var userExist = await _userManager.FindByEmailAsync(newUser.Email);
+        if (userExist != null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
         newUser.DepartmentId = request.DepartmentId;
 
-        await _userManager.CreateAsync(newUser, request.Password);
-        await _userManager.AddToRoleAsync(newUser, request.RoleId);
+        var password = AuthHelpers.GeneratePassword(8, true);
+
+        var userCreated = await _userManager.CreateAsync(newUser, password);
+        var roleAdded = await _userManager.AddToRoleAsync(newUser, role.Name);
+
+        await ValidationDisposal(newUser, isValid: userCreated.Succeeded || roleAdded.Succeeded);
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(newUser);
+        var sendSucceeded = await _emailService.SendAuthInfoUpdatePasswordAsync(
+            receiver: newUser,
+            passwordResetToken: token,
+            receiverPassword: password,
+            senderFullName: "Cecilia McDermott",
+            senderTitle: "Senior Integration Executive");
+
+        await ValidationDisposal(newUser, isValid: sendSucceeded);
     }
 
-    public async Task EditAsync(string userId, UpdateUserRequest request)
+    public override async Task EditAsync(string id, UpdateUserRequest request)
     {
-        if (request == null
-            || string.IsNullOrEmpty(userId))
-            throw new ArgumentNullException(string.Empty);
-
-        userId = EncryptHelpers.DecodeBase64Url(userId);
-        var user = await _userManager.FindByIdAsync(EncryptHelpers.DecodeBase64Url(userId));
+        var userToEdit = await _userManager.FindByIdAsync(EncryptHelpers.DecodeBase64Url(id));
 
         var newDepartment = await _unitOfWork.Departments.GetByIdAsync(request.DepartmentId);
-        var newRole = await _roleManager.Roles.FirstOrDefaultAsync(_ => _.Id == request.RoleId);
-
+        var newRole = await _roleManager.FindByIdAsync(EncryptHelpers.DecodeBase64Url(request.RoleId));
         if (newRole == null || newDepartment == null)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        var oldRoles = await _userManager.GetRolesAsync(user);
-        await _userManager.RemoveFromRolesAsync(user, oldRoles);
-        await _userManager.AddToRoleAsync(user, newRole.Id);
+        var oldRoles = await _userManager.GetRolesAsync(userToEdit);
+        await _userManager.RemoveFromRolesAsync(userToEdit, oldRoles);
+        await _userManager.AddToRoleAsync(userToEdit, newRole.Id);
 
-        user = _mapper.Map<AppUser>(request);
-        user.DepartmentId = newDepartment.Id;
+        userToEdit = _mapper.Map<AppUser>(request);
+        userToEdit.DepartmentId = newDepartment.Id;
 
-        await _userManager.UpdateAsync(user);
+        await _userManager.UpdateAsync(userToEdit);
 
         if (request.Password == null) return;
         if (request.Password != request.ConfirmPassword)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
 
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var result = await _userManager.ResetPasswordAsync(user, token, request.Password);
+        var token = await _userManager.GeneratePasswordResetTokenAsync(userToEdit);
 
+        var result = await _userManager.ResetPasswordAsync(userToEdit, token, request.Password);
         if (!result.Succeeded)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
     }
 
-    public async Task<TableResponse> FindAsync(SieveModel model)
+    public override async Task<TableResponse> FindAsync(SieveModel model)
     {
-        if (model == null)
-            throw new ArgumentNullException(string.Empty);
-
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,
                                     ErrorResponseMessages.BadRequest);
@@ -115,19 +119,13 @@ public class UserService : Service, IUserService
                 })));
         }
 
-        var pageSize = model?.PageSize ?? _sieveOptions.DefaultPageSize;
-        var total = await _userManager.Users.CountAsync();
-
-        return new(mappedUsers, mappedUsers.Count,
-            currentPage: model?.Page ?? 1,
-            totalPages: (int)Math.Ceiling((float)(total / pageSize)));
+        return new(rows: mappedUsers,
+            index: model?.Page ?? 1,
+            total: await _userManager.Users.CountAsync());
     }
 
-    public async Task<UserDetailsResponse> FindByIdAsync(string userId)
+    public override async Task<UserDetailsResponse> FindByIdAsync(string userId)
     {
-        if (string.IsNullOrEmpty(userId))
-            throw new ArgumentNullException(string.Empty);
-
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -148,11 +146,8 @@ public class UserService : Service, IUserService
         return mappedUser;
     }
 
-    public async Task RemoveAsync(string userId)
+    public override async Task RemoveAsync(string userId)
     {
-        if (string.IsNullOrEmpty(userId))
-            throw new ArgumentNullException(string.Empty);
-
         userId = EncryptHelpers.DecodeBase64Url(userId);
         var user = await _userManager.FindByIdAsync(userId);
 
@@ -165,5 +160,14 @@ public class UserService : Service, IUserService
                                     ErrorResponseMessages.BadRequest);
 
         await _userManager.DeleteAsync(user);
+    }
+
+    private async Task ValidationDisposal(AppUser user, bool isValid)
+    {
+        if (!isValid)
+        {
+            await _userManager.DeleteAsync(user);
+            throw new HttpException(HttpStatusCode.InternalServerError);
+        }
     }
 }

@@ -25,7 +25,7 @@ global using Newtonsoft.Json.Serialization;
 global using Sieve.Models;
 global using Sieve.Services;
 global using Swashbuckle.AspNetCore.SwaggerGen;
-// Project namespaces
+// In-Project namespaces
 global using UIM.Core.Common;
 global using UIM.Core.Data;
 global using UIM.Core.Data.Repositories;
@@ -41,6 +41,7 @@ global using UIM.Core.Models.Dtos.Auth;
 global using UIM.Core.Models.Dtos.Category;
 global using UIM.Core.Models.Dtos.Department;
 global using UIM.Core.Models.Dtos.Idea;
+global using UIM.Core.Models.Dtos.Role;
 global using UIM.Core.Models.Dtos.Submission;
 global using UIM.Core.Models.Dtos.Token;
 global using UIM.Core.Models.Dtos.User;
