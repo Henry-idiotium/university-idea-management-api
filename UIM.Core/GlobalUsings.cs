@@ -22,12 +22,10 @@ global using Microsoft.IdentityModel.Tokens;
 global using Microsoft.OpenApi.Models;
 global using Newtonsoft.Json;
 global using Newtonsoft.Json.Serialization;
-global using SendGrid;
-global using SendGrid.Helpers.Mail;
 global using Sieve.Models;
 global using Sieve.Services;
 global using Swashbuckle.AspNetCore.SwaggerGen;
-// Project namespaces
+// In-Project namespaces
 global using UIM.Core.Common;
 global using UIM.Core.Data;
 global using UIM.Core.Data.Repositories;

@@ -1,3 +1,5 @@
+using SendGrid;
+using SendGrid.Helpers.Mail;
 using SG = UIM.Core.Helpers.EnvVars.ExternalProvider.SendGrid;
 
 namespace UIM.Core.Services;
