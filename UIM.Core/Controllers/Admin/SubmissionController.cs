@@ -19,6 +19,6 @@ public class SubmissionController : AdminController<ISubmissionService, string,
                                     ErrorResponseMessages.BadRequest);
 
         await _service.AddIdeaToSubmissionAsync(request);
-        return Ok(new GenericResponse());
+        return new ActionResponse();
     }
 }

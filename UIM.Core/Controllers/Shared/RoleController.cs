@@ -16,13 +16,13 @@ public class RoleController : SharedController<IRoleService>
                                     ErrorResponseMessages.BadRequest);
 
         var result = await _service.FindAsync(request);
-        return Ok(new GenericResponse(result));
+        return new ActionResponse(result);
     }
 
     [HttpGet("[controller]/{id}")]
     public async Task<IActionResult> Get(string id)
     {
         var result = await _service.FindByIdAsync(EncryptHelpers.DecodeBase64Url(id));
-        return Ok(new GenericResponse(result));
+        return new ActionResponse(result);
     }
 }

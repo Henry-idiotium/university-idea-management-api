@@ -9,7 +9,7 @@ public class TableResponse
         Total = total;
     }
 
-    public IEnumerable<object> Rows { get; private set; }
     public int Index { get; private set; }
     public int Total { get; private set; }
+    public IEnumerable<object> Rows { get; private set; }
 }

@@ -27,7 +27,7 @@ public class AuthController : ControllerBase
                                     ErrorResponseMessages.Unauthorized);
 
         var user = await _userService.FindByIdAsync(userId);
-        return Ok(new GenericResponse(user));
+        return new ActionResponse(user);
     }
 
     [HttpPost("update-password")]
@@ -45,7 +45,7 @@ public class AuthController : ControllerBase
                                     ErrorResponseMessages.Unauthorized);
 
         await _authService.UpdatePasswordAsync(userId, request);
-        return Ok(new GenericResponse());
+        return new ActionResponse();
     }
 
     [AllowAnonymous]
@@ -57,7 +57,7 @@ public class AuthController : ControllerBase
                                     ErrorResponseMessages.BadRequest);
 
         var response = await _authService.LoginAsync(request);
-        return Ok(new GenericResponse(response));
+        return new ActionResponse(response);
     }
 
     [AllowAnonymous]
@@ -69,14 +69,14 @@ public class AuthController : ControllerBase
                                     ErrorResponseMessages.BadRequest);
 
         var response = await _authService.ExternalLoginAsync(request);
-        return Ok(new GenericResponse(response));
+        return new ActionResponse(response);
     }
 
     [HttpPut("token/revoke")]
     public IActionResult Revoke(string refreshToken)
     {
         _authService.RevokeRefreshToken(refreshToken);
-        return Ok(new GenericResponse(SuccessResponseMessages.TokenRevoked));
+        return new ActionResponse(SuccessResponseMessages.TokenRevoked);
     }
 
     [HttpPut("token/rotate")]
@@ -87,6 +87,6 @@ public class AuthController : ControllerBase
                                     ErrorResponseMessages.BadRequest);
 
         var response = await _authService.RotateTokensAsync(request);
-        return Ok(new GenericResponse(response));
+        return new ActionResponse(response);
     }
 }

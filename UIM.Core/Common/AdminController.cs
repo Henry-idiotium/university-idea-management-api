@@ -21,7 +21,7 @@ public abstract class AdminController<TService, TIdentity, TCreate, TUpdate, TDe
                                     ErrorResponseMessages.BadRequest);
 
         await _service.CreateAsync(request);
-        return Ok(new GenericResponse());
+        return new ActionResponse();
     }
 
     [HttpDelete("[controller]/{id}")]
@@ -29,7 +29,7 @@ public abstract class AdminController<TService, TIdentity, TCreate, TUpdate, TDe
     {
         var entityId = DecodeGenericIdentity(id);
         await _service.RemoveAsync(entityId);
-        return Ok(new GenericResponse());
+        return new ActionResponse();
     }
 
     [HttpPut("[controller]/{id}")]
@@ -42,7 +42,7 @@ public abstract class AdminController<TService, TIdentity, TCreate, TUpdate, TDe
         var entityId = DecodeGenericIdentity(id);
 
         await _service.EditAsync(entityId, request);
-        return Ok(new GenericResponse());
+        return new ActionResponse();
     }
 
     [HttpGet("[controller]s")]
@@ -53,7 +53,7 @@ public abstract class AdminController<TService, TIdentity, TCreate, TUpdate, TDe
                                     ErrorResponseMessages.BadRequest);
 
         var result = await _service.FindAsync(request);
-        return Ok(new GenericResponse(result));
+        return new ActionResponse(result);
     }
 
     [HttpGet("[controller]/{id}")]
@@ -61,7 +61,7 @@ public abstract class AdminController<TService, TIdentity, TCreate, TUpdate, TDe
     {
         var entityId = DecodeGenericIdentity(id);
         var result = await _service.FindByIdAsync(entityId);
-        return Ok(new GenericResponse(result));
+        return new ActionResponse(result);
     }
 
     private static TIdentity DecodeGenericIdentity(TIdentity id)
