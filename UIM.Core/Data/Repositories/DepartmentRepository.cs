@@ -1,6 +1,6 @@
 namespace UIM.Core.Data.Repositories;
 
-public class DepartmentRepository : Repository<Department, int>, IDepartmentRepository
+public class DepartmentRepository : Repository<Department>, IDepartmentRepository
 {
     public DepartmentRepository(UimContext context) : base(context) { }
 

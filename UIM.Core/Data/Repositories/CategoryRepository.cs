@@ -1,6 +1,6 @@
 namespace UIM.Core.Data.Repositories;
 
-public class CategoryRepository : Repository<Category, int>, ICategoryRepository
+public class CategoryRepository : Repository<Category>, ICategoryRepository
 {
     public CategoryRepository(UimContext context) : base(context) { }
 

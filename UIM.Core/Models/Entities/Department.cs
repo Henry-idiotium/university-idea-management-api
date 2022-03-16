@@ -1,6 +1,6 @@
 namespace UIM.Core.Models.Entities;
 
-public class Department : Entity<int>
+public class Department : Entity
 {
     public string Name { get; set; } = default!;
 

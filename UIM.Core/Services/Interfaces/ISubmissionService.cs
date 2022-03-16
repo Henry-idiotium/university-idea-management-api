@@ -1,7 +1,7 @@
 namespace UIM.Core.Services.Interfaces;
 
 public interface ISubmissionService
-    : IService<string,
+    : IService<
         CreateSubmissionRequest,
         UpdateSubmissionRequest,
         SubmissionDetailsResponse>

@@ -1,7 +1,7 @@
 namespace UIM.Core.Services.Interfaces;
 
 public interface IDepartmentService
-    : IService<int,
+    : IService<
         CreateDepartmentRequest,
         UpdateDepartmentRequest,
         DepartmentDetailsResponse>

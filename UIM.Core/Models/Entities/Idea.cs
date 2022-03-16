@@ -1,6 +1,6 @@
 namespace UIM.Core.Models.Entities;
 
-public class Idea : Entity<string>
+public class Idea : Entity
 {
     public string Title { get; set; } = default!;
     public string? Description { get; set; }

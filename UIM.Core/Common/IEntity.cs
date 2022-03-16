@@ -1,14 +1,14 @@
 namespace UIM.Core.Common;
 
-public interface IEntity
+public interface IBaseEntity
 {
-    DateTime CreatedDate { get; set; }
-    DateTime ModifiedDate { get; set; }
     string? CreatedBy { get; set; }
+    DateTime CreatedDate { get; set; }
     string? ModifiedBy { get; set; }
+    DateTime ModifiedDate { get; set; }
 }
 
-public interface IEntity<T> : IEntity
+public interface IEntity : IBaseEntity
 {
-    T Id { get; set; }
+    string Id { get; set; }
 }

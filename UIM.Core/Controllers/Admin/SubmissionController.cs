@@ -2,7 +2,7 @@ namespace UIM.Core.Controllers.Admin;
 
 [ApiController]
 [Route("api/submission-management")]
-public class SubmissionController : AdminController<ISubmissionService, string,
+public class SubmissionController : AdminController<ISubmissionService,
     CreateSubmissionRequest,
     UpdateSubmissionRequest,
     SubmissionDetailsResponse>
@@ -19,6 +19,6 @@ public class SubmissionController : AdminController<ISubmissionService, string,
                                     ErrorResponseMessages.BadRequest);
 
         await _service.AddIdeaToSubmissionAsync(request);
-        return new ActionResponse();
+        return ResponseResult();
     }
 }

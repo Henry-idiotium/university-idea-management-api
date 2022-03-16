@@ -1,7 +1,7 @@
 namespace UIM.Core.Services;
 
 public class CategoryService
-    : Service<int,
+    : Service<
         CreateCategoryRequest,
         UpdateCategoryRequest,
         CategoryDetailsResponse>,
@@ -27,7 +27,7 @@ public class CategoryService
                                     ErrorResponseMessages.UnexpectedError);
     }
 
-    public override async Task EditAsync(int categoryId, UpdateCategoryRequest request)
+    public override async Task EditAsync(string categoryId, UpdateCategoryRequest request)
     {
         var category = await _unitOfWork.Categories.GetByIdAsync(categoryId);
         if (category == null)
@@ -41,7 +41,7 @@ public class CategoryService
                                     ErrorResponseMessages.UnexpectedError);
     }
 
-    public override async Task<TableResponse> FindAsync(SieveModel model)
+    public override async Task<SieveResponse> FindAsync(SieveModel model)
     {
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -59,14 +59,14 @@ public class CategoryService
             total: await _unitOfWork.Ideas.CountAsync());
     }
 
-    public override async Task<CategoryDetailsResponse> FindByIdAsync(int categoryId)
+    public override async Task<CategoryDetailsResponse> FindByIdAsync(string categoryId)
     {
         var category = _mapper.Map<CategoryDetailsResponse>(
             await _unitOfWork.Categories.GetByIdAsync(categoryId));
         return category;
     }
 
-    public override async Task RemoveAsync(int categoryId)
+    public override async Task RemoveAsync(string categoryId)
     {
         var succeeded = await _unitOfWork.Categories.DeleteAsync(categoryId);
         if (!succeeded)

@@ -46,7 +46,7 @@ public class HttpStatusExceptionHandlerMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = code;
 
-        var response = JsonConvert.SerializeObject(new GenericResponse
+        var response = JsonConvert.SerializeObject(new CoreResponse
         (
             message: (exception.Message != null) && (exception is HttpException) ?
                       exception.Message : ErrorResponseMessages.UnexpectedError,

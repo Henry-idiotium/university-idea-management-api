@@ -63,7 +63,11 @@ public class UimContext : IdentityDbContext<AppUser>
             conf.HasOne(_ => _.Submission).WithMany(_ => _.Ideas)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            conf.OwnsMany(_ => _.Attachments);
+            conf.OwnsMany(_ => _.Attachments, b =>
+            {
+                b.Property(_ => _.Id).HasMaxLength(450);
+                b.Property(_ => _.IdeaId).IsRequired();
+            });
 
             conf.OwnsMany(_ => _.Comments, b =>
             {
@@ -82,9 +86,15 @@ public class UimContext : IdentityDbContext<AppUser>
         });
 
         builder.Entity<Department>(conf =>
-            conf.Property(_ => _.Name).IsRequired());
+        {
+            conf.Property(_ => _.Id).HasMaxLength(450);
+            conf.Property(_ => _.Name).IsRequired();
+        });
 
         builder.Entity<Category>(conf =>
-            conf.Property(_ => _.Name).IsRequired().HasMaxLength(450));
+        {
+            conf.Property(_ => _.Id).HasMaxLength(450);
+            conf.Property(_ => _.Name).IsRequired().HasMaxLength(450);
+        });
     }
 }

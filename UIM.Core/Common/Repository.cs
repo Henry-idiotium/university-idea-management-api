@@ -1,7 +1,7 @@
 namespace UIM.Core.Common;
 
-public abstract class Repository<TEntity, TIdentity> : IRepository<TEntity, TIdentity>
-    where TEntity : class, IEntity<TIdentity>
+public abstract class Repository<TEntity> : IRepository<TEntity>
+    where TEntity : class, IEntity
 {
     protected UimContext _context;
 
@@ -22,7 +22,7 @@ public abstract class Repository<TEntity, TIdentity> : IRepository<TEntity, TIde
 
     public async Task<int> CountAsync() => await Set.CountAsync();
 
-    public async Task<bool> DeleteAsync(TIdentity entityId)
+    public async Task<bool> DeleteAsync(string entityId)
     {
         var entity = await Set.FindAsync(entityId);
         if (entity == null) return false;
@@ -33,10 +33,7 @@ public abstract class Repository<TEntity, TIdentity> : IRepository<TEntity, TIde
         return deleted > 0;
     }
 
-    public async Task<TEntity?> GetByIdAsync(TIdentity entityId) =>
-        (entityId != null)
-            ? await Set.FindAsync(entityId)
-            : null;
+    public async Task<TEntity?> GetByIdAsync(string entityId) => await Set.FindAsync(entityId);
 
     public async Task<bool> UpdateAsync(TEntity entity)
     {

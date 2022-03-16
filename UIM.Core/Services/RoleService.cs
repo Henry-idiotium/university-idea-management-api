@@ -1,7 +1,7 @@
 namespace UIM.Core.Services;
 
 public class RoleService
-    : Service<string,
+    : Service<
         ICreateRequest,
         IUpdateRequest,
         RoleDetailsResponse>,
@@ -22,7 +22,7 @@ public class RoleService
     public override Task CreateAsync(ICreateRequest request) => throw new NotImplementedException();
     public override Task EditAsync(string entityId, IUpdateRequest request) => throw new NotImplementedException();
 
-    public override async Task<TableResponse> FindAsync(SieveModel model)
+    public override async Task<SieveResponse> FindAsync(SieveModel model)
     {
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,

@@ -1,6 +1,6 @@
 namespace UIM.Core.Models.Entities;
 
-public class Category : Entity<int>
+public class Category : Entity
 {
     public string Name { get; set; } = default!;
 
