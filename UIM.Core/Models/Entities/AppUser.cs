@@ -3,7 +3,7 @@ namespace UIM.Core.Models.Entities;
 public class AppUser : IdentityUser
 {
     public string FullName { get; set; } = default!;
-    public int? DepartmentId { get; set; }
+    public string? DepartmentId { get; set; }
     public DateTime? DateOfBirth { get; set; }
 
     private DateTime? createdDate;

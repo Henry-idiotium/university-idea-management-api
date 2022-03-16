@@ -1,6 +1,6 @@
 namespace UIM.Core.Models.Entities;
 
-public class RefreshToken : Entity<int>
+public class RefreshToken : Entity
 {
     public string Token { get; set; } = default!;
     public string UserId { get; set; } = default!;

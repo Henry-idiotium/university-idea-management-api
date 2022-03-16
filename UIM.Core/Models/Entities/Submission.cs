@@ -1,6 +1,6 @@
 namespace UIM.Core.Models.Entities;
 
-public class Submission : Entity<string>
+public class Submission : Entity
 {
     public string Title { get; set; } = default!;
     public string? Description { get; set; }

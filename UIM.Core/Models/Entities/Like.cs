@@ -1,6 +1,6 @@
 namespace UIM.Core.Models.Entities;
 
-public class Like : Entity
+public class Like : NonEntity
 {
     public string UserId { get; set; } = default!;
     public string IdeaId { get; set; } = default!;

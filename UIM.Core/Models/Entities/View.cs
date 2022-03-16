@@ -1,6 +1,6 @@
 namespace UIM.Core.Models.Entities;
 
-public class View : Entity
+public class View : NonEntity
 {
     public string UserId { get; set; } = default!;
     public string IdeaId { get; set; } = default!;

@@ -1,6 +1,6 @@
 namespace UIM.Core.Models.Entities;
 
-public class Comment : Entity<string>
+public class Comment : Entity
 {
     public string IdeaId { get; set; } = default!;
     public string? Parrent { get; set; }

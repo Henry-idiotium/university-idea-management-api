@@ -1,6 +1,6 @@
 namespace UIM.Core.Models.Entities;
 
-public class Attachment : Entity<int>
+public class Attachment : Entity
 {
     public string IdeaId { get; set; } = default!;
     public string Url { get; set; } = default!;
