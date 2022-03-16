@@ -6,6 +6,6 @@ public abstract class IdeaDto
     public string? Description { get; set; }
     public string Content { get; set; } = default!;
     public bool IsAnonymous { get; set; }
-    public int? CategoryId { get; set; }
+    public string? CategoryId { get; set; }
     [Required] public string SubmissionId { get; set; } = default!;
 }

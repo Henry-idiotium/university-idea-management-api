@@ -1,8 +1,8 @@
 namespace UIM.Core.Models.Dtos;
 
-public class TableResponse
+public class SieveResponse
 {
-    public TableResponse(IEnumerable<object> rows, int? index, int total)
+    public SieveResponse(IEnumerable<object> rows, int? index, int total)
     {
         Rows = rows;
         Index = index ?? 1;
