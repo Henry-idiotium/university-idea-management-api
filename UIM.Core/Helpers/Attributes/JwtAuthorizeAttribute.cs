@@ -27,7 +27,7 @@ public class JwtAuthorizeAttribute : Attribute, IAuthorizationFilter
 
         if (userId == null || (_roles.Any() && !_roles.Contains(role!)))
         {
-            context.Result = new JsonResult(new GenericResponse
+            context.Result = new JsonResult(new CoreResponse
             (
                 succeeded: false,
                 message: ErrorResponseMessages.Unauthorized
