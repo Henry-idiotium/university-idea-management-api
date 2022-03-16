@@ -173,8 +173,8 @@ namespace UIM.Core.Data.Migrations
                     b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("date");
 
-                    b.Property<int?>("DepartmentId")
-                        .HasColumnType("int");
+                    b.Property<string>("DepartmentId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -238,11 +238,10 @@ namespace UIM.Core.Data.Migrations
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Category", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -268,11 +267,10 @@ namespace UIM.Core.Data.Migrations
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Department", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -304,6 +302,9 @@ namespace UIM.Core.Data.Migrations
 
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
+
+                    b.Property<string>("CategoryId1")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -340,7 +341,7 @@ namespace UIM.Core.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("CategoryId1");
 
                     b.HasIndex("SubmissionId");
 
@@ -506,12 +507,10 @@ namespace UIM.Core.Data.Migrations
 
                     b.OwnsMany("UIM.Core.Models.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
-                            b1.Property<int>("Id")
+                            b1.Property<string>("Id")
                                 .ValueGeneratedOnAdd()
                                 .HasMaxLength(450)
-                                .HasColumnType("int");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"), 1L, 1);
+                                .HasColumnType("nvarchar(450)");
 
                             b1.Property<string>("CreatedBy")
                                 .HasColumnType("nvarchar(max)");
@@ -569,7 +568,7 @@ namespace UIM.Core.Data.Migrations
                 {
                     b.HasOne("UIM.Core.Models.Entities.Category", "Category")
                         .WithMany("Ideas")
-                        .HasForeignKey("CategoryId")
+                        .HasForeignKey("CategoryId1")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("UIM.Core.Models.Entities.Submission", "Submission")
@@ -585,11 +584,10 @@ namespace UIM.Core.Data.Migrations
 
                     b.OwnsMany("UIM.Core.Models.Entities.Attachment", "Attachments", b1 =>
                         {
-                            b1.Property<int>("Id")
+                            b1.Property<string>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"), 1L, 1);
+                                .HasMaxLength(450)
+                                .HasColumnType("nvarchar(450)");
 
                             b1.Property<string>("CreatedBy")
                                 .HasColumnType("nvarchar(max)");
