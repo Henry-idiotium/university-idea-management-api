@@ -1,7 +1,7 @@
 namespace UIM.Core.Services.Interfaces;
 
 public interface IUserService
-    : IService<string,
+    : IService<
         CreateUserRequest,
         UpdateUserRequest,
         UserDetailsResponse>

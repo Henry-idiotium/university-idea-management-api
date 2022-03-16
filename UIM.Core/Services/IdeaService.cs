@@ -1,7 +1,7 @@
 namespace UIM.Core.Services;
 
 public class IdeaService
-    : Service<string,
+    : Service<
         CreateIdeaRequest,
         UpdateIdeaRequest,
         IdeaDetailsResponse>,
@@ -26,7 +26,7 @@ public class IdeaService
                                     ErrorResponseMessages.BadRequest);
 
         if (request.CategoryId != null)
-            if (await _unitOfWork.Categories.GetByIdAsync((int)request.CategoryId) == null)
+            if (await _unitOfWork.Categories.GetByIdAsync(request.CategoryId) == null)
                 throw new HttpException(HttpStatusCode.BadRequest,
                                         ErrorResponseMessages.BadRequest);
 
@@ -49,7 +49,7 @@ public class IdeaService
                                     ErrorResponseMessages.BadRequest);
 
         if (request.CategoryId != null)
-            if (await _unitOfWork.Categories.GetByIdAsync((int)request.CategoryId) == null)
+            if (await _unitOfWork.Categories.GetByIdAsync(request.CategoryId) == null)
                 throw new HttpException(HttpStatusCode.BadRequest,
                                         ErrorResponseMessages.BadRequest);
 
@@ -60,7 +60,7 @@ public class IdeaService
                                     ErrorResponseMessages.UnexpectedError);
     }
 
-    public override async Task<TableResponse> FindAsync(SieveModel model)
+    public override async Task<SieveResponse> FindAsync(SieveModel model)
     {
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,

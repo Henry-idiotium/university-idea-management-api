@@ -1,7 +1,7 @@
 namespace UIM.Core.Services.Interfaces;
 
 public interface ICategoryService
-    : IService<int,
+    : IService<
         CreateCategoryRequest,
         UpdateCategoryRequest,
         CategoryDetailsResponse>

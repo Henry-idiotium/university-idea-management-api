@@ -1,7 +1,7 @@
 namespace UIM.Core.Services;
 
 public class SubmissionService
-    : Service<string,
+    : Service<
         CreateSubmissionRequest,
         UpdateSubmissionRequest,
         SubmissionDetailsResponse>,
@@ -52,7 +52,7 @@ public class SubmissionService
                                     ErrorResponseMessages.BadRequest);
     }
 
-    public override async Task<TableResponse> FindAsync(SieveModel model)
+    public override async Task<SieveResponse> FindAsync(SieveModel model)
     {
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,

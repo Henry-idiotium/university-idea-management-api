@@ -1,7 +1,7 @@
 namespace UIM.Core.Services;
 
 public class UserService
-    : Service<string,
+    : Service<
         CreateUserRequest,
         UpdateUserRequest,
         UserDetailsResponse>,
@@ -93,7 +93,7 @@ public class UserService
                                     ErrorResponseMessages.BadRequest);
     }
 
-    public override async Task<TableResponse> FindAsync(SieveModel model)
+    public override async Task<SieveResponse> FindAsync(SieveModel model)
     {
         if (model?.Page < 0 || model?.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest,
@@ -109,7 +109,7 @@ public class UserService
         {
             var role = await _userManager.GetRolesAsync(user);
             var department = user.DepartmentId == null ? null
-                : await _unitOfWork.Departments.GetByIdAsync((int)user.DepartmentId);
+                : await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
 
             mappedUsers.Add(_mapper.Map<UserDetailsResponse>(user, opt =>
                 opt.AfterMap((src, dest) =>
@@ -132,7 +132,7 @@ public class UserService
                                     ErrorResponseMessages.BadRequest);
 
         var department = user.DepartmentId == null ? null
-            : await _unitOfWork.Departments.GetByIdAsync((int)user.DepartmentId);
+            : await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
 
         var role = await _userManager.GetRolesAsync(user);
 
