@@ -2,7 +2,7 @@ using DataType = System.ComponentModel.DataAnnotations.DataType;
 
 namespace UIM.Core.Common
 {
-    public abstract class Entity : IEntity
+    public abstract class NonEntity : IBaseEntity
     {
         private DateTime? createdDate;
         [DataType(DataType.DateTime)]
@@ -18,11 +18,11 @@ namespace UIM.Core.Common
         public string? ModifiedBy { get; set; }
     }
 
-    public abstract class Entity<T> : IEntity<T>
+    public abstract class Entity : IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public T Id { get; set; } = default!;
+        public string Id { get; set; } = default!;
 
         private DateTime? createdDate;
         [DataType(DataType.DateTime)]

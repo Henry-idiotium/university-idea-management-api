@@ -1,12 +1,12 @@
 namespace UIM.Core.Common;
 
-public interface IRepository<TEntity, TIdentity>
-    where TEntity : class, IEntity<TIdentity>
+public interface IRepository<TEntity>
+    where TEntity : class, IEntity
 {
     DbSet<TEntity> Set { get; }
     Task<bool> AddAsync(TEntity entity);
     Task<int> CountAsync();
-    Task<bool> DeleteAsync(TIdentity entityId);
-    Task<TEntity?> GetByIdAsync(TIdentity entityId);
+    Task<bool> DeleteAsync(string entityId);
+    Task<TEntity?> GetByIdAsync(string entityId);
     Task<bool> UpdateAsync(TEntity entity);
 }
