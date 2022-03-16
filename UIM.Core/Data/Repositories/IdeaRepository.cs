@@ -1,6 +1,6 @@
 namespace UIM.Core.Data.Repositories;
 
-public class IdeaRepository : Repository<Idea, string>, IIdeaRepository
+public class IdeaRepository : Repository<Idea>, IIdeaRepository
 {
     public IdeaRepository(UimContext context) : base(context) { }
 
