@@ -1,8 +1,7 @@
 namespace UIM.Core.Common;
 
 [JwtAuthorize]
-[ApiController]
-public abstract class SharedController<TService> : ControllerBase
+public abstract class SharedController<TService> : UimController
 {
     protected TService _service;
 

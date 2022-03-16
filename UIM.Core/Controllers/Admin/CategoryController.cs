@@ -2,7 +2,7 @@ namespace UIM.Core.Controllers;
 
 [ApiController]
 [Route("api/category-management")]
-public class CategoryController : AdminController<ICategoryService, int,
+public class CategoryController : AdminController<ICategoryService,
     CreateCategoryRequest,
     UpdateCategoryRequest,
     CategoryDetailsResponse>

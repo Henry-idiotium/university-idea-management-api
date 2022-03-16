@@ -1,9 +1,8 @@
 namespace UIM.Core.Controllers;
 
 [JwtAuthorize(RoleNames.Admin)]
-[ApiController]
 [Route("api/auth")]
-public class AuthController : ControllerBase
+public class AuthController : UimController
 {
     private readonly IAuthService _authService;
     private readonly IJwtService _jwtService;
@@ -27,7 +26,7 @@ public class AuthController : ControllerBase
                                     ErrorResponseMessages.Unauthorized);
 
         var user = await _userService.FindByIdAsync(userId);
-        return new ActionResponse(user);
+        return ResponseResult(user);
     }
 
     [HttpPost("update-password")]
@@ -45,7 +44,7 @@ public class AuthController : ControllerBase
                                     ErrorResponseMessages.Unauthorized);
 
         await _authService.UpdatePasswordAsync(userId, request);
-        return new ActionResponse();
+        return ResponseResult();
     }
 
     [AllowAnonymous]
@@ -57,7 +56,7 @@ public class AuthController : ControllerBase
                                     ErrorResponseMessages.BadRequest);
 
         var response = await _authService.LoginAsync(request);
-        return new ActionResponse(response);
+        return ResponseResult(response);
     }
 
     [AllowAnonymous]
@@ -69,14 +68,14 @@ public class AuthController : ControllerBase
                                     ErrorResponseMessages.BadRequest);
 
         var response = await _authService.ExternalLoginAsync(request);
-        return new ActionResponse(response);
+        return ResponseResult(response);
     }
 
     [HttpPut("token/revoke")]
     public IActionResult Revoke(string refreshToken)
     {
         _authService.RevokeRefreshToken(refreshToken);
-        return new ActionResponse(SuccessResponseMessages.TokenRevoked);
+        return ResponseResult(SuccessResponseMessages.TokenRevoked);
     }
 
     [HttpPut("token/rotate")]
@@ -87,6 +86,6 @@ public class AuthController : ControllerBase
                                     ErrorResponseMessages.BadRequest);
 
         var response = await _authService.RotateTokensAsync(request);
-        return new ActionResponse(response);
+        return ResponseResult(response);
     }
 }
