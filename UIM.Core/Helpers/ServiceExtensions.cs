@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Init = UIM.Core.Helpers.EnvVars.System;
 
 namespace UIM.Core.Helpers;
@@ -22,6 +23,15 @@ public static class ServiceExtensions
             options.SerializerSettings.ContractResolver = new DefaultContractResolver
             {
                 NamingStrategy = new SnakeCaseNamingStrategy()
+            };
+        })
+        .ConfigureApiBehaviorOptions(opt =>
+        {
+            opt.InvalidModelStateResponseFactory = context =>
+            {
+                var result = new ValidationFailedResult();
+                result.ContentTypes.Add(MediaTypeNames.Application.Json);
+                return result;
             };
         });
     }
@@ -49,7 +59,7 @@ public static class ServiceExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IRoleService, RoleService>();
-        services.AddScoped<ICategoryService, CategoryService>();
+        services.AddScoped<ITagService, TagService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<ISubmissionService, SubmissionService>();
     }
@@ -129,7 +139,7 @@ public static class ServiceExtensions
         services.AddAutoMapper(
             typeof(UserProfile),
             typeof(IdeaProfile),
-            typeof(CategoryProfile),
+            typeof(TagProfile),
             typeof(DepartmentProfile),
             typeof(SubmissionProfile)
         );
@@ -193,6 +203,58 @@ public static class ServiceExtensions
                     await roleManager.CreateAsync(new IdentityRole(name));
             }
 
+            #region init rando user
+            var randoPwd = "qwe123";
+            {
+                var mgr = new AppUser
+                {
+                    EmailConfirmed = true,
+                    FullName = "Spencer Yost",
+                    Email = "manager@gmail.com",
+                    UserName = "best_manager_ever_7861",
+                    CreatedDate = DateTime.UtcNow,
+                };
+                var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
+                if (existingMgr == null)
+                {
+                    var createUser = await userManager.CreateAsync(mgr, randoPwd);
+                    if (createUser.Succeeded) await userManager.AddToRoleAsync(mgr, Init.Role.Manager);
+                }
+            }
+            {
+                var supv = new AppUser
+                {
+                    EmailConfirmed = true,
+                    FullName = "Jeff Wells",
+                    Email = "bojejje@majpithu.st",
+                    UserName = "aspernatur",
+                    CreatedDate = DateTime.UtcNow,
+                };
+                var existingSupv = await userManager.FindByEmailAsync(supv.Email);
+                if (existingSupv == null)
+                {
+                    var createUser = await userManager.CreateAsync(supv, randoPwd);
+                    if (createUser.Succeeded) await userManager.AddToRoleAsync(supv, Init.Role.Supervisor);
+                }
+            }
+            {
+                var staff = new AppUser
+                {
+                    EmailConfirmed = true,
+                    FullName = "Madge Valdez",
+                    Email = "aptu@mitep.pt",
+                    UserName = "unde",
+                    CreatedDate = DateTime.UtcNow,
+                };
+                var existingStaff = await userManager.FindByEmailAsync(staff.Email);
+                if (existingStaff == null)
+                {
+                    var createUser = await userManager.CreateAsync(staff, randoPwd);
+                    if (createUser.Succeeded) await userManager.AddToRoleAsync(staff, Init.Role.Staff);
+                }
+            }
+            #endregion
+
             // Create a super user who will maintain the system
             var existingPwrUser = await userManager.FindByEmailAsync(Init.PwrUserAuth.Email);
             if (existingPwrUser == null)
@@ -209,13 +271,14 @@ public static class ServiceExtensions
                 var createPowerUser = await userManager.CreateAsync(pwrUser, Init.PwrUserAuth.Password);
                 if (createPowerUser.Succeeded)
                     await userManager.AddToRoleAsync(pwrUser, Init.Role.PwrUser);
-
-                return;
             }
-            // Add add poweruser to admin role if not 
-            var pwrUserRoles = await userManager.GetRolesAsync(existingPwrUser);
-            if (pwrUserRoles.Count == 0)
-                await userManager.AddToRoleAsync(existingPwrUser, Init.Role.PwrUser);
+            else
+            {
+                // Add add poweruser to admin role if not 
+                var pwrUserRoles = await userManager.GetRolesAsync(existingPwrUser);
+                if (pwrUserRoles.Count == 0)
+                    await userManager.AddToRoleAsync(existingPwrUser, Init.Role.PwrUser);
+            }
         }
     }
 }

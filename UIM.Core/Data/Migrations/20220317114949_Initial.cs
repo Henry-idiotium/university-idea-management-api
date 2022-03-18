@@ -24,22 +24,6 @@ namespace UIM.Core.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Categories",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Categories", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Departments",
                 columns: table => new
                 {
@@ -73,6 +57,22 @@ namespace UIM.Core.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Submissions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tags",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tags", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -226,9 +226,8 @@ namespace UIM.Core.Data.Migrations
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsAnonymous = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    CategoryId = table.Column<int>(type: "int", nullable: true),
+                    TagId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SubmissionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CategoryId1 = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -241,12 +240,6 @@ namespace UIM.Core.Data.Migrations
                         name: "FK_Ideas_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_Ideas_Categories_CategoryId1",
-                        column: x => x.CategoryId1,
-                        principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
@@ -327,6 +320,34 @@ namespace UIM.Core.Data.Migrations
                         name: "FK_Comments_Ideas_IdeaId",
                         column: x => x.IdeaId,
                         principalTable: "Ideas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "IdeaTags",
+                columns: table => new
+                {
+                    TagId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    IdeaId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IdeaTags", x => new { x.TagId, x.IdeaId });
+                    table.ForeignKey(
+                        name: "FK_IdeaTags_Ideas_IdeaId",
+                        column: x => x.IdeaId,
+                        principalTable: "Ideas",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_IdeaTags_Tags_TagId",
+                        column: x => x.TagId,
+                        principalTable: "Tags",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -443,11 +464,6 @@ namespace UIM.Core.Data.Migrations
                 column: "IdeaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Ideas_CategoryId1",
-                table: "Ideas",
-                column: "CategoryId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Ideas_SubmissionId",
                 table: "Ideas",
                 column: "SubmissionId");
@@ -456,6 +472,11 @@ namespace UIM.Core.Data.Migrations
                 name: "IX_Ideas_UserId",
                 table: "Ideas",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IdeaTags_IdeaId",
+                table: "IdeaTags",
+                column: "IdeaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Likes_IdeaId",
@@ -497,6 +518,9 @@ namespace UIM.Core.Data.Migrations
                 name: "Comments");
 
             migrationBuilder.DropTable(
+                name: "IdeaTags");
+
+            migrationBuilder.DropTable(
                 name: "Likes");
 
             migrationBuilder.DropTable(
@@ -509,13 +533,13 @@ namespace UIM.Core.Data.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "Tags");
+
+            migrationBuilder.DropTable(
                 name: "Ideas");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "Categories");
 
             migrationBuilder.DropTable(
                 name: "Submissions");

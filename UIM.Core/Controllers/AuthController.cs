@@ -22,8 +22,7 @@ public class AuthController : UimController
 
         var userId = _jwtService.Validate(token);
         if (userId == null)
-            throw new HttpException(HttpStatusCode.Unauthorized,
-                                    ErrorResponseMessages.Unauthorized);
+            throw new HttpException(HttpStatusCode.Unauthorized);
 
         var user = await _userService.FindByIdAsync(userId);
         return ResponseResult(user);
@@ -33,15 +32,13 @@ public class AuthController : UimController
     public async Task<IActionResult> ChangePassword([FromBody] UpdatePasswordRequest request)
     {
         if (request == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].First().Split(" ").Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)
-            throw new HttpException(HttpStatusCode.Unauthorized,
-                                    ErrorResponseMessages.Unauthorized);
+            throw new HttpException(HttpStatusCode.Unauthorized);
 
         await _authService.UpdatePasswordAsync(userId, request);
         return ResponseResult();
@@ -52,8 +49,7 @@ public class AuthController : UimController
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (request == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
         var response = await _authService.LoginAsync(request);
         return ResponseResult(response);
@@ -64,8 +60,7 @@ public class AuthController : UimController
     public async Task<IActionResult> LoginExternal([FromBody] ExternalAuthRequest request)
     {
         if (request == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
         var response = await _authService.ExternalLoginAsync(request);
         return ResponseResult(response);
@@ -82,8 +77,7 @@ public class AuthController : UimController
     public async Task<IActionResult> Rotate([FromBody] RotateTokenRequest request)
     {
         if (request == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
         var response = await _authService.RotateTokensAsync(request);
         return ResponseResult(response);

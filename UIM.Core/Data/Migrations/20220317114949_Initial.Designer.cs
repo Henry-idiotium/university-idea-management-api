@@ -12,7 +12,7 @@ using UIM.Core.Data;
 namespace UIM.Core.Data.Migrations
 {
     [DbContext(typeof(UimContext))]
-    [Migration("20220316103829_Initial")]
+    [Migration("20220317114949_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -238,35 +238,6 @@ namespace UIM.Core.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("UIM.Core.Models.Entities.Category", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Categories");
-                });
-
             modelBuilder.Entity("UIM.Core.Models.Entities.Department", b =>
                 {
                     b.Property<string>("Id")
@@ -302,12 +273,6 @@ namespace UIM.Core.Data.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CategoryId1")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -334,6 +299,9 @@ namespace UIM.Core.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("TagId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -343,13 +311,38 @@ namespace UIM.Core.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId1");
-
                     b.HasIndex("SubmissionId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Ideas");
+                });
+
+            modelBuilder.Entity("UIM.Core.Models.Entities.IdeaTag", b =>
+                {
+                    b.Property<string>("TagId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("IdeaId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("TagId", "IdeaId");
+
+                    b.HasIndex("IdeaId");
+
+                    b.ToTable("IdeaTags");
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Like", b =>
@@ -420,6 +413,35 @@ namespace UIM.Core.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Submissions");
+                });
+
+            modelBuilder.Entity("UIM.Core.Models.Entities.Tag", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.View", b =>
@@ -568,11 +590,6 @@ namespace UIM.Core.Data.Migrations
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Idea", b =>
                 {
-                    b.HasOne("UIM.Core.Models.Entities.Category", "Category")
-                        .WithMany("Ideas")
-                        .HasForeignKey("CategoryId1")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("UIM.Core.Models.Entities.Submission", "Submission")
                         .WithMany("Ideas")
                         .HasForeignKey("SubmissionId")
@@ -667,13 +684,30 @@ namespace UIM.Core.Data.Migrations
 
                     b.Navigation("Attachments");
 
-                    b.Navigation("Category");
-
                     b.Navigation("Comments");
 
                     b.Navigation("Submission");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("UIM.Core.Models.Entities.IdeaTag", b =>
+                {
+                    b.HasOne("UIM.Core.Models.Entities.Idea", "Idea")
+                        .WithMany("IdeaTags")
+                        .HasForeignKey("IdeaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UIM.Core.Models.Entities.Tag", "Tag")
+                        .WithMany("IdeaTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Idea");
+
+                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Like", b =>
@@ -723,11 +757,6 @@ namespace UIM.Core.Data.Migrations
                     b.Navigation("Views");
                 });
 
-            modelBuilder.Entity("UIM.Core.Models.Entities.Category", b =>
-                {
-                    b.Navigation("Ideas");
-                });
-
             modelBuilder.Entity("UIM.Core.Models.Entities.Department", b =>
                 {
                     b.Navigation("Users");
@@ -735,6 +764,8 @@ namespace UIM.Core.Data.Migrations
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Idea", b =>
                 {
+                    b.Navigation("IdeaTags");
+
                     b.Navigation("Likes");
 
                     b.Navigation("Views");
@@ -743,6 +774,11 @@ namespace UIM.Core.Data.Migrations
             modelBuilder.Entity("UIM.Core.Models.Entities.Submission", b =>
                 {
                     b.Navigation("Ideas");
+                });
+
+            modelBuilder.Entity("UIM.Core.Models.Entities.Tag", b =>
+                {
+                    b.Navigation("IdeaTags");
                 });
 #pragma warning restore 612, 618
         }

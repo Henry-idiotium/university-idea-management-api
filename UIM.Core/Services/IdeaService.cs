@@ -1,11 +1,6 @@
 namespace UIM.Core.Services;
 
-public class IdeaService
-    : Service<
-        CreateIdeaRequest,
-        UpdateIdeaRequest,
-        IdeaDetailsResponse>,
-    IIdeaService
+public class IdeaService : Service, IIdeaService
 {
     private readonly UserManager<AppUser> _userManager;
 
@@ -18,58 +13,63 @@ public class IdeaService
         _userManager = userManager;
     }
 
-    public override async Task CreateAsync(CreateIdeaRequest request)
+    public async Task CreateAsync(CreateIdeaRequest request)
     {
         if (await _userManager.FindByIdAsync(request.UserId) == null
             || await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
-        if (request.CategoryId != null)
-            if (await _unitOfWork.Categories.GetByIdAsync(request.CategoryId) == null)
-                throw new HttpException(HttpStatusCode.BadRequest,
-                                        ErrorResponseMessages.BadRequest);
+        var idea = _mapper.Map<Idea>(request);
 
-        var newIdea = _mapper.Map<Idea>(request);
-        var succeeded = await _unitOfWork.Ideas.AddAsync(newIdea);
-        if (!succeeded)
-            throw new HttpException(HttpStatusCode.InternalServerError,
-                                    ErrorResponseMessages.UnexpectedError);
+        var add = await _unitOfWork.Ideas.AddAsync(idea);
+        if (!add.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
+
+        if (request.Tags != null)
+            await AddTagsAsync(add.Entity!, request.Tags);
     }
 
-    public override async Task EditAsync(string ideaId, UpdateIdeaRequest request)
+    public async Task AddTagsAsync(Idea idea, string[] tags)
+    {
+        foreach (var tagName in tags)
+        {
+            var tag = await _unitOfWork.Tags.GetByNameAsync(tagName);
+            if (tag == null)
+                throw new HttpException(HttpStatusCode.BadRequest);
+
+            var added = await _unitOfWork.Ideas.AddToTagAsync(idea, tag);
+            if (!added)
+                throw new HttpException(HttpStatusCode.InternalServerError);
+        }
+    }
+
+    public async Task EditAsync(string ideaId, UpdateIdeaRequest request)
     {
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         if (idea == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
         if (await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
-        if (request.CategoryId != null)
-            if (await _unitOfWork.Categories.GetByIdAsync(request.CategoryId) == null)
-                throw new HttpException(HttpStatusCode.BadRequest,
-                                        ErrorResponseMessages.BadRequest);
+        if (request.Tags != null)
+            await AddTagsAsync(idea, request.Tags);
 
-        idea = _mapper.Map<Idea>(request);
-        var edited = await _unitOfWork.Ideas.UpdateAsync(idea);
-        if (!edited)
-            throw new HttpException(HttpStatusCode.InternalServerError,
-                                    ErrorResponseMessages.UnexpectedError);
+        _mapper.Map(request, idea);
+
+        var edit = await _unitOfWork.Ideas.UpdateAsync(idea);
+        if (!edit.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    public override async Task<SieveResponse> FindAsync(SieveModel model)
+    public async Task<SieveResponse> FindAsync(SieveModel model)
     {
         if (model?.Page < 0 || model?.PageSize < 1)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
         var sortedIdeas = _sieveProcessor.Apply(model, _unitOfWork.Ideas.Set);
         if (sortedIdeas == null)
-            throw new HttpException(HttpStatusCode.InternalServerError,
-                                    ErrorResponseMessages.UnexpectedError);
+            throw new HttpException(HttpStatusCode.InternalServerError);
 
         var mappedIdeas = new List<IdeaDetailsResponse>();
         foreach (var idea in sortedIdeas)
@@ -84,12 +84,11 @@ public class IdeaService
             total: await _unitOfWork.Ideas.CountAsync());
     }
 
-    public override async Task<IdeaDetailsResponse> FindByIdAsync(string ideaId)
+    public async Task<IdeaDetailsResponse> FindByIdAsync(string ideaId)
     {
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         if (idea == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
         IdeaDetailsResponse mappedIdea;
         if (idea.User == null)
             mappedIdea = _mapper.Map<Idea, IdeaDetailsResponse>(idea);
@@ -102,11 +101,10 @@ public class IdeaService
         return mappedIdea;
     }
 
-    public override async Task RemoveAsync(string ideaId)
+    public async Task RemoveAsync(string ideaId)
     {
-        var succeeded = await _unitOfWork.Ideas.DeleteAsync(ideaId);
-        if (!succeeded)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+        var delete = await _unitOfWork.Ideas.DeleteAsync(ideaId);
+        if (!delete.Succeeded)
+            throw new HttpException(HttpStatusCode.BadRequest);
     }
 }

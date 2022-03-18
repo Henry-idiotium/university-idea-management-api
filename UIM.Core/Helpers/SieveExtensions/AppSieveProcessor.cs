@@ -9,7 +9,7 @@ public class AppSieveProcessor : SieveProcessor
         return mapper
             .ApplyConfiguration<UserSieveConfig>()
             .ApplyConfiguration<IdeaSieveConfig>()
-            .ApplyConfiguration<CategorySieveConfig>()
+            .ApplyConfiguration<TagSieveConfig>()
             .ApplyConfiguration<DepartmentSieveConfig>()
             .ApplyConfiguration<RoleSieveConfig>()
             .ApplyConfiguration<SubmissionSieveConfig>();

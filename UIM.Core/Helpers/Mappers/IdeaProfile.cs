@@ -9,16 +9,10 @@ public class IdeaProfile : Profile
                 dest => dest.Id,
                 opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id)));
 
-        CreateMap<IdeaDetailsResponse, Idea>()
-            .ForMember(
-                dest => dest.Id,
-                opt => opt.MapFrom(src => EncryptHelpers.DecodeBase64Url(src.Id)));
-
-        CreateMap<UpdateIdeaRequest, Idea>();
+        CreateMap<UpdateIdeaRequest, Idea>()
+            .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate());
 
         CreateMap<CreateIdeaRequest, Idea>()
-            .ForMember(
-                dest => dest.UserId,
-                opt => opt.MapFrom(src => EncryptHelpers.DecodeBase64Url(src.UserId)));
+            .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate());
     }
 }

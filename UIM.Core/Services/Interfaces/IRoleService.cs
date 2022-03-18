@@ -1,7 +1,9 @@
 namespace UIM.Core.Services.Interfaces;
 
 public interface IRoleService
-    : IService<ICreateRequest, IUpdateRequest, RoleDetailsResponse>
 {
+    // Task<SieveResponse> FindAsync(SieveModel model);
+    IEnumerable<RoleDetailsResponse> FindAll();
+    Task<RoleDetailsResponse> FindByIdAsync(string entityId);
     Task<RoleDetailsResponse> FindByNameAsync(string name);
 }

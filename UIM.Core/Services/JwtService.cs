@@ -149,8 +149,7 @@ public class JwtService : IJwtService
         {
             var googleId = EnvVars.SocialAuth.GoogleClientId;
             if (googleId == null)
-                throw new HttpException(HttpStatusCode.BadRequest,
-                                        ErrorResponseMessages.BadRequest);
+                throw new HttpException(HttpStatusCode.BadRequest);
 
             var settings = new GoogleJsonWebSignature.ValidationSettings()
             {
@@ -161,8 +160,7 @@ public class JwtService : IJwtService
         }
         catch (InvalidJwtException)
         {
-            throw new HttpException(HttpStatusCode.Forbidden,
-                                    ErrorResponseMessages.Forbidden);
+            throw new HttpException(HttpStatusCode.Forbidden);
         }
     }
 }
