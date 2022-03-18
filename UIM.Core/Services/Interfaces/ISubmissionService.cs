@@ -6,5 +6,5 @@ public interface ISubmissionService
         UpdateSubmissionRequest,
         SubmissionDetailsResponse>
 {
-    Task AddIdeaToSubmissionAsync(AddIdeaRequest request);
+    Task AddIdeaAsync(AddIdeaRequest request);
 }

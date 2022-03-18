@@ -1,10 +1,10 @@
 namespace UIM.Core.Models.Entities;
 
-public class View : BaseEntity
+public class IdeaTag : BaseEntity
 {
-    public string UserId { get; set; } = default!;
+    public string TagId { get; set; } = default!;
     public string IdeaId { get; set; } = default!;
 
-    public virtual AppUser? User { get; set; }
+    public virtual Tag? Tag { get; set; }
     public virtual Idea? Idea { get; set; }
 }

@@ -6,5 +6,5 @@ public interface IUserService
         UpdateUserRequest,
         UserDetailsResponse>
 {
-
+    Task AddToDepartmentAsync(AppUser user, string? department);
 }

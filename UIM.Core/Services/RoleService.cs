@@ -1,11 +1,6 @@
 namespace UIM.Core.Services;
 
-public class RoleService
-    : Service<
-        ICreateRequest,
-        IUpdateRequest,
-        RoleDetailsResponse>,
-    IRoleService
+public class RoleService : Service, IRoleService
 {
     private readonly RoleManager<IdentityRole> _roleManager;
 
@@ -19,33 +14,13 @@ public class RoleService
         _roleManager = roleManager;
     }
 
-    public override Task CreateAsync(ICreateRequest request) => throw new NotImplementedException();
-    public override Task EditAsync(string entityId, IUpdateRequest request) => throw new NotImplementedException();
+    public IEnumerable<RoleDetailsResponse> FindAll() =>
+        _mapper.Map<List<RoleDetailsResponse>>(_roleManager.Roles);
 
-    public override async Task<SieveResponse> FindAsync(SieveModel model)
+    public async Task<RoleDetailsResponse> FindByIdAsync(string id)
     {
-        if (model?.Page < 0 || model?.PageSize < 1)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
-
-        var sortedRoles = _sieveProcessor.Apply(model, _roleManager.Roles);
-        if (sortedRoles == null)
-            throw new HttpException(HttpStatusCode.InternalServerError,
-                                    ErrorResponseMessages.UnexpectedError);
-
-        var mappedRoles = _mapper.Map<List<RoleDetailsResponse>>(sortedRoles);
-        var count = (await _roleManager.Roles.ToListAsync()).Count;
-
-        return new(rows: mappedRoles,
-            index: model?.Page,
-            total: count);
-    }
-
-    public override async Task<RoleDetailsResponse> FindByIdAsync(string id)
-    {
-        var roleId = EncryptHelpers.DecodeBase64Url(id);
         var role = _mapper.Map<RoleDetailsResponse>(
-            await _roleManager.Roles.FirstOrDefaultAsync(_ => _.Id == roleId));
+            await _roleManager.Roles.FirstOrDefaultAsync(_ => _.Id == id));
 
         return role;
     }
@@ -55,6 +30,4 @@ public class RoleService
         var role = _mapper.Map<RoleDetailsResponse>(await _roleManager.FindByNameAsync(name));
         return role;
     }
-
-    public override Task RemoveAsync(string entityId) => throw new NotImplementedException();
 }

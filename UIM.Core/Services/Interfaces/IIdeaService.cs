@@ -6,5 +6,5 @@ public interface IIdeaService
         UpdateIdeaRequest,
         IdeaDetailsResponse>
 {
-
+    Task AddTagsAsync(Idea idea, string[] tags);
 }

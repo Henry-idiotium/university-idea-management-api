@@ -1,8 +1,7 @@
 namespace Namespace;
 
-[ApiController]
-[Route("api/idea-management")]
-public class IdeaController : AdminController<IIdeaService,
+[JwtAuthorize]
+public class IdeaController : CrudController<IIdeaService,
     CreateIdeaRequest,
     UpdateIdeaRequest,
     IdeaDetailsResponse>

@@ -7,11 +7,11 @@ public class Idea : Entity
     public string Content { get; set; } = default!;
     public bool IsAnonymous { get; set; }
     public string? UserId { get; set; }
-    public int? CategoryId { get; set; }
+    public string? TagId { get; set; }
     public string SubmissionId { get; set; } = default!;
 
     public virtual AppUser? User { get; set; }
-    public virtual Category? Category { get; set; }
+    public virtual ICollection<IdeaTag>? IdeaTags { get; set; }
     public virtual Submission Submission { get; set; } = default!;
     public virtual List<Comment>? Comments { get; set; }
     public virtual List<Attachment>? Attachments { get; set; }

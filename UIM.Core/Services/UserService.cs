@@ -1,54 +1,55 @@
 namespace UIM.Core.Services;
 
-public class UserService
-    : Service<
-        CreateUserRequest,
-        UpdateUserRequest,
-        UserDetailsResponse>,
-    IUserService
+public class UserService : Service, IUserService
 {
     private readonly IEmailService _emailService;
-    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly UserManager<AppUser> _userManager;
 
     public UserService(
         IMapper mapper,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork,
-        RoleManager<IdentityRole> roleManager,
         UserManager<AppUser> userManager,
         IEmailService emailService)
         : base(mapper, sieveProcessor, unitOfWork)
     {
-        _roleManager = roleManager;
         _userManager = userManager;
         _emailService = emailService;
     }
 
-    public override async Task CreateAsync(CreateUserRequest request)
+    public async Task AddToDepartmentAsync(AppUser user, string? department)
     {
-        var dep = await _unitOfWork.Departments.GetByIdAsync(request.DepartmentId);
-        var role = await _roleManager.FindByIdAsync(EncryptHelpers.DecodeBase64Url(request.RoleId));
-        if (dep == null || role == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+        var depObj = await _unitOfWork.Departments.GetByNameAsync(department);
+        if (depObj == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
 
-        request.UserName ??= request.Email;
-        var newUser = _mapper.Map<AppUser>(request);
+        var userToBeAdded = await _userManager.FindByEmailAsync(user.Email)
+            ?? await _userManager.FindByIdAsync(user.Id);
 
-        var userExist = await _userManager.FindByEmailAsync(newUser.Email);
+        userToBeAdded.DepartmentId = depObj.Id;
+        var edit = await _userManager.UpdateAsync(userToBeAdded);
+        if (!edit.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
+    }
+
+    public async Task CreateAsync(CreateUserRequest request)
+    {
+        var userExist = await _userManager.FindByEmailAsync(request.Email);
         if (userExist != null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
-        newUser.DepartmentId = request.DepartmentId;
-
+        var newUser = _mapper.Map<AppUser>(request);
         var password = AuthHelpers.GeneratePassword(8, true);
 
         var userCreated = await _userManager.CreateAsync(newUser, password);
-        var roleAdded = await _userManager.AddToRoleAsync(newUser, role.Name);
+        await AddToDepartmentAsync(newUser, request.Department);
+        await _userManager.AddToRoleAsync(newUser, request.Role);
 
-        await ValidationDisposal(newUser, isValid: userCreated.Succeeded || roleAdded.Succeeded);
+        if (!userCreated.Succeeded)
+        {
+            await _userManager.DeleteAsync(newUser);
+            throw new HttpException(HttpStatusCode.InternalServerError);
+        }
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(newUser);
         var sendSucceeded = await _emailService.SendAuthInfoUpdatePasswordAsync(
@@ -58,58 +59,41 @@ public class UserService
             senderFullName: "Cecilia McDermott",
             senderTitle: "Senior Integration Executive");
 
-        await ValidationDisposal(newUser, isValid: sendSucceeded);
+        if (!sendSucceeded)
+            throw new HttpException(HttpStatusCode.InternalServerError,
+                                    ErrorResponseMessages.SentEmailFailed);
     }
 
-    public override async Task EditAsync(string id, UpdateUserRequest request)
+    public async Task EditAsync(string id, UpdateUserRequest request)
     {
-        var userToEdit = await _userManager.FindByIdAsync(EncryptHelpers.DecodeBase64Url(id));
-
-        var newDepartment = await _unitOfWork.Departments.GetByIdAsync(request.DepartmentId);
-        var newRole = await _roleManager.FindByIdAsync(EncryptHelpers.DecodeBase64Url(request.RoleId));
-        if (newRole == null || newDepartment == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+        var userToEdit = await _userManager.FindByIdAsync(id);
+        if (userToEdit == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
 
         var oldRoles = await _userManager.GetRolesAsync(userToEdit);
+
         await _userManager.RemoveFromRolesAsync(userToEdit, oldRoles);
-        await _userManager.AddToRoleAsync(userToEdit, newRole.Id);
+        await _userManager.AddToRoleAsync(userToEdit, request.Role);
+        await AddToDepartmentAsync(userToEdit, request.Department);
 
         userToEdit = _mapper.Map<AppUser>(request);
-        userToEdit.DepartmentId = newDepartment.Id;
-
         await _userManager.UpdateAsync(userToEdit);
-
-        if (request.Password == null) return;
-        if (request.Password != request.ConfirmPassword)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
-
-        var token = await _userManager.GeneratePasswordResetTokenAsync(userToEdit);
-
-        var result = await _userManager.ResetPasswordAsync(userToEdit, token, request.Password);
-        if (!result.Succeeded)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
     }
 
-    public override async Task<SieveResponse> FindAsync(SieveModel model)
+    public async Task<SieveResponse> FindAsync(SieveModel model)
     {
         if (model?.Page < 0 || model?.PageSize < 1)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
         var sortedUsers = _sieveProcessor.Apply(model, _userManager.Users);
         if (sortedUsers == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
         var mappedUsers = new List<UserDetailsResponse>();
         foreach (var user in sortedUsers)
         {
             var role = await _userManager.GetRolesAsync(user);
-            var department = user.DepartmentId == null ? null
-                : await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
+            var department = await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
 
             mappedUsers.Add(_mapper.Map<UserDetailsResponse>(user, opt =>
                 opt.AfterMap((src, dest) =>
@@ -124,12 +108,11 @@ public class UserService
             total: await _userManager.Users.CountAsync());
     }
 
-    public override async Task<UserDetailsResponse> FindByIdAsync(string userId)
+    public async Task<UserDetailsResponse> FindByIdAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
         var department = user.DepartmentId == null ? null
             : await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
@@ -146,9 +129,8 @@ public class UserService
         return mappedUser;
     }
 
-    public override async Task RemoveAsync(string userId)
+    public async Task RemoveAsync(string userId)
     {
-        userId = EncryptHelpers.DecodeBase64Url(userId);
         var user = await _userManager.FindByIdAsync(userId);
 
         var userIsAdmin =
@@ -156,18 +138,8 @@ public class UserService
             || user.UserName == EnvVars.System.PwrUserAuth.UserName;
 
         if (user == null || userIsAdmin)
-            throw new HttpException(HttpStatusCode.BadRequest,
-                                    ErrorResponseMessages.BadRequest);
+            throw new HttpException(HttpStatusCode.BadRequest);
 
         await _userManager.DeleteAsync(user);
-    }
-
-    private async Task ValidationDisposal(AppUser user, bool isValid)
-    {
-        if (!isValid)
-        {
-            await _userManager.DeleteAsync(user);
-            throw new HttpException(HttpStatusCode.InternalServerError);
-        }
     }
 }

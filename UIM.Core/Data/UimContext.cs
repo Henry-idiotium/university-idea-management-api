@@ -4,14 +4,15 @@ public class UimContext : IdentityDbContext<AppUser>
 {
     public UimContext(DbContextOptions<UimContext> options) : base(options) { }
 
+    public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<Idea> Ideas => Set<Idea>();
-    public DbSet<Submission> Submissions => Set<Submission>();
-    public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<Like> Likes => Set<Like>();
     public DbSet<View> Views => Set<View>();
-    public DbSet<Models.Entities.Attachment> Attachments => Set<Models.Entities.Attachment>();
+    public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<IdeaTag> IdeaTags => Set<IdeaTag>();
+    public DbSet<Submission> Submissions => Set<Submission>();
+    public DbSet<Attachment> Attachments => Set<Attachment>();
     public DbSet<Department> Departments => Set<Department>();
-    public DbSet<Category> Categories => Set<Category>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -58,8 +59,6 @@ public class UimContext : IdentityDbContext<AppUser>
             conf.Property(_ => _.Id).HasMaxLength(450);
             conf.HasOne(_ => _.User).WithMany(_ => _.Ideas)
                 .OnDelete(DeleteBehavior.SetNull);
-            conf.HasOne(_ => _.Category).WithMany(_ => _.Ideas)
-                .OnDelete(DeleteBehavior.SetNull);
             conf.HasOne(_ => _.Submission).WithMany(_ => _.Ideas)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -77,6 +76,21 @@ public class UimContext : IdentityDbContext<AppUser>
             });
         });
 
+        builder.Entity<Tag>(conf =>
+        {
+            conf.Property(_ => _.Id).HasMaxLength(450);
+            conf.Property(_ => _.Name).IsRequired().HasMaxLength(450);
+        });
+
+        builder.Entity<IdeaTag>(conf =>
+        {
+            conf.HasKey(_ => new { _.TagId, _.IdeaId });
+            conf.HasOne(_ => _.Tag).WithMany(_ => _.IdeaTags)
+                .OnDelete(DeleteBehavior.Cascade);
+            conf.HasOne(_ => _.Idea).WithMany(_ => _.IdeaTags)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         builder.Entity<Submission>(conf =>
         {
             conf.Property(_ => _.Id).HasMaxLength(450);
@@ -89,12 +103,6 @@ public class UimContext : IdentityDbContext<AppUser>
         {
             conf.Property(_ => _.Id).HasMaxLength(450);
             conf.Property(_ => _.Name).IsRequired();
-        });
-
-        builder.Entity<Category>(conf =>
-        {
-            conf.Property(_ => _.Id).HasMaxLength(450);
-            conf.Property(_ => _.Name).IsRequired().HasMaxLength(450);
         });
     }
 }

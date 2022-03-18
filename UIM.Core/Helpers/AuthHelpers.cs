@@ -69,16 +69,16 @@ public static class AuthHelpers
 
     public static string GeneratePassword(int length, bool isFirstLetterCapital = false)
     {
-        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789123456789123456789";
+        var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789123456789123456789";
         var charBuffer = new char[length];
-        var random = new Random();
+        var random = new Random(Guid.NewGuid().GetHashCode());
 
         for (int i = 0; i < charBuffer.Length; i++)
         {
             if (i == 0 && isFirstLetterCapital)
             {
-                var upperChars = chars[..26];
-                charBuffer[i] = chars[random.Next(upperChars.Length)];
+                var upperChars = chars[26..51];
+                charBuffer[i] = upperChars[random.Next(upperChars.Length)];
             }
             else
                 charBuffer[i] = chars[random.Next(chars.Length)];

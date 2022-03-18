@@ -1,8 +1,6 @@
 namespace UIM.Core.Controllers;
 
-[ApiController]
-[Route("api/user-management")]
-public class UserController : AdminController<IUserService,
+public class UserController : CrudController<IUserService,
     CreateUserRequest,
     UpdateUserRequest,
     UserDetailsResponse>

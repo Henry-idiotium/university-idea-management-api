@@ -4,9 +4,9 @@ public class DepartmentRepository : Repository<Department>, IDepartmentRepositor
 {
     public DepartmentRepository(UimContext context) : base(context) { }
 
-    public async Task<Department?> GetByNameAsync(string name)
+    public async Task<Department?> GetByNameAsync(string? name)
     {
-        return await _context.Departments
-            .FirstOrDefaultAsync(_ => _.Name.ToLower() == name.ToLower());
+        var depName = name?.ToLower();
+        return await _context.Departments.FirstOrDefaultAsync(_ => _.Name.ToLower() == depName);
     }
 }
