@@ -27,6 +27,7 @@ global using Sieve.Services;
 global using Swashbuckle.AspNetCore.SwaggerGen;
 // In-Project namespaces
 global using UIM.Core.Common;
+global using UIM.Core.Common.Services;
 global using UIM.Core.Data;
 global using UIM.Core.Data.Repositories;
 global using UIM.Core.Data.Repositories.Interfaces;

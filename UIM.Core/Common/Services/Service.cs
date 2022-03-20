@@ -1,4 +1,4 @@
-namespace UIM.Core.Common;
+namespace UIM.Core.Common.Services;
 
 public abstract class Service
 {
