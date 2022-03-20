@@ -1,18 +1,58 @@
 namespace UIM.Core.Controllers;
 
-public class TagController : CrudController<ITagService,
-    CreateTagRequest,
-    UpdateTagRequest,
-    TagDetailsResponse>
+[JwtAuthorize(RoleNames.Admin)]
+[Route("api/[controller]-management")]
+public class TagController : UimController<ITagService>
 {
-    public TagController(ITagService service) : base(service)
-    {
+    public TagController(ITagService service) : base(service) { }
 
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateTagRequest request)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        await _service.CreateAsync(request);
+        return ResponseResult();
+    }
+
+    [HttpDelete("[controller]/{id}")]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var entityId = EncryptHelpers.DecodeBase64Url(id);
+        await _service.RemoveAsync(entityId);
+        return ResponseResult();
     }
 
     [JwtAuthorize]
-    public override async Task<IActionResult> Get([FromQuery] SieveModel request) => await base.Get(request);
+    [HttpGet("[controller]s")]
+    public async Task<IActionResult> Read([FromQuery] SieveModel request)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var result = await _service.FindAsync(request);
+        return ResponseResult(result);
+    }
 
     [JwtAuthorize]
-    public override async Task<IActionResult> Get(string id) => await base.Get(id);
+    [HttpGet("[controller]/{id}")]
+    public async Task<IActionResult> Read(string id)
+    {
+        var entityId = EncryptHelpers.DecodeBase64Url(id);
+        var result = await _service.FindByIdAsync(entityId);
+        return ResponseResult(result);
+    }
+
+    [HttpPut("[controller]/{id}")]
+    public async Task<IActionResult> Update([FromBody] UpdateTagRequest request, string id)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var entityId = EncryptHelpers.DecodeBase64Url(id);
+
+        await _service.EditAsync(entityId, request);
+        return ResponseResult();
+    }
 }

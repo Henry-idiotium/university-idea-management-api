@@ -11,9 +11,10 @@
 	"profiles": {
 		"UIM.Core": {
 			"commandName": "Project",
-			"dotnetRunMessages": true,
-			"launchBrowser": true,
+			"dotnetRunMessages": false,
+			"launchBrowser": false,
 			"hotReloadEnabled": true,
+			"hotReloadProfile": "aspnetcore",
 			"launchUrl": "swagger",
 			"applicationUrl": "https://localhost:7024;http://localhost:5251",
 			"environmentVariables": {

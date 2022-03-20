@@ -1,18 +1,15 @@
 namespace UIM.Core.Controllers.Shared;
 
-[Route("api")]
-public class RoleController : SharedController<IRoleService>
+[JwtAuthorize]
+public class RoleController : UimController<IRoleService>
 {
-    public RoleController(IRoleService service) : base(service)
-    {
-
-    }
+    public RoleController(IRoleService service) : base(service) { }
 
     [HttpGet("[controller]s")]
-    public IActionResult Get() => ResponseResult(_service.FindAll());
+    public IActionResult Read() => ResponseResult(_service.FindAll());
 
     [HttpGet("[controller]/{id}")]
-    public async Task<IActionResult> Get(string id)
+    public async Task<IActionResult> Read(string id)
     {
         var roleId = EncryptHelpers.DecodeBase64Url(id);
         var result = await _service.FindByIdAsync(roleId);

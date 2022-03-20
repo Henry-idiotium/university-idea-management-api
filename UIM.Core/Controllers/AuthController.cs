@@ -1,16 +1,15 @@
 namespace UIM.Core.Controllers;
 
-[JwtAuthorize(RoleNames.Admin)]
+[JwtAuthorize]
 [Route("api/auth")]
-public class AuthController : UimController
+public class AuthController : UimController<IAuthService>
 {
-    private readonly IAuthService _authService;
     private readonly IJwtService _jwtService;
     private readonly IUserService _userService;
 
     public AuthController(IAuthService authService, IUserService userService, IJwtService jwtService)
+        : base(authService)
     {
-        _authService = authService;
         _userService = userService;
         _jwtService = jwtService;
     }
@@ -40,7 +39,7 @@ public class AuthController : UimController
         if (userId == null)
             throw new HttpException(HttpStatusCode.Unauthorized);
 
-        await _authService.UpdatePasswordAsync(userId, request);
+        await _service.UpdatePasswordAsync(userId, request);
         return ResponseResult();
     }
 
@@ -51,7 +50,7 @@ public class AuthController : UimController
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var response = await _authService.LoginAsync(request);
+        var response = await _service.LoginAsync(request);
         return ResponseResult(response);
     }
 
@@ -62,14 +61,14 @@ public class AuthController : UimController
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var response = await _authService.ExternalLoginAsync(request);
+        var response = await _service.ExternalLoginAsync(request);
         return ResponseResult(response);
     }
 
     [HttpPut("token/revoke")]
     public IActionResult Revoke(string refreshToken)
     {
-        _authService.RevokeRefreshToken(refreshToken);
+        _service.RevokeRefreshToken(refreshToken);
         return ResponseResult(SuccessResponseMessages.TokenRevoked);
     }
 
@@ -79,7 +78,7 @@ public class AuthController : UimController
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var response = await _authService.RotateTokensAsync(request);
+        var response = await _service.RotateTokensAsync(request);
         return ResponseResult(response);
     }
 }

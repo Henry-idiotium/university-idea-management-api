@@ -1,27 +1,63 @@
 namespace UIM.Core.Controllers.Admin;
 
-public class SubmissionController : CrudController<ISubmissionService,
-    CreateSubmissionRequest,
-    UpdateSubmissionRequest,
-    SubmissionDetailsResponse>
+[JwtAuthorize(RoleNames.Admin)]
+[Route("api/[controller]-management")]
+public class SubmissionController : UimController<ISubmissionService>
 {
-    public SubmissionController(ISubmissionService service) : base(service)
-    {
-    }
+    public SubmissionController(ISubmissionService service) : base(service) { }
 
-    [JwtAuthorize]
-    public override async Task<IActionResult> Get([FromQuery] SieveModel request) => await base.Get(request);
+    /* ─── BUSINESS LOGICS ────────────────────────────────────────────────────────────
+        Staff:
+        - Cannot View Submissions that're already final due
+    */
 
-    [JwtAuthorize]
-    public override async Task<IActionResult> Get(string id) => await base.Get(id);
-
-    [HttpPut("managed-idea")]
-    public async Task<IActionResult> AddIdea([FromBody] AddIdeaRequest request)
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateSubmissionRequest request)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        await _service.AddIdeaAsync(request);
+        await _service.CreateAsync(request);
+        return ResponseResult();
+    }
+
+    [HttpDelete("[controller]/{id}")]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var entityId = EncryptHelpers.DecodeBase64Url(id);
+        await _service.RemoveAsync(entityId);
+        return ResponseResult();
+    }
+
+    [JwtAuthorize]
+    [HttpGet("[controller]s")]
+    public async Task<IActionResult> Read([FromQuery] SieveModel request)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var result = await _service.FindAsync(request);
+        return ResponseResult(result);
+    }
+
+    [JwtAuthorize]
+    [HttpGet("[controller]/{id}")]
+    public async Task<IActionResult> Read(string id)
+    {
+        var entityId = EncryptHelpers.DecodeBase64Url(id);
+        var result = await _service.FindByIdAsync(entityId);
+        return ResponseResult(result);
+    }
+
+    [HttpPut("[controller]/{id}")]
+    public async Task<IActionResult> Update([FromBody] UpdateSubmissionRequest request, string id)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var entityId = EncryptHelpers.DecodeBase64Url(id);
+
+        await _service.EditAsync(entityId, request);
         return ResponseResult();
     }
 }
