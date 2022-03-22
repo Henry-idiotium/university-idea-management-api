@@ -1,12 +1,11 @@
 using System.Net.Mime;
-using Init = UIM.Core.Helpers.EnvVars.System;
 
 namespace UIM.Core.Helpers;
 
 public static class ServiceExtensions
 {
     // Vanilla authorize attribute cannot obtain role claims
-    public static void AddAuthenticationExt(this IServiceCollection services)
+    public static IServiceCollection AddAuthenticationExt(this IServiceCollection services)
     {
         services
             .AddAuthentication(_ =>
@@ -14,9 +13,10 @@ public static class ServiceExtensions
                 _.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 _.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             });
+        return services;
     }
 
-    public static void AddControllersExt(this IServiceCollection services)
+    public static IServiceCollection AddControllersExt(this IServiceCollection services)
     {
         services.AddControllers().AddNewtonsoftJson(options =>
         {
@@ -34,9 +34,10 @@ public static class ServiceExtensions
                 return result;
             };
         });
+        return services;
     }
 
-    public static void AddCorsExt(this IServiceCollection services)
+    public static IServiceCollection AddCorsExt(this IServiceCollection services)
     {
         services.AddCors(_ =>
         {
@@ -45,9 +46,10 @@ public static class ServiceExtensions
                     .AllowAnyHeader()
                     .WithOrigins(EnvVars.ValidOrigins));
         });
+        return services;
     }
 
-    public static void AddDIContainerExt(this IServiceCollection services)
+    public static IServiceCollection AddDIContainerExt(this IServiceCollection services)
     {
         services.AddScoped<SieveProcessor>();
         services.AddScoped<ISieveProcessor, AppSieveProcessor>();
@@ -62,9 +64,11 @@ public static class ServiceExtensions
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<ISubmissionService, SubmissionService>();
+
+        return services;
     }
 
-    public static void AddDbContextExt(this IServiceCollection services, string localDbConnectionString)
+    public static IServiceCollection AddDbContextExt(this IServiceCollection services, string localDbConnectionString)
     {
         if (EnvVars.CoreEnv == "development")
             services.AddDbContextPool<UimContext>(_ => _.UseSqlServer(localDbConnectionString));
@@ -85,9 +89,10 @@ public static class ServiceExtensions
                 ");
             });
         }
+        return services;
     }
 
-    public static void AddIdentityExt(this IServiceCollection services)
+    public static IServiceCollection AddIdentityExt(this IServiceCollection services)
     {
         if (EnvVars.CoreEnv == "development")
         {
@@ -132,20 +137,21 @@ public static class ServiceExtensions
                 _.Password.RequiredLength = default;
             });
         }
+        return services;
     }
 
-    public static void AddMapperExt(this IServiceCollection services)
+    public static IServiceCollection AddMapperExt(this IServiceCollection services)
     {
         services.AddAutoMapper(
             typeof(UserProfile),
             typeof(IdeaProfile),
-            typeof(TagProfile),
-            typeof(DepartmentProfile),
+            typeof(SimpleEntitiesProfile),
             typeof(SubmissionProfile)
         );
+        return services;
     }
 
-    public static void AddSwaggerExt(this IServiceCollection services)
+    public static IServiceCollection AddSwaggerExt(this IServiceCollection services)
     {
         services.AddSwaggerGen(_ =>
         {
@@ -179,106 +185,6 @@ public static class ServiceExtensions
                     }
             });
         });
-    }
-
-    public static async Task CreateRolesAndPwdUser(IServiceScope scope, bool enable)
-    {
-        if (enable)
-        {
-            var userManager = (UserManager<AppUser>)scope.ServiceProvider.GetService(typeof(UserManager<AppUser>))!;
-            var roleManager = (RoleManager<IdentityRole>)scope.ServiceProvider.GetService(typeof(RoleManager<IdentityRole>))!;
-
-            // Initializing custom roles
-            var roleNames = new List<string>
-                {
-                    Init.Role.Staff,
-                    Init.Role.PwrUser,
-                    Init.Role.Manager,
-                    Init.Role.Supervisor,
-                };
-            foreach (var name in roleNames)
-            {
-                var roleExist = await roleManager.RoleExistsAsync(name);
-                if (!roleExist)
-                    await roleManager.CreateAsync(new IdentityRole(name));
-            }
-
-            #region init rando user
-            var randoPwd = "qwe123";
-            {
-                var mgr = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Spencer Yost",
-                    Email = "manager@gmail.com",
-                    UserName = "best_manager_ever_7861",
-                    CreatedDate = DateTime.UtcNow,
-                };
-                var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
-                if (existingMgr == null)
-                {
-                    var createUser = await userManager.CreateAsync(mgr, randoPwd);
-                    if (createUser.Succeeded) await userManager.AddToRoleAsync(mgr, Init.Role.Manager);
-                }
-            }
-            {
-                var supv = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Jeff Wells",
-                    Email = "bojejje@majpithu.st",
-                    UserName = "aspernatur",
-                    CreatedDate = DateTime.UtcNow,
-                };
-                var existingSupv = await userManager.FindByEmailAsync(supv.Email);
-                if (existingSupv == null)
-                {
-                    var createUser = await userManager.CreateAsync(supv, randoPwd);
-                    if (createUser.Succeeded) await userManager.AddToRoleAsync(supv, Init.Role.Supervisor);
-                }
-            }
-            {
-                var staff = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Madge Valdez",
-                    Email = "aptu@mitep.pt",
-                    UserName = "unde",
-                    CreatedDate = DateTime.UtcNow,
-                };
-                var existingStaff = await userManager.FindByEmailAsync(staff.Email);
-                if (existingStaff == null)
-                {
-                    var createUser = await userManager.CreateAsync(staff, randoPwd);
-                    if (createUser.Succeeded) await userManager.AddToRoleAsync(staff, Init.Role.Staff);
-                }
-            }
-            #endregion
-
-            // Create a super user who will maintain the system
-            var existingPwrUser = await userManager.FindByEmailAsync(Init.PwrUserAuth.Email);
-            if (existingPwrUser == null)
-            {
-                var pwrUser = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Henry David",
-                    Email = Init.PwrUserAuth.Email,
-                    UserName = Init.PwrUserAuth.UserName,
-                    CreatedDate = DateTime.UtcNow,
-                };
-
-                var createPowerUser = await userManager.CreateAsync(pwrUser, Init.PwrUserAuth.Password);
-                if (createPowerUser.Succeeded)
-                    await userManager.AddToRoleAsync(pwrUser, Init.Role.PwrUser);
-            }
-            else
-            {
-                // Add add poweruser to admin role if not 
-                var pwrUserRoles = await userManager.GetRolesAsync(existingPwrUser);
-                if (pwrUserRoles.Count == 0)
-                    await userManager.AddToRoleAsync(existingPwrUser, Init.Role.PwrUser);
-            }
-        }
+        return services;
     }
 }
