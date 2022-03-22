@@ -1,18 +1,11 @@
-namespace UIM.Core.Controllers.Admin;
+namespace UIM.Core.Controllers;
 
-[JwtAuthorize(RoleNames.Admin)]
-[Route("api/[controller]-management")]
-public class SubmissionController : UimController<ISubmissionService>
+public class UserController : AdminController<IUserService>
 {
-    public SubmissionController(ISubmissionService service) : base(service) { }
-
-    /* ─── BUSINESS LOGICS ────────────────────────────────────────────────────────────
-        Staff:
-        - Cannot View Submissions that're already final due
-    */
+    public UserController(IUserService service) : base(service) { }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateSubmissionRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
@@ -21,7 +14,7 @@ public class SubmissionController : UimController<ISubmissionService>
         return ResponseResult();
     }
 
-    [HttpDelete("[controller]/{id}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);
@@ -29,8 +22,7 @@ public class SubmissionController : UimController<ISubmissionService>
         return ResponseResult();
     }
 
-    [JwtAuthorize]
-    [HttpGet("[controller]s")]
+    [HttpGet]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)
@@ -40,8 +32,7 @@ public class SubmissionController : UimController<ISubmissionService>
         return ResponseResult(result);
     }
 
-    [JwtAuthorize]
-    [HttpGet("[controller]/{id}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);
@@ -49,8 +40,8 @@ public class SubmissionController : UimController<ISubmissionService>
         return ResponseResult(result);
     }
 
-    [HttpPut("[controller]/{id}")]
-    public async Task<IActionResult> Update([FromBody] UpdateSubmissionRequest request, string id)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromBody] UpdateUserRequest request, string id)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);

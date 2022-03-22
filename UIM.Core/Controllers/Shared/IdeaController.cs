@@ -1,8 +1,6 @@
-namespace UIM.Core.Controllers;
+namespace UIM.Core.Controllers.Shared;
 
-[JwtAuthorize]
-[Route("api/[controller]-management")]
-public class IdeaController : UimController<IIdeaService>
+public class IdeaController : SharedController<IIdeaService>
 {
     private readonly IJwtService _jwtService;
 
@@ -13,13 +11,17 @@ public class IdeaController : UimController<IIdeaService>
         _jwtService = jwtService;
     }
 
-    [HttpPost]
+    [HttpPost("[controller]")]
     public async Task<IActionResult> Create([FromBody] CreateIdeaRequest request)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var userId = GetUserIdFromToken();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
 
         await _service.CreateAsync(userId, request);
         return ResponseResult();
@@ -28,14 +30,19 @@ public class IdeaController : UimController<IIdeaService>
     [HttpDelete("[controller]/{id}")]
     public async Task<IActionResult> Delete(string id)
     {
-        var userId = GetUserIdFromToken();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
         var entityId = EncryptHelpers.DecodeBase64Url(id);
 
         await _service.RemoveAsync(userId, entityId);
         return ResponseResult();
     }
 
-    [HttpGet("[controller]s")]
+    [HttpGet("[controller]s", Order = 2)]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)
@@ -59,21 +66,15 @@ public class IdeaController : UimController<IIdeaService>
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var userId = GetUserIdFromToken();
-        var entityId = EncryptHelpers.DecodeBase64Url(id);
-
-        await _service.EditAsync(entityId, userId, request);
-        return ResponseResult();
-    }
-
-    private string GetUserIdFromToken()
-    {
         var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)
             throw new HttpException(HttpStatusCode.Unauthorized);
 
-        return userId;
+        var entityId = EncryptHelpers.DecodeBase64Url(id);
+
+        await _service.EditAsync(entityId, userId, request);
+        return ResponseResult();
     }
 }

@@ -1,11 +1,10 @@
-namespace UIM.Core.Controllers;
+namespace UIM.Core.Controllers.Shared;
 
-[JwtAuthorize]
-[Route("api/auth")]
-public class AuthController : UimController<IAuthService>
+public class AuthController : SharedController<IAuthService>
 {
     private readonly IJwtService _jwtService;
     private readonly IUserService _userService;
+
 
     public AuthController(IAuthService authService, IUserService userService, IJwtService jwtService)
         : base(authService)
@@ -14,7 +13,7 @@ public class AuthController : UimController<IAuthService>
         _jwtService = jwtService;
     }
 
-    [HttpGet("info")]
+    [HttpGet("[controller]/info")]
     public async Task<IActionResult> GetMeData()
     {
         var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
@@ -27,7 +26,7 @@ public class AuthController : UimController<IAuthService>
         return ResponseResult(user);
     }
 
-    [HttpPost("update-password")]
+    [HttpPost("[controller]/update-password")]
     public async Task<IActionResult> ChangePassword([FromBody] UpdatePasswordRequest request)
     {
         if (request == null)
@@ -44,7 +43,7 @@ public class AuthController : UimController<IAuthService>
     }
 
     [AllowAnonymous]
-    [HttpPost("login")]
+    [HttpPost("[controller]/login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (request == null)
@@ -55,7 +54,7 @@ public class AuthController : UimController<IAuthService>
     }
 
     [AllowAnonymous]
-    [HttpPost("login-ex")]
+    [HttpPost("[controller]/login-ex")]
     public async Task<IActionResult> LoginExternal([FromBody] ExternalAuthRequest request)
     {
         if (request == null)
@@ -65,14 +64,14 @@ public class AuthController : UimController<IAuthService>
         return ResponseResult(response);
     }
 
-    [HttpPut("token/revoke")]
-    public IActionResult Revoke(string refreshToken)
+    [HttpPut("[controller]/token/revoke/{token}")]
+    public IActionResult Revoke(string token)
     {
-        _service.RevokeRefreshToken(refreshToken);
+        _service.RevokeRefreshToken(token);
         return ResponseResult(SuccessResponseMessages.TokenRevoked);
     }
 
-    [HttpPut("token/rotate")]
+    [HttpPut("[controller]/token/rotate")]
     public async Task<IActionResult> Rotate([FromBody] RotateTokenRequest request)
     {
         if (request == null)

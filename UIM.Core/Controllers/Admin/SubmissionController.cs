@@ -1,13 +1,11 @@
-namespace UIM.Core.Controllers;
+namespace UIM.Core.Controllers.Admin;
 
-[JwtAuthorize(RoleNames.Admin)]
-[Route("api/[controller]-management")]
-public class UserController : UimController<IUserService>
+public class SubmissionController : AdminController<ISubmissionService>
 {
-    public UserController(IUserService service) : base(service) { }
+    public SubmissionController(ISubmissionService service) : base(service) { }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateSubmissionRequest request)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
@@ -16,7 +14,7 @@ public class UserController : UimController<IUserService>
         return ResponseResult();
     }
 
-    [HttpDelete("[controller]/{id}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);
@@ -24,7 +22,7 @@ public class UserController : UimController<IUserService>
         return ResponseResult();
     }
 
-    [HttpGet("[controller]s")]
+    [HttpGet]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)
@@ -34,7 +32,7 @@ public class UserController : UimController<IUserService>
         return ResponseResult(result);
     }
 
-    [HttpGet("[controller]/{id}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);
@@ -42,8 +40,8 @@ public class UserController : UimController<IUserService>
         return ResponseResult(result);
     }
 
-    [HttpPut("[controller]/{id}")]
-    public async Task<IActionResult> Update([FromBody] UpdateUserRequest request, string id)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update([FromBody] UpdateSubmissionRequest request, string id)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
