@@ -18,8 +18,6 @@ public class EmailService : IEmailService
         string senderFullName,
         string senderTitle)
     {
-        if (EnvVars.CoreEnv == "development") return true;
-
         var client = new SendGridClient(SG.ApiKey);
         var message = new SendGridMessage
         {

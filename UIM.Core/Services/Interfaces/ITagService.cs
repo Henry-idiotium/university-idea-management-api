@@ -1,8 +1,11 @@
 namespace UIM.Core.Services.Interfaces;
 
 public interface ITagService
-    : IReadService<TagDetailsResponse>
-    , IModifyService<CreateTagRequest, UpdateTagRequest>
 {
-
+    Task CreateAsync(string name);
+    Task EditAsync(UpdateTagRequest request);
+    IEnumerable<TagDetailsResponse> FindAll();
+    Task<TagDetailsResponse> FindByIdAsync(string entityId);
+    Task<TagDetailsResponse> FindByNameAsync(string name);
+    Task RemoveAsync(string name);
 }
