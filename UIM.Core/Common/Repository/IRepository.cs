@@ -1,4 +1,4 @@
-namespace UIM.Core.Common;
+namespace UIM.Core.Common.Repository;
 
 public interface IRepository<TEntity>
     where TEntity : class, IEntity

@@ -1,4 +1,4 @@
-namespace UIM.Core.Common;
+namespace UIM.Core.Common.UnitOfWork;
 
 public class UnitOfWork : IUnitOfWork, IDisposable
 {

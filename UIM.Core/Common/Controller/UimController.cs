@@ -1,12 +1,8 @@
-namespace UIM.Core.Common;
+namespace UIM.Core.Common.Controller;
 
 [ApiController]
-public abstract class UimController<TService> : ControllerBase
+public abstract class UimController : ControllerBase
 {
-    protected TService _service;
-
-    protected UimController(TService service) => _service = service;
-
     protected IActionResult ResponseResult(
         bool succeeded = true,
         string message = SuccessResponseMessages.RequestSucceeded,

@@ -1,5 +1,4 @@
-
-namespace UIM.Core.Common;
+namespace UIM.Core.Common.UnitOfWork;
 
 public interface IUnitOfWork
 {
