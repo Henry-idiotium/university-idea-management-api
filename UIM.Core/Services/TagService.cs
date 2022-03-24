@@ -9,45 +9,31 @@ public class TagService : Service, ITagService
     {
     }
 
-    public async Task CreateAsync(CreateTagRequest request)
+    public async Task CreateAsync(string name)
     {
-        if (await _unitOfWork.Tags.GetByNameAsync(request.Name) != null)
+        if (await _unitOfWork.Tags.GetByNameAsync(name) != null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var tag = _mapper.Map<Tag>(request);
-
-        var add = await _unitOfWork.Tags.AddAsync(tag);
+        var add = await _unitOfWork.Tags.AddAsync(new Tag(name));
         if (!add.Succeeded)
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    public async Task EditAsync(string entityId, UpdateTagRequest request)
+    public async Task EditAsync(UpdateTagRequest request)
     {
-        var tag = await _unitOfWork.Tags.GetByIdAsync(entityId);
+        var tag = await _unitOfWork.Tags.GetByNameAsync(request.OldName);
         if (tag == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        _mapper.Map(request, tag);
+        tag.Name = request.NewName;
 
         var edit = await _unitOfWork.Tags.UpdateAsync(tag);
         if (!edit.Succeeded)
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    public async Task<SieveResponse> FindAsync(SieveModel model)
-    {
-        if (model?.Page < 0 || model?.PageSize < 1)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
-        var sortedList = _sieveProcessor.Apply(model, _unitOfWork.Tags.Set);
-        if (sortedList == null)
-            throw new HttpException(HttpStatusCode.InternalServerError);
-
-        return new(
-            index: model?.Page,
-            rows: _mapper.Map<List<DepartmentDetailsResponse>>(sortedList),
-            total: await _unitOfWork.Tags.CountAsync());
-    }
+    public IEnumerable<TagDetailsResponse> FindAll()
+        => _mapper.Map<IEnumerable<TagDetailsResponse>>(_unitOfWork.Tags.Set);
 
     public async Task<TagDetailsResponse> FindByIdAsync(string tagId)
     {
@@ -56,9 +42,20 @@ public class TagService : Service, ITagService
         return response;
     }
 
-    public async Task RemoveAsync(string tagId)
+    public async Task<TagDetailsResponse> FindByNameAsync(string name)
     {
-        var delete = await _unitOfWork.Tags.DeleteAsync(tagId);
+        var tag = await _unitOfWork.Tags.GetByNameAsync(name);
+        var response = _mapper.Map<TagDetailsResponse>(tag);
+        return response;
+    }
+
+    public async Task RemoveAsync(string name)
+    {
+        var tag = await _unitOfWork.Tags.GetByNameAsync(name);
+        if (tag == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var delete = await _unitOfWork.Tags.DeleteAsync(tag.Id);
         if (!delete.Succeeded)
             throw new HttpException(HttpStatusCode.BadRequest);
     }

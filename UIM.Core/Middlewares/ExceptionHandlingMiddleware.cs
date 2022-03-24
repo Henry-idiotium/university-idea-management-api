@@ -2,7 +2,7 @@ namespace UIM.Core.Middlewares;
 
 public static class ExceptionHandlingMiddlewareExt
 {
-    public static void UseExceptionHandlingExt(this IApplicationBuilder app) =>
+    public static IApplicationBuilder UseHttpExceptionHandler(this IApplicationBuilder app) =>
         app.UseMiddleware<HttpStatusExceptionHandlerMiddleware>();
 }
 

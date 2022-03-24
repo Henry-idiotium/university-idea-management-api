@@ -364,3 +364,5 @@ FodyWeavers.xsd
 # An ASP.NET build file that specify where and which project to build 
 build.proj
 **/appsettings.*.json
+
+Properties/

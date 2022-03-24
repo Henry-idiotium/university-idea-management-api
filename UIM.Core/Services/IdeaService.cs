@@ -13,22 +13,6 @@ public class IdeaService : Service, IIdeaService
         _userManager = userManager;
     }
 
-    public async Task CreateAsync(CreateIdeaRequest request)
-    {
-        if (await _userManager.FindByIdAsync(request.UserId) == null
-            || await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
-        var idea = _mapper.Map<Idea>(request);
-
-        var add = await _unitOfWork.Ideas.AddAsync(idea);
-        if (!add.Succeeded)
-            throw new HttpException(HttpStatusCode.InternalServerError);
-
-        if (request.Tags != null)
-            await AddTagsAsync(add.Entity!, request.Tags);
-    }
-
     public async Task AddTagsAsync(Idea idea, string[] tags)
     {
         foreach (var tagName in tags)
@@ -43,10 +27,32 @@ public class IdeaService : Service, IIdeaService
         }
     }
 
-    public async Task EditAsync(string ideaId, UpdateIdeaRequest request)
+    public async Task CreateAsync(string userId, CreateIdeaRequest request)
     {
+        if (await _userManager.FindByIdAsync(userId) == null
+            || await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var idea = _mapper.Map<Idea>(request);
+
+        var add = await _unitOfWork.Ideas.AddAsync(idea);
+        if (!add.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
+
+        if (request.Tags != null)
+            await AddTagsAsync(add.Entity!, request.Tags);
+    }
+
+    public async Task EditAsync(string ideaId, string userId, UpdateIdeaRequest request)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
-        if (idea == null)
+
+        if (idea == null || user == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        if (idea.UserId != user.Id
+            || !await _userManager.IsInRoleAsync(user, RoleNames.Admin))
             throw new HttpException(HttpStatusCode.BadRequest);
 
         if (await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
@@ -89,6 +95,7 @@ public class IdeaService : Service, IIdeaService
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         if (idea == null)
             throw new HttpException(HttpStatusCode.BadRequest);
+
         IdeaDetailsResponse mappedIdea;
         if (idea.User == null)
             mappedIdea = _mapper.Map<Idea, IdeaDetailsResponse>(idea);
@@ -101,8 +108,18 @@ public class IdeaService : Service, IIdeaService
         return mappedIdea;
     }
 
-    public async Task RemoveAsync(string ideaId)
+    public async Task RemoveAsync(string userId, string ideaId)
     {
+        var user = await _userManager.FindByIdAsync(userId);
+        var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
+
+        if (idea == null || user == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        if (idea.UserId != user.Id
+            || !await _userManager.IsInRoleAsync(user, RoleNames.Admin))
+            throw new HttpException(HttpStatusCode.BadRequest);
+
         var delete = await _unitOfWork.Ideas.DeleteAsync(ideaId);
         if (!delete.Succeeded)
             throw new HttpException(HttpStatusCode.BadRequest);

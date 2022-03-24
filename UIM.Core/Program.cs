@@ -3,43 +3,42 @@ var Configuration = builder.Configuration;
 
 // Add services to the container.
 {
-    var services = builder.Services;
+    builder.Services
+        .AddDbContextExt(Configuration.GetConnectionString("uimdb"))
+        .AddMapperExt()
+        .AddIdentityExt()
+        .AddAuthenticationExt()
+        .AddDIContainerExt()
 
-    services.AddDbContextExt(Configuration.GetConnectionString("uimdb"));
-    services.AddMapperExt();
-    services.AddIdentityExt();
-    services.AddAuthenticationExt();
-    services.AddDIContainerExt();
+        .Configure<SieveOptions>(Configuration.GetSection("Sieve"))
 
-    services.Configure<SieveOptions>(Configuration.GetSection("Sieve"));
-
-    services.AddCorsExt();
-    services.AddControllersExt();
-    services.AddSwaggerExt();
+        .AddCorsExt()
+        .AddControllersExt()
+        .AddSwaggerExt();
 }
 
 var app = builder.Build();
 var env = app.Environment;
-var serviceProvider = app.Services;
 // Configure the HTTP request pipeline.
 {
     if (env.IsDevelopment())
     {
-        app.UseDeveloperExceptionPage();
-        app.UseSwagger();
-        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "UIM v1"));
+        app.UseDeveloperExceptionPage()
+            .UseSwagger()
+            .UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "UIM v1"));
     }
-    app.UseHttpsRedirection();
-    app.UseRouting();
-    app.UseCors("default");
 
-    app.UseAuthentication();
-    app.UseAuthorization();
-    app.UseExceptionHandlingExt();
-    app.UseJwtExt();
+    app.UseHttpsRedirection()
+        .UseRouting()
+        .UseCors("default")
 
-    app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-    ServiceExtensions.CreateRolesAndPwdUser(
-        serviceProvider.CreateScope(), EnvVars.InitRolesPwrUser).Wait();
+        .UseAuthentication()
+        .UseAuthorization()
+
+        .UseInitRolesPowerUser()
+        .UseHttpExceptionHandler()
+        .UseJwt()
+
+        .UseEndpoints(endpoints => endpoints.MapControllers());
 }
 app.Run();

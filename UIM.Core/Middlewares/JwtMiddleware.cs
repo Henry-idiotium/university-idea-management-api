@@ -2,7 +2,7 @@ namespace UIM.Core.Middlewares;
 
 public static class JwtMiddlewareExt
 {
-    public static void UseJwtExt(this IApplicationBuilder app) =>
+    public static IApplicationBuilder UseJwt(this IApplicationBuilder app) =>
         app.UseMiddleware<JwtMiddleware>();
 }
 

@@ -1,10 +1,8 @@
 namespace UIM.Core.Services.Interfaces;
 
 public interface ISubmissionService
-    : IService<
-        CreateSubmissionRequest,
-        UpdateSubmissionRequest,
-        SubmissionDetailsResponse>
+    : IReadService<SubmissionDetailsResponse>
+    , IModifyService<CreateSubmissionRequest, UpdateSubmissionRequest>
 {
     Task AddIdeaAsync(AddIdeaRequest request);
 }

@@ -52,7 +52,7 @@ public class UserService : Service, IUserService
         }
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(newUser);
-        var sendSucceeded = await _emailService.SendAuthInfoUpdatePasswordAsync(
+        var sendSucceeded = await _emailService.SendAuthInfoEmailAsync(
             receiver: newUser,
             passwordResetToken: token,
             receiverPassword: password,

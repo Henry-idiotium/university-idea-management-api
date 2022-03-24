@@ -80,6 +80,7 @@ public class UimContext : IdentityDbContext<AppUser>
         {
             conf.Property(_ => _.Id).HasMaxLength(450);
             conf.Property(_ => _.Name).IsRequired().HasMaxLength(450);
+            conf.HasIndex(_ => _.Name).IsUnique();
         });
 
         builder.Entity<IdeaTag>(conf =>
@@ -103,6 +104,7 @@ public class UimContext : IdentityDbContext<AppUser>
         {
             conf.Property(_ => _.Id).HasMaxLength(450);
             conf.Property(_ => _.Name).IsRequired();
+            conf.HasIndex(_ => _.Name).IsUnique();
         });
     }
 }
