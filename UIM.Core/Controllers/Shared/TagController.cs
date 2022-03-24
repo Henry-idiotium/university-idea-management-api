@@ -4,6 +4,6 @@ public class TagController : SharedController<ITagService>
 {
     public TagController(ITagService service) : base(service) { }
 
-    [HttpGet("[controller]s")]
+    [HttpGet]
     public IActionResult Read() => ResponseResult(_service.FindAll());
 }

@@ -11,7 +11,7 @@ public class IdeaController : SharedController<IIdeaService>
         _jwtService = jwtService;
     }
 
-    [HttpPost("[controller]")]
+    [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateIdeaRequest request)
     {
         if (request == null)
@@ -27,7 +27,7 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult();
     }
 
-    [HttpDelete("[controller]/{id}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
@@ -42,7 +42,7 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult();
     }
 
-    [HttpGet("[controller]s", Order = 2)]
+    [HttpGet]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)
@@ -52,7 +52,7 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult(result);
     }
 
-    [HttpGet("[controller]/{id}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);
@@ -60,7 +60,7 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult(result);
     }
 
-    [HttpPut("[controller]/{id}")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromBody] UpdateIdeaRequest request, string id)
     {
         if (request == null)

@@ -20,7 +20,7 @@
 			"environmentVariables": {
 				"ASPNETCORE_ENVIRONMENT": "Development",
 				"CLIENT_DOMAIN": "http://localhost:3000",
-				"EMAIL_DOMAIN": "gmail.com",
+				"UPDATE_PWD_PATH": "auth/udpate-password",
 				"VALID_ORIGINS": "https://localhost:7024;http://localhost:5251",
 				"INIT_ROLES_PWRUSER": "false",
 				"PGSQL_DB": "",

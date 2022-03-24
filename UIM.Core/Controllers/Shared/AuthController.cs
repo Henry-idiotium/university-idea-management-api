@@ -13,7 +13,7 @@ public class AuthController : SharedController<IAuthService>
         _jwtService = jwtService;
     }
 
-    [HttpGet("[controller]/info")]
+    [HttpGet("info")]
     public async Task<IActionResult> GetMeData()
     {
         var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
@@ -26,7 +26,7 @@ public class AuthController : SharedController<IAuthService>
         return ResponseResult(user);
     }
 
-    [HttpPost("[controller]/update-password")]
+    [HttpPost("update-password")]
     public async Task<IActionResult> ChangePassword([FromBody] UpdatePasswordRequest request)
     {
         if (request == null)
@@ -43,7 +43,7 @@ public class AuthController : SharedController<IAuthService>
     }
 
     [AllowAnonymous]
-    [HttpPost("[controller]/login")]
+    [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (request == null)
@@ -54,7 +54,7 @@ public class AuthController : SharedController<IAuthService>
     }
 
     [AllowAnonymous]
-    [HttpPost("[controller]/login-ex")]
+    [HttpPost("login-ex")]
     public async Task<IActionResult> LoginExternal([FromBody] ExternalAuthRequest request)
     {
         if (request == null)
@@ -64,14 +64,15 @@ public class AuthController : SharedController<IAuthService>
         return ResponseResult(response);
     }
 
-    [HttpPut("[controller]/token/revoke/{token}")]
+    [HttpPut("token/revoke/{token}")]
     public IActionResult Revoke(string token)
     {
         _service.RevokeRefreshToken(token);
         return ResponseResult(SuccessResponseMessages.TokenRevoked);
     }
 
-    [HttpPut("[controller]/token/rotate")]
+    [AllowAnonymous]
+    [HttpPut("token/rotate")]
     public async Task<IActionResult> Rotate([FromBody] RotateTokenRequest request)
     {
         if (request == null)
