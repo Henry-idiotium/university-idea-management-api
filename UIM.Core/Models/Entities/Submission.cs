@@ -9,4 +9,5 @@ public class Submission : Entity
     public bool IsActive { get; set; }
 
     public virtual ICollection<Idea>? Ideas { get; set; }
+    public virtual ICollection<SubmissionTag>? SubmissionTags { get; set; }
 }
