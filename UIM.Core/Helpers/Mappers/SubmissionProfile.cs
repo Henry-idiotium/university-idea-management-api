@@ -14,8 +14,10 @@ public class SubmissionProfile : Profile
                 dest => dest.Id,
                 opt => opt.MapFrom(src => EncryptHelpers.DecodeBase64Url(src.Id)));
 
-        CreateMap<CreateSubmissionRequest, Submission>();
+        CreateMap<CreateSubmissionRequest, Submission>()
+            .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate());
 
-        CreateMap<UpdateSubmissionRequest, Submission>();
+        CreateMap<UpdateSubmissionRequest, Submission>()
+            .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate());
     }
 }

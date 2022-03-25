@@ -6,5 +6,5 @@ public class Tag : Entity
 
     public string Name { get; set; } = default!;
 
-    public virtual ICollection<IdeaTag>? IdeaTags { get; set; }
+    public virtual ICollection<SubmissionTag>? SubmissionTags { get; set; }
 }

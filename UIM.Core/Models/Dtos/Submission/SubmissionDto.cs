@@ -7,4 +7,5 @@ public abstract class SubmissionDto
     public virtual DateTime InitialDate { get; set; }
     public virtual DateTime FinalDate { get; set; }
     public virtual bool? IsActive { get; set; }
+    public virtual string[] Tags { get; set; } = default!;
 }

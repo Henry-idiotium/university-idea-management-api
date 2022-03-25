@@ -9,10 +9,7 @@ public class IdeaProfile : Profile
                 dest => dest.Id,
                 opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id)));
 
-        CreateMap<UpdateIdeaRequest, Idea>()
-            .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate());
-
-        CreateMap<CreateIdeaRequest, Idea>()
-            .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate());
+        CreateMap<UpdateIdeaRequest, Idea>();
+        CreateMap<CreateIdeaRequest, Idea>();
     }
 }

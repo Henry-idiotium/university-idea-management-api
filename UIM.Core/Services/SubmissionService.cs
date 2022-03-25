@@ -9,6 +9,20 @@ public class SubmissionService : Service, ISubmissionService
     {
     }
 
+    public async Task AddTagsAsync(Submission submission, string[] tags)
+    {
+        foreach (var tagName in tags)
+        {
+            var tag = await _unitOfWork.Tags.GetByNameAsync(tagName);
+            if (tag == null)
+                throw new HttpException(HttpStatusCode.BadRequest);
+
+            var added = await _unitOfWork.Submissions.AddToTagAsync(submission, tag);
+            if (!added)
+                throw new HttpException(HttpStatusCode.InternalServerError);
+        }
+    }
+
     public async Task AddIdeaAsync(AddIdeaRequest request)
     {
         var submission = await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId);
@@ -28,6 +42,9 @@ public class SubmissionService : Service, ISubmissionService
         var add = await _unitOfWork.Submissions.AddAsync(submission);
         if (add.Succeeded)
             throw new HttpException(HttpStatusCode.BadRequest);
+
+        if (request.Tags != null)
+            await AddTagsAsync(add.Entity!, request.Tags);
     }
 
     public async Task EditAsync(string submissionId, UpdateSubmissionRequest request)
@@ -41,6 +58,9 @@ public class SubmissionService : Service, ISubmissionService
         var edit = await _unitOfWork.Submissions.UpdateAsync(oldSubmission);
         if (!edit.Succeeded)
             throw new HttpException(HttpStatusCode.BadRequest);
+
+        if (request.Tags != null)
+            await AddTagsAsync(edit.Entity!, request.Tags);
     }
 
     public async Task<SieveResponse> FindAsync(SieveModel model)
