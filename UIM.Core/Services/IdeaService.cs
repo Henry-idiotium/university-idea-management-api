@@ -13,20 +13,6 @@ public class IdeaService : Service, IIdeaService
         _userManager = userManager;
     }
 
-    public async Task AddTagsAsync(Idea idea, string[] tags)
-    {
-        foreach (var tagName in tags)
-        {
-            var tag = await _unitOfWork.Tags.GetByNameAsync(tagName);
-            if (tag == null)
-                throw new HttpException(HttpStatusCode.BadRequest);
-
-            var added = await _unitOfWork.Ideas.AddToTagAsync(idea, tag);
-            if (!added)
-                throw new HttpException(HttpStatusCode.InternalServerError);
-        }
-    }
-
     public async Task CreateAsync(string userId, CreateIdeaRequest request)
     {
         if (await _userManager.FindByIdAsync(userId) == null
@@ -38,9 +24,6 @@ public class IdeaService : Service, IIdeaService
         var add = await _unitOfWork.Ideas.AddAsync(idea);
         if (!add.Succeeded)
             throw new HttpException(HttpStatusCode.InternalServerError);
-
-        if (request.Tags != null)
-            await AddTagsAsync(add.Entity!, request.Tags);
     }
 
     public async Task EditAsync(string ideaId, string userId, UpdateIdeaRequest request)
@@ -57,9 +40,6 @@ public class IdeaService : Service, IIdeaService
 
         if (await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
             throw new HttpException(HttpStatusCode.BadRequest);
-
-        if (request.Tags != null)
-            await AddTagsAsync(idea, request.Tags);
 
         _mapper.Map(request, idea);
 
