@@ -9,7 +9,7 @@ public class UimContext : IdentityDbContext<AppUser>
     public DbSet<Like> Likes => Set<Like>();
     public DbSet<View> Views => Set<View>();
     public DbSet<Comment> Comments => Set<Comment>();
-    public DbSet<SubmissionTag> SubmissionTags => Set<SubmissionTag>();
+    public DbSet<IdeaTag> IdeaTags => Set<IdeaTag>();
     public DbSet<Submission> Submissions => Set<Submission>();
     public DbSet<Attachment> Attachments => Set<Attachment>();
     public DbSet<Department> Departments => Set<Department>();
@@ -83,12 +83,12 @@ public class UimContext : IdentityDbContext<AppUser>
             conf.HasIndex(_ => _.Name).IsUnique();
         });
 
-        builder.Entity<SubmissionTag>(conf =>
+        builder.Entity<IdeaTag>(conf =>
         {
-            conf.HasKey(_ => new { _.SubmissionId, _.TagId });
-            conf.HasOne(_ => _.Tag).WithMany(_ => _.SubmissionTags)
+            conf.HasKey(_ => new { _.TagId, _.IdeaId });
+            conf.HasOne(_ => _.Tag).WithMany(_ => _.IdeaTags)
                 .OnDelete(DeleteBehavior.Cascade);
-            conf.HasOne(_ => _.Submission).WithMany(_ => _.SubmissionTags)
+            conf.HasOne(_ => _.Idea).WithMany(_ => _.IdeaTags)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

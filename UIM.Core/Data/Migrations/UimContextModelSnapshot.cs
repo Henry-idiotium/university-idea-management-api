@@ -319,6 +319,33 @@ namespace UIM.Core.Data.Migrations
                     b.ToTable("Ideas");
                 });
 
+            modelBuilder.Entity("UIM.Core.Models.Entities.IdeaTag", b =>
+                {
+                    b.Property<string>("TagId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("IdeaId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("TagId", "IdeaId");
+
+                    b.HasIndex("IdeaId");
+
+                    b.ToTable("IdeaTags");
+                });
+
             modelBuilder.Entity("UIM.Core.Models.Entities.Like", b =>
                 {
                     b.Property<string>("UserId")
@@ -387,33 +414,6 @@ namespace UIM.Core.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Submissions");
-                });
-
-            modelBuilder.Entity("UIM.Core.Models.Entities.SubmissionTag", b =>
-                {
-                    b.Property<string>("SubmissionId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("TagId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("SubmissionId", "TagId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("SubmissionTags");
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Tag", b =>
@@ -695,6 +695,25 @@ namespace UIM.Core.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("UIM.Core.Models.Entities.IdeaTag", b =>
+                {
+                    b.HasOne("UIM.Core.Models.Entities.Idea", "Idea")
+                        .WithMany("IdeaTags")
+                        .HasForeignKey("IdeaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UIM.Core.Models.Entities.Tag", "Tag")
+                        .WithMany("IdeaTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Idea");
+
+                    b.Navigation("Tag");
+                });
+
             modelBuilder.Entity("UIM.Core.Models.Entities.Like", b =>
                 {
                     b.HasOne("UIM.Core.Models.Entities.Idea", "Idea")
@@ -712,25 +731,6 @@ namespace UIM.Core.Data.Migrations
                     b.Navigation("Idea");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("UIM.Core.Models.Entities.SubmissionTag", b =>
-                {
-                    b.HasOne("UIM.Core.Models.Entities.Submission", "Submission")
-                        .WithMany("SubmissionTags")
-                        .HasForeignKey("SubmissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("UIM.Core.Models.Entities.Tag", "Tag")
-                        .WithMany("SubmissionTags")
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Submission");
-
-                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.View", b =>
@@ -768,6 +768,8 @@ namespace UIM.Core.Data.Migrations
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Idea", b =>
                 {
+                    b.Navigation("IdeaTags");
+
                     b.Navigation("Likes");
 
                     b.Navigation("Views");
@@ -776,13 +778,11 @@ namespace UIM.Core.Data.Migrations
             modelBuilder.Entity("UIM.Core.Models.Entities.Submission", b =>
                 {
                     b.Navigation("Ideas");
-
-                    b.Navigation("SubmissionTags");
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Tag", b =>
                 {
-                    b.Navigation("SubmissionTags");
+                    b.Navigation("IdeaTags");
                 });
 #pragma warning restore 612, 618
         }

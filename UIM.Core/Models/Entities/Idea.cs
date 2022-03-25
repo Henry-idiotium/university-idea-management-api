@@ -11,6 +11,7 @@ public class Idea : Entity
     public string SubmissionId { get; set; } = default!;
 
     public virtual AppUser? User { get; set; }
+    public virtual ICollection<IdeaTag>? IdeaTags { get; set; }
     public virtual Submission Submission { get; set; } = default!;
     public virtual List<Comment>? Comments { get; set; }
     public virtual List<Attachment>? Attachments { get; set; }
