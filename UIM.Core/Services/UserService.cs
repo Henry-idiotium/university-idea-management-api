@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace UIM.Core.Services;
 
 public class UserService : Service, IUserService
@@ -51,10 +53,8 @@ public class UserService : Service, IUserService
             throw new HttpException(HttpStatusCode.InternalServerError);
         }
 
-        var token = await _userManager.GeneratePasswordResetTokenAsync(newUser);
-        var sendSucceeded = await _emailService.SendAuthInfoEmailAsync(
+        var sendSucceeded = await _emailService.SendWelcomeEmailAsync(
             receiver: newUser,
-            passwordResetToken: token,
             receiverPassword: password,
             senderFullName: "Cecilia McDermott",
             senderTitle: "Senior Integration Executive");
@@ -99,7 +99,7 @@ public class UserService : Service, IUserService
                 opt.AfterMap((src, dest) =>
                 {
                     dest.Department = department?.Name;
-                    dest.Role = role.First();
+                    dest.Role = role?.FirstOrDefault() ?? string.Empty;
                 })));
         }
 

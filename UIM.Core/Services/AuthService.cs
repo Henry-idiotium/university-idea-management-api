@@ -47,19 +47,23 @@ public class AuthService : IAuthService
 
     public async Task UpdatePasswordAsync(string userId, UpdatePasswordRequest request)
     {
-        if (request?.Password != request?.ConfirmPassword)
+        if (request?.NewPassword != request?.ConfirmNewPassword)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var user = await _userManager.FindByIdAsync(userId);
-        var pwdCorrect = await _userManager.CheckPasswordAsync(user, request?.Password);
+        var pwdCorrect = await _userManager.CheckPasswordAsync(user, request?.OldPassword);
         if (!pwdCorrect)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var resetResult = await _userManager.ResetPasswordAsync(user,
-            request?.PasswordResetToken,
-            request?.Password);
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var pwdReset = await _userManager.ResetPasswordAsync(user, token, request?.NewPassword);
 
-        if (!resetResult.Succeeded)
+        if (!pwdReset.Succeeded)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        user.IsDefaultPassword = false;
+        var userUpdated = await _userManager.UpdateAsync(user);
+        if (!userUpdated.Succeeded)
             throw new HttpException(HttpStatusCode.BadRequest);
     }
 

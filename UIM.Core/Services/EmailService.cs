@@ -7,13 +7,12 @@ namespace UIM.Core.Services;
 public class EmailService : IEmailService
 {
     private readonly string _clientDomain = EnvVars.ClientDomain;
-    private readonly string _updatePwdPath = EnvVars.UpdatePwdPath;
+    private readonly string _profilePath = EnvVars.UserProfilePath;
     private readonly ILogger<EmailService> _logger;
 
     public EmailService(ILogger<EmailService> logger) => _logger = logger;
 
-    public async Task<bool> SendAuthInfoEmailAsync(AppUser receiver,
-        string passwordResetToken,
+    public async Task<bool> SendWelcomeEmailAsync(AppUser receiver,
         string receiverPassword,
         string senderFullName,
         string senderTitle)
@@ -32,7 +31,7 @@ public class EmailService : IEmailService
         {
             subject,
             preheader = subject,
-            register_url = $"{_clientDomain}/{_updatePwdPath}/{passwordResetToken}",
+            register_url = $"{_clientDomain}/{_profilePath}",
             receiver = new
             {
                 email = receiver.Email,

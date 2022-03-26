@@ -18,7 +18,11 @@ public static class ServiceExtensions
 
     public static IServiceCollection AddControllersExt(this IServiceCollection services)
     {
-        services.AddControllers().AddNewtonsoftJson(options =>
+        services.AddControllers(options =>
+        {
+            options.ValueProviderFactories.Add(new SnakeCaseQueryValueProviderFactory());
+        })
+        .AddNewtonsoftJson(options =>
         {
             options.SerializerSettings.ContractResolver = new DefaultContractResolver
             {
@@ -155,6 +159,7 @@ public static class ServiceExtensions
     {
         services.AddSwaggerGen(_ =>
         {
+            _.OperationFilter<SnakecasingParameOperationFilter>();
             _.DocumentFilter<LowercaseDocumentFilter>();
             _.SwaggerDoc("v1", new OpenApiInfo { Title = "UIM", Version = "v1" });
             _.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

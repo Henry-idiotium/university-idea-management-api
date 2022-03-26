@@ -4,7 +4,7 @@ public static class EnvVars
 {
 
     public static string ClientDomain => GetEnvVar("CLIENT_DOMAIN");
-    public static string UpdatePwdPath => GetEnvVar("UPDATE_PWD_PATH");
+    public static string UserProfilePath => GetEnvVar("USER_PROFILE_PATH");
     public static string CoreEnv => GetEnvVar("ASPNETCORE_ENVIRONMENT").ToLower();
     public static bool InitRolesPwrUser => bool.Parse(GetEnvVar("INIT_ROLES_PWRUSER"));
     public static string[] ValidOrigins
