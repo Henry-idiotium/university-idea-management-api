@@ -22,7 +22,7 @@ public class AuthService : IAuthService
 
         var user = await _userManager.FindByEmailAsync(payload.Email);
         if (user == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
+            throw new HttpException(HttpStatusCode.Unauthorized);
 
         var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
         await _unitOfWork.Users.AddRefreshTokenAsync(user, refreshToken);
@@ -36,7 +36,7 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(request?.Email);
         var pwdCorrect = await _userManager.CheckPasswordAsync(user, request?.Password);
         if (user == null || !pwdCorrect)
-            throw new HttpException(HttpStatusCode.BadRequest);
+            throw new HttpException(HttpStatusCode.Unauthorized);
 
         var accessToken = await _jwtService.GenerateAccessTokenAsync(user);
         var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
@@ -59,12 +59,12 @@ public class AuthService : IAuthService
         var pwdReset = await _userManager.ResetPasswordAsync(user, token, request?.NewPassword);
 
         if (!pwdReset.Succeeded)
-            throw new HttpException(HttpStatusCode.BadRequest);
+            throw new HttpException(HttpStatusCode.InternalServerError);
 
         user.IsDefaultPassword = false;
         var userUpdated = await _userManager.UpdateAsync(user);
         if (!userUpdated.Succeeded)
-            throw new HttpException(HttpStatusCode.BadRequest);
+            throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
     public async Task RevokeRefreshToken(string token)
