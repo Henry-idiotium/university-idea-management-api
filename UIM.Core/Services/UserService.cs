@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace UIM.Core.Services;
 
 public class UserService : Service, IUserService
@@ -51,10 +53,8 @@ public class UserService : Service, IUserService
             throw new HttpException(HttpStatusCode.InternalServerError);
         }
 
-        var token = await _userManager.GeneratePasswordResetTokenAsync(newUser);
-        var sendSucceeded = await _emailService.SendAuthInfoEmailAsync(
+        var sendSucceeded = await _emailService.SendWelcomeEmailAsync(
             receiver: newUser,
-            passwordResetToken: token,
             receiverPassword: password,
             senderFullName: "Cecilia McDermott",
             senderTitle: "Senior Integration Executive");
@@ -76,8 +76,10 @@ public class UserService : Service, IUserService
         await _userManager.AddToRoleAsync(userToEdit, request.Role);
         await AddToDepartmentAsync(userToEdit, request.Department);
 
-        userToEdit = _mapper.Map<AppUser>(request);
-        await _userManager.UpdateAsync(userToEdit);
+        _mapper.Map(request, userToEdit);
+        var edited = await _userManager.UpdateAsync(userToEdit);
+        if (!edited.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
     public async Task<SieveResponse> FindAsync(SieveModel model)
@@ -99,7 +101,7 @@ public class UserService : Service, IUserService
                 opt.AfterMap((src, dest) =>
                 {
                     dest.Department = department?.Name;
-                    dest.Role = role.First();
+                    dest.Role = role?.FirstOrDefault() ?? string.Empty;
                 })));
         }
 
@@ -140,6 +142,8 @@ public class UserService : Service, IUserService
         if (user == null || userIsAdmin)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        await _userManager.DeleteAsync(user);
+        var deleted = await _userManager.DeleteAsync(user);
+        if (!deleted.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
     }
 }

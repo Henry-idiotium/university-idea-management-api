@@ -5,6 +5,7 @@ public abstract class IdeaDto
     [Required] public virtual string Title { get; set; } = default!;
     [Required] public virtual string Content { get; set; } = default!;
     [Required] public virtual string SubmissionId { get; set; } = default!;
+    public virtual string[] AttachmentUrls { get; set; } = default!;
     public virtual string Description { get; set; } = default!;
     public virtual bool IsAnonymous { get; set; }
     public virtual string[] Tags { get; set; } = default!;
