@@ -12,7 +12,8 @@ public class UserProfile : Profile
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
             .ForMember(dest => dest.Likes, opt => opt.Ignore())
             .ForMember(dest => dest.Views, opt => opt.Ignore())
-            .ForMember(dest => dest.Department, opt => opt.Ignore());
+            .ForMember(dest => dest.Department, opt => opt.Ignore())
+            .ForSourceMember(src => src.Department, opt => opt.DoNotValidate());
 
         CreateMap<UpdateUserRequest, AppUser>()
             .ForMember(dest => dest.Likes, opt => opt.Ignore())

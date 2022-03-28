@@ -76,8 +76,10 @@ public class UserService : Service, IUserService
         await _userManager.AddToRoleAsync(userToEdit, request.Role);
         await AddToDepartmentAsync(userToEdit, request.Department);
 
-        userToEdit = _mapper.Map<AppUser>(request);
-        await _userManager.UpdateAsync(userToEdit);
+        _mapper.Map(request, userToEdit);
+        var edited = await _userManager.UpdateAsync(userToEdit);
+        if (!edited.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
     public async Task<SieveResponse> FindAsync(SieveModel model)
@@ -140,6 +142,8 @@ public class UserService : Service, IUserService
         if (user == null || userIsAdmin)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        await _userManager.DeleteAsync(user);
+        var deleted = await _userManager.DeleteAsync(user);
+        if (!deleted.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
     }
 }
