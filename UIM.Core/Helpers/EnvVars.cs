@@ -4,6 +4,7 @@ public static class EnvVars
 {
 
     public static string ClientDomain => GetEnvVar("CLIENT_DOMAIN");
+    public static bool UseEmailService => bool.Parse(GetEnvVar("USE_EMAIL_SERVICE"));
     public static string UserProfilePath => GetEnvVar("USER_PROFILE_PATH");
     public static string CoreEnv => GetEnvVar("ASPNETCORE_ENVIRONMENT").ToLower();
     public static bool InitRolesPwrUser => bool.Parse(GetEnvVar("INIT_ROLES_PWRUSER"));
