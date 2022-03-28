@@ -19,6 +19,7 @@ var Configuration = builder.Configuration;
 
 var app = builder.Build();
 var env = app.Environment;
+var serviceProvider = app.Services;
 // Configure the HTTP request pipeline.
 {
     if (env.IsDevelopment())
@@ -35,10 +36,11 @@ var env = app.Environment;
         .UseAuthentication()
         .UseAuthorization()
 
-        .UseInitRolesPowerUser()
         .UseHttpExceptionHandler()
         .UseJwt()
 
         .UseEndpoints(endpoints => endpoints.MapControllers());
+
+    builder.Services.InitRolesPowerUser(serviceProvider.CreateScope()).Wait();
 }
 app.Run();
