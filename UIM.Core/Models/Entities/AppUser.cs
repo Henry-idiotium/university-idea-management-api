@@ -4,13 +4,14 @@ public class AppUser : IdentityUser
 {
     public string FullName { get; set; } = default!;
     public string? DepartmentId { get; set; }
+    public Gender? Gender { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public bool IsDefaultPassword { get; set; } = true;
 
     private DateTime? createdDate;
     public DateTime CreatedDate
     {
-        get => createdDate ?? DateTime.UtcNow;
+        get => createdDate ?? DateTime.Now;
         set => createdDate = value;
     }
 

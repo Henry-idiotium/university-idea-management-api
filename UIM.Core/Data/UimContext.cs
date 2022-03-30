@@ -26,6 +26,13 @@ public class UimContext : IdentityDbContext<AppUser>
             conf.HasOne(_ => _.Department).WithMany(_ => _.Users)
                 .OnDelete(DeleteBehavior.SetNull);
 
+#nullable disable
+            conf.Property(_ => _.Gender)
+                .HasMaxLength(10)
+                .HasConversion(v => v.ToString(),
+                    v => (Gender?)Enum.Parse(typeof(Gender?), v));
+#nullable enable
+
             conf.OwnsMany(_ => _.RefreshTokens, b =>
             {
                 b.Property(_ => _.Id).HasMaxLength(450);
