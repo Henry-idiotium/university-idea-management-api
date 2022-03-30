@@ -2,10 +2,11 @@ namespace UIM.Core.Services.Interfaces;
 
 public interface ITagService
 {
-    Task CreateAsync(string name);
+    Task CreateAsync(CreateTagRequest request);
     Task EditAsync(UpdateTagRequest request);
     IEnumerable<TagDetailsResponse> FindAll();
+    Task<SieveResponse> FindAsync(SieveModel model);
     Task<TagDetailsResponse> FindByIdAsync(string entityId);
     Task<TagDetailsResponse> FindByNameAsync(string name);
-    Task RemoveAsync(string name);
+    Task RemoveAsync(string entityId);
 }

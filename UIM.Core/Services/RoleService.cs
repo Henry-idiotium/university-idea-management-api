@@ -14,8 +14,11 @@ public class RoleService : Service, IRoleService
         _roleManager = roleManager;
     }
 
-    public IEnumerable<RoleDetailsResponse> FindAll() =>
-        _mapper.Map<List<RoleDetailsResponse>>(_roleManager.Roles);
+    public IEnumerable<RoleDetailsResponse> FindAll()
+    {
+        return _mapper.Map<List<RoleDetailsResponse>>(
+            _roleManager.Roles.Where(_ => _.Name != EnvVars.System.Role.PwrUser));
+    }
 
     public async Task<RoleDetailsResponse> FindByIdAsync(string id)
     {

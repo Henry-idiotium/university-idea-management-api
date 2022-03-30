@@ -27,9 +27,9 @@ public class IdeaService : Service, IIdeaService
         }
     }
 
-    public async Task CreateAsync(string userId, CreateIdeaRequest request)
+    public async Task CreateAsync(CreateIdeaRequest request)
     {
-        if (await _userManager.FindByIdAsync(userId) == null
+        if (await _userManager.FindByIdAsync(request.UserId) == null
             || await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
@@ -43,10 +43,10 @@ public class IdeaService : Service, IIdeaService
             await AddTagsAsync(add.Entity!, request.Tags);
     }
 
-    public async Task EditAsync(string ideaId, string userId, UpdateIdeaRequest request)
+    public async Task EditAsync(UpdateIdeaRequest request)
     {
-        var user = await _userManager.FindByIdAsync(userId);
-        var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        var idea = await _unitOfWork.Ideas.GetByIdAsync(request.Id);
 
         if (idea == null || user == null)
             throw new HttpException(HttpStatusCode.BadRequest);

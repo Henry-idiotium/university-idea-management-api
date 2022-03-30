@@ -45,12 +45,15 @@ public class AuthService : IAuthService
         return new(accessToken, refreshToken.Token);
     }
 
-    public async Task UpdatePasswordAsync(string userId, UpdatePasswordRequest request)
+    public async Task UpdatePasswordAsync(UpdatePasswordRequest request)
     {
-        if (request?.NewPassword != request?.ConfirmNewPassword)
+        if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var user = await _userManager.FindByIdAsync(userId);
+        if (request.NewPassword != request.ConfirmNewPassword)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var user = await _userManager.FindByIdAsync(request.Id);
         var pwdCorrect = await _userManager.CheckPasswordAsync(user, request?.OldPassword);
         if (!pwdCorrect)
             throw new HttpException(HttpStatusCode.BadRequest);

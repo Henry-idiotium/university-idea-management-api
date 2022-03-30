@@ -30,7 +30,7 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> RemoveOutdatedRefreshTokensAsync(AppUser user)
     {
-        user.RefreshTokens.RemoveAll(t => !t.IsActive && t.ExpiredDate <= DateTime.UtcNow);
+        user.RefreshTokens.RemoveAll(t => !t.IsActive || t.ExpiredDate <= DateTime.Now);
         var removed = await _context.SaveChangesAsync();
         return removed > 0;
     }
@@ -72,7 +72,7 @@ public class UserRepository : IUserRepository
     private static void RevokeToken(RefreshToken token, string? reason = null,
         string? replacedByToken = null)
     {
-        token.RevokedDate = DateTime.UtcNow;
+        token.RevokedDate = DateTime.Now;
         token.ReasonRevoked = reason;
         token.ReplacedByToken = replacedByToken;
     }

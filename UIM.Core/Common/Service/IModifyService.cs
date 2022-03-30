@@ -5,6 +5,6 @@ public interface IModifyService<TCreate, TUpdate>
     where TUpdate : IUpdateRequest
 {
     Task CreateAsync(TCreate request);
-    Task EditAsync(string entityId, TUpdate request);
+    Task EditAsync(TUpdate request);
     Task RemoveAsync(string entityId);
 }

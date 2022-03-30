@@ -150,7 +150,9 @@ public static class ServiceExtensions
         services.AddAutoMapper(
             typeof(UserProfile),
             typeof(IdeaProfile),
-            typeof(SimpleEntitiesProfile),
+            typeof(RoleProfile),
+            typeof(TagProfile),
+            typeof(DepartmentProfile),
             typeof(SubmissionProfile)
         );
         return services;
@@ -194,7 +196,7 @@ public static class ServiceExtensions
         return services;
     }
 
-    public static async Task InitRolesPowerUser(this IServiceCollection services, IServiceScope scope)
+    public static async Task InitRolesPowerUser(this IServiceCollection _, IServiceScope scope)
     {
         if (EnvVars.InitRolesPwrUser)
         {
@@ -222,10 +224,45 @@ public static class ServiceExtensions
                 var mgr = new AppUser
                 {
                     EmailConfirmed = true,
+                    FullName = "Bettie Snyder",
+                    Email = "quocdat.438317@gmail.com",
+                    UserName = "best_staff_ever_7861",
+                    CreatedDate = DateTime.Now,
+                    IsDefaultPassword = false
+                };
+                var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
+                if (existingMgr == null)
+                {
+                    var createUser = await userManager.CreateAsync(mgr, randoPwd);
+                    if (createUser.Succeeded) await userManager.AddToRoleAsync(mgr, Init.Role.Staff);
+                }
+            }
+            {
+                var mgr = new AppUser
+                {
+                    EmailConfirmed = true,
+                    FullName = "Samuel Wolfe",
+                    Email = "henry.test.dev.381872@gmail.com",
+                    UserName = "best_manager_ever_a89y2412",
+                    CreatedDate = DateTime.Now,
+                    IsDefaultPassword = false
+                };
+                var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
+                if (existingMgr == null)
+                {
+                    var createUser = await userManager.CreateAsync(mgr, randoPwd);
+                    if (createUser.Succeeded) await userManager.AddToRoleAsync(mgr, Init.Role.Manager);
+                }
+            }
+            {
+                var mgr = new AppUser
+                {
+                    EmailConfirmed = true,
                     FullName = "Spencer Yost",
                     Email = "manager@gmail.com",
                     UserName = "best_manager_ever_7861",
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
+                    IsDefaultPassword = false
                 };
                 var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
                 if (existingMgr == null)
@@ -241,7 +278,8 @@ public static class ServiceExtensions
                     FullName = "Jeff Wells",
                     Email = "bojejje@majpithu.st",
                     UserName = "aspernatur",
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
+                    IsDefaultPassword = false
                 };
                 var existingSupv = await userManager.FindByEmailAsync(supv.Email);
                 if (existingSupv == null)
@@ -257,7 +295,8 @@ public static class ServiceExtensions
                     FullName = "Madge Valdez",
                     Email = "aptu@mitep.pt",
                     UserName = "unde",
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
+                    IsDefaultPassword = false
                 };
                 var existingStaff = await userManager.FindByEmailAsync(staff.Email);
                 if (existingStaff == null)
@@ -278,7 +317,8 @@ public static class ServiceExtensions
                     FullName = "Henry David",
                     Email = Init.PwrUserAuth.Email,
                     UserName = Init.PwrUserAuth.UserName,
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = DateTime.Now,
+                    IsDefaultPassword = false
                 };
 
                 var createPowerUser = await userManager.CreateAsync(pwrUser, Init.PwrUserAuth.Password);

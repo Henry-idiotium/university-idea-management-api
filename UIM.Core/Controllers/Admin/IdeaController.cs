@@ -1,5 +1,6 @@
 namespace UIM.Core.Controllers.Admin;
 
+[Route("api/[controller]-management")]
 public class IdeaController : AdminController<IIdeaService>
 {
     private readonly IJwtService _jwtService;
@@ -23,7 +24,9 @@ public class IdeaController : AdminController<IIdeaService>
         if (userId == null)
             throw new HttpException(HttpStatusCode.Unauthorized);
 
-        await _service.CreateAsync(userId, request);
+        request.UserId = userId;
+
+        await _service.CreateAsync(request);
         return ResponseResult();
     }
 
@@ -74,7 +77,10 @@ public class IdeaController : AdminController<IIdeaService>
 
         var entityId = EncryptHelpers.DecodeBase64Url(id);
 
-        await _service.EditAsync(entityId, userId, request);
+        request.Id = entityId;
+        request.UserId = userId;
+
+        await _service.EditAsync(request);
         return ResponseResult();
     }
 }

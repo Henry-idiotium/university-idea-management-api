@@ -14,6 +14,6 @@ public class CoreResponse
 
     public bool Succeeded { get; }
     public string Message { get; }
-    public DateTime TimeStamp { get; } = DateTime.UtcNow;
+    public DateTime TimeStamp { get; } = DateTime.Now;
     public object? Result { get; }
 }

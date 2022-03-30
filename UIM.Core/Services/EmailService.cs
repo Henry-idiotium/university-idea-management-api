@@ -33,7 +33,7 @@ public class EmailService : IEmailService
         {
             subject,
             preheader = subject,
-            register_url = $"{_clientDomain}/{_profilePath}",
+            register_url = _clientDomain,
             receiver = new
             {
                 email = receiver.Email,

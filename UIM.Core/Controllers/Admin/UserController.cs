@@ -1,5 +1,6 @@
 namespace UIM.Core.Controllers;
 
+[Route("api/[controller]-management")]
 public class UserController : AdminController<IUserService>
 {
     public UserController(IUserService service) : base(service) { }
@@ -48,7 +49,9 @@ public class UserController : AdminController<IUserService>
 
         var entityId = EncryptHelpers.DecodeBase64Url(id);
 
-        await _service.EditAsync(entityId, request);
+        request.Id = entityId;
+
+        await _service.EditAsync(request);
         return ResponseResult();
     }
 }

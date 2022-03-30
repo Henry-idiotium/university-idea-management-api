@@ -8,12 +8,12 @@ public abstract class BaseEntity : IBaseEntity
     [DataType(DataType.DateTime)]
     public DateTime CreatedDate
     {
-        get => createdDate ?? DateTime.UtcNow;
+        get => createdDate ?? DateTime.Now;
         set => createdDate = value;
     }
 
     [DataType(DataType.DateTime)]
-    public DateTime ModifiedDate { get; set; } = DateTime.UtcNow;
+    public DateTime ModifiedDate { get; set; } = DateTime.Now;
     public string? CreatedBy { get; set; }
     public string? ModifiedBy { get; set; }
 }

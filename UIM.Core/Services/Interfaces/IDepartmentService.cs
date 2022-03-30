@@ -2,10 +2,11 @@ namespace UIM.Core.Services.Interfaces;
 
 public interface IDepartmentService
 {
-    Task CreateAsync(string name);
+    Task CreateAsync(CreateDepartmentRequest request);
     Task EditAsync(UpdateDepartmentRequest request);
-    IEnumerable<DepartmentDetailsResponse> FindAll();
+    IEnumerable<SimpleDepartmentResponse> FindAll();
+    Task<SieveResponse> FindAsync(SieveModel model);
     Task<DepartmentDetailsResponse> FindByIdAsync(string entityId);
     Task<DepartmentDetailsResponse> FindByNameAsync(string name);
-    Task RemoveAsync(string name);
+    Task RemoveAsync(string entityId);
 }

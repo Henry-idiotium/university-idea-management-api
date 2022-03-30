@@ -5,4 +5,5 @@ public interface IUserService
     , IModifyService<CreateUserRequest, UpdateUserRequest>
 {
     Task AddToDepartmentAsync(AppUser user, string? department);
+    Task<UserDetailsResponse> FindByEmailAsync(string email);
 }

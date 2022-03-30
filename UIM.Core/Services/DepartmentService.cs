@@ -2,37 +2,56 @@ namespace UIM.Core.Services;
 
 public class DepartmentService : Service, IDepartmentService
 {
-    public DepartmentService(IMapper mapper,
+    public DepartmentService(
+        IMapper mapper,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork)
         : base(mapper, sieveProcessor, unitOfWork)
     {
     }
 
-    public async Task CreateAsync(string name)
+    public async Task CreateAsync(CreateDepartmentRequest request)
     {
-        if (await _unitOfWork.Departments.GetByNameAsync(name) != null)
+        if (await _unitOfWork.Departments.GetByNameAsync(request.Name) != null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var add = await _unitOfWork.Departments.AddAsync(new Department(name));
+        var dep = _mapper.Map<Department>(request);
+
+        var add = await _unitOfWork.Departments.AddAsync(dep);
         if (!add.Succeeded)
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
     public async Task EditAsync(UpdateDepartmentRequest request)
     {
-        var department = await _unitOfWork.Departments.GetByNameAsync(request.OldName);
+        var department = await _unitOfWork.Departments.GetByIdAsync(request.Id);
         if (department == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        department.Name = request.NewName;
+        _mapper.Map(request, department);
 
         var edit = await _unitOfWork.Departments.UpdateAsync(department);
         if (!edit.Succeeded)
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
-    public IEnumerable<DepartmentDetailsResponse> FindAll()
-        => _mapper.Map<IEnumerable<DepartmentDetailsResponse>>(_unitOfWork.Departments.Set);
+
+    public IEnumerable<SimpleDepartmentResponse> FindAll()
+        => _mapper.Map<IEnumerable<SimpleDepartmentResponse>>(_unitOfWork.Departments.Set);
+
+    public async Task<SieveResponse> FindAsync(SieveModel model)
+    {
+        if (model?.Page < 0 || model?.PageSize < 1)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var sorted = _sieveProcessor.Apply(model, _unitOfWork.Departments.Set);
+        if (sorted == null)
+            throw new HttpException(HttpStatusCode.InternalServerError);
+
+        var mappedDep = _mapper.Map<IEnumerable<DepartmentDetailsResponse>>(sorted);
+        return new(rows: mappedDep,
+            index: model?.Page ?? 1,
+            total: await _unitOfWork.Departments.CountAsync());
+    }
 
     public async Task<DepartmentDetailsResponse> FindByIdAsync(string id)
     {

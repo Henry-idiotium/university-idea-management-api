@@ -2,11 +2,15 @@ namespace UIM.Core.Services;
 
 public class SubmissionService : Service, ISubmissionService
 {
+    private readonly UserManager<AppUser> _userManager;
+
     public SubmissionService(IMapper mapper,
         SieveProcessor sieveProcessor,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        UserManager<AppUser> userManager)
         : base(mapper, sieveProcessor, unitOfWork)
     {
+        _userManager = userManager;
     }
 
     public async Task AddIdeaAsync(AddIdeaRequest request)
@@ -24,21 +28,39 @@ public class SubmissionService : Service, ISubmissionService
 
     public async Task CreateAsync(CreateSubmissionRequest request)
     {
-        var submission = _mapper.Map<Submission>(request);
-        var add = await _unitOfWork.Submissions.AddAsync(submission);
-        if (add.Succeeded)
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        if (user == null)
             throw new HttpException(HttpStatusCode.BadRequest);
+
+        // TODO: Too redundant, please return to good old mapping after test
+        var submission = _mapper.Map<Submission>(request, opts =>
+            opts.AfterMap((src, dest) =>
+            {
+                dest.CreatedBy = user.Email;
+                dest.ModifiedBy = user.Email;
+            }));
+
+        var add = await _unitOfWork.Submissions.AddAsync(submission);
+        if (!add.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    public async Task EditAsync(string submissionId, UpdateSubmissionRequest request)
+    public async Task EditAsync(UpdateSubmissionRequest request)
     {
-        var oldSubmission = await _unitOfWork.Submissions.GetByIdAsync(submissionId);
-        if (oldSubmission == null)
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        var subToEdit = await _unitOfWork.Submissions.GetByIdAsync(request.Id);
+        if (user == null || subToEdit == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        _mapper.Map(request, oldSubmission);
+        // TODO: u seeing this
+        _mapper.Map(request, subToEdit, opts =>
+            opts.AfterMap((src, dest) =>
+            {
+                dest.ModifiedBy = user.Email;
+                dest.ModifiedDate = DateTime.Now;
+            }));
 
-        var edit = await _unitOfWork.Submissions.UpdateAsync(oldSubmission);
+        var edit = await _unitOfWork.Submissions.UpdateAsync(subToEdit);
         if (!edit.Succeeded)
             throw new HttpException(HttpStatusCode.BadRequest);
     }
@@ -67,10 +89,6 @@ public class SubmissionService : Service, ISubmissionService
 
     public async Task RemoveAsync(string submissionId)
     {
-        var subExists = await _unitOfWork.Submissions.GetByIdAsync(submissionId);
-        if (subExists == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
         var delete = await _unitOfWork.Submissions.DeleteAsync(submissionId);
         if (!delete.Succeeded)
             throw new HttpException(HttpStatusCode.BadRequest);

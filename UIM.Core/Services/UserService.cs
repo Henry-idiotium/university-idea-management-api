@@ -37,7 +37,8 @@ public class UserService : Service, IUserService
     public async Task CreateAsync(CreateUserRequest request)
     {
         var userExist = await _userManager.FindByEmailAsync(request.Email);
-        if (userExist != null)
+        if (userExist != null
+            || request.Role == EnvVars.System.Role.PwrUser)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var newUser = _mapper.Map<AppUser>(request);
@@ -60,14 +61,20 @@ public class UserService : Service, IUserService
             senderTitle: "Senior Integration Executive");
 
         if (!sendSucceeded)
-            throw new HttpException(HttpStatusCode.InternalServerError,
-                                    ErrorResponseMessages.SentEmailFailed);
+        {
+            await _userManager.DeleteAsync(newUser);
+            throw new HttpException(HttpStatusCode.InternalServerError);
+        }
     }
 
-    public async Task EditAsync(string id, UpdateUserRequest request)
+    public async Task EditAsync(UpdateUserRequest request)
     {
-        var userToEdit = await _userManager.FindByIdAsync(id);
-        if (userToEdit == null)
+        var userToEdit = await _userManager.FindByIdAsync(request.Id);
+        var userIsAdmin =
+            userToEdit.Email == EnvVars.System.PwrUserAuth.Email
+            || userToEdit.UserName == EnvVars.System.PwrUserAuth.UserName;
+
+        if (userIsAdmin || userToEdit == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var oldRoles = await _userManager.GetRolesAsync(userToEdit);
@@ -110,6 +117,27 @@ public class UserService : Service, IUserService
             total: await _userManager.Users.CountAsync());
     }
 
+    public async Task<UserDetailsResponse> FindByEmailAsync(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var department = user.DepartmentId == null ? null
+            : await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
+
+        var role = await _userManager.GetRolesAsync(user);
+
+        var mappedUser = _mapper.Map<UserDetailsResponse>(user, opt =>
+            opt.AfterMap((src, dest) =>
+            {
+                dest.Department = department?.Name;
+                dest.Role = role.First();
+            }));
+
+        return mappedUser;
+    }
+
     public async Task<UserDetailsResponse> FindByIdAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
@@ -139,7 +167,7 @@ public class UserService : Service, IUserService
             user.Email == EnvVars.System.PwrUserAuth.Email
             || user.UserName == EnvVars.System.PwrUserAuth.UserName;
 
-        if (user == null || userIsAdmin)
+        if (userIsAdmin || user == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var deleted = await _userManager.DeleteAsync(user);

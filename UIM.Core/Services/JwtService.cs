@@ -15,7 +15,7 @@ public class JwtService : IJwtService
     {
         if (claims == null) throw new ArgumentNullException(null);
 
-        var expireAt = DateTime.UtcNow.AddDays(EnvVars.Jwt.AccessExpiredDate);
+        var expireAt = DateTime.Now.AddDays(EnvVars.Jwt.AccessExpiredDate);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Issuer = EnvVars.Jwt.Issuer,
@@ -47,7 +47,7 @@ public class JwtService : IJwtService
                 new Claim(UimClaimTypes.Role, roles.First())
             };
 
-        var expireAt = DateTime.UtcNow.AddDays(EnvVars.Jwt.AccessExpiredDate!);
+        var expireAt = DateTime.Now.AddDays(EnvVars.Jwt.AccessExpiredDate!);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Issuer = EnvVars.Jwt.Issuer,
@@ -76,7 +76,7 @@ public class JwtService : IJwtService
         var refreshToken = new RefreshToken
         {
             Token = Convert.ToBase64String(randomBytes),
-            ExpiredDate = DateTime.UtcNow.AddDays(EnvVars.Jwt.RefreshExpiredDate!),
+            ExpiredDate = DateTime.Now.AddDays(EnvVars.Jwt.RefreshExpiredDate!),
             UserId = userId
         };
         return refreshToken;

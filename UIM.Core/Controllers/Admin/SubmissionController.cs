@@ -1,14 +1,28 @@
 namespace UIM.Core.Controllers.Admin;
 
+[Route("api/[controller]-management")]
 public class SubmissionController : AdminController<ISubmissionService>
 {
-    public SubmissionController(ISubmissionService service) : base(service) { }
+    private readonly IJwtService _jwtService;
+
+    public SubmissionController(ISubmissionService service, IJwtService jwtService) : base(service)
+    {
+        _jwtService = jwtService;
+    }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateSubmissionRequest request)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
+
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        request.UserId = userId;
 
         await _service.CreateAsync(request);
         return ResponseResult();
@@ -46,9 +60,16 @@ public class SubmissionController : AdminController<ISubmissionService>
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var entityId = EncryptHelpers.DecodeBase64Url(id);
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
-        await _service.EditAsync(entityId, request);
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        request.Id = EncryptHelpers.DecodeBase64Url(id);
+        request.UserId = userId;
+
+        await _service.EditAsync(request);
         return ResponseResult();
     }
 }

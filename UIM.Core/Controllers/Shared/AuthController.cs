@@ -5,7 +5,6 @@ public class AuthController : SharedController<IAuthService>
     private readonly IJwtService _jwtService;
     private readonly IUserService _userService;
 
-
     public AuthController(IAuthService authService, IUserService userService, IJwtService jwtService)
         : base(authService)
     {
@@ -38,7 +37,9 @@ public class AuthController : SharedController<IAuthService>
         if (userId == null)
             throw new HttpException(HttpStatusCode.Unauthorized);
 
-        await _service.UpdatePasswordAsync(userId, request);
+        request.Id = userId;
+
+        await _service.UpdatePasswordAsync(request);
         return ResponseResult();
     }
 

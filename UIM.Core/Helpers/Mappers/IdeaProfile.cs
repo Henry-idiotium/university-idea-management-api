@@ -10,9 +10,13 @@ public class IdeaProfile : Profile
                 opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id)));
 
         CreateMap<UpdateIdeaRequest, Idea>()
-            .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate());
+            .ForSourceMember(src => src.Id, opt => opt.DoNotValidate())
+            .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate())
+            .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.Now))
+            .ForMember(dest => dest.ModifiedDate, opt => opt.MapFrom(src => DateTime.Now));
 
         CreateMap<CreateIdeaRequest, Idea>()
-            .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate());
+            .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate())
+            .ForMember(dest => dest.ModifiedDate, opt => opt.MapFrom(src => DateTime.Now));
     }
 }
