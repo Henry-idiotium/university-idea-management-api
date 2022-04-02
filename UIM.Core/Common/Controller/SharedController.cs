@@ -1,7 +1,7 @@
 namespace UIM.Core.Common.Controller;
 
 [JwtAuthorize]
-[Route("api/[controller]")]
+[Route("")]
 public abstract class SharedController<TService> : UimController
 {
     protected TService _service;

@@ -5,7 +5,8 @@ public class CoreResponse
     public CoreResponse(
         bool succeeded = true,
         string message = SuccessResponseMessages.RequestSucceeded,
-        object? result = null)
+        object? result = null
+    )
     {
         Result = result;
         Message = message;

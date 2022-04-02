@@ -5,10 +5,9 @@ public class DepartmentService : Service, IDepartmentService
     public DepartmentService(
         IMapper mapper,
         SieveProcessor sieveProcessor,
-        IUnitOfWork unitOfWork)
-        : base(mapper, sieveProcessor, unitOfWork)
-    {
-    }
+        IUnitOfWork unitOfWork,
+        UserManager<AppUser> userManager
+    ) : base(mapper, sieveProcessor, unitOfWork, userManager) { }
 
     public async Task CreateAsync(CreateDepartmentRequest request)
     {
@@ -35,12 +34,12 @@ public class DepartmentService : Service, IDepartmentService
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    public IEnumerable<SimpleDepartmentResponse> FindAll()
-        => _mapper.Map<IEnumerable<SimpleDepartmentResponse>>(_unitOfWork.Departments.Set);
+    public IEnumerable<SimpleDepartmentResponse> FindAll() =>
+        _mapper.Map<IEnumerable<SimpleDepartmentResponse>>(_unitOfWork.Departments.Set);
 
     public async Task<SieveResponse> FindAsync(SieveModel model)
     {
-        if (model?.Page < 0 || model?.PageSize < 1)
+        if (model.Page < 0 || model.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var sorted = _sieveProcessor.Apply(model, _unitOfWork.Departments.Set);
@@ -48,9 +47,11 @@ public class DepartmentService : Service, IDepartmentService
             throw new HttpException(HttpStatusCode.InternalServerError);
 
         var mappedDep = _mapper.Map<IEnumerable<DepartmentDetailsResponse>>(sorted);
-        return new(rows: mappedDep,
+        return new(
+            rows: mappedDep,
             index: model?.Page ?? 1,
-            total: await _unitOfWork.Departments.CountAsync());
+            total: await _unitOfWork.Departments.CountAsync()
+        );
     }
 
     public async Task<DepartmentDetailsResponse> FindByIdAsync(string id)
@@ -67,9 +68,9 @@ public class DepartmentService : Service, IDepartmentService
         return response;
     }
 
-    public async Task RemoveAsync(string departmentId)
+    public async Task RemoveAsync(string id)
     {
-        var delete = await _unitOfWork.Departments.DeleteAsync(departmentId);
+        var delete = await _unitOfWork.Departments.DeleteAsync(id);
         if (!delete.Succeeded)
             throw new HttpException(HttpStatusCode.BadRequest);
     }

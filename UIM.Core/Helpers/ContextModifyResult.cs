@@ -1,22 +1,15 @@
 namespace UIM.Core.Helpers;
 
-public class ContextModifyResult<TEntity>
-    where TEntity : class, IEntity
+public class ContextModifyResult<TEntity> where TEntity : class, IEntity
 {
-    public ContextModifyResult(TEntity? entity = null, bool succeeded = true, string? error = null)
+    public ContextModifyResult(TEntity? entity = null, bool succeeded = true)
     {
-        Error = error;
         Entity = entity;
         Succeeded = succeeded;
     }
 
-    public ContextModifyResult(string error)
-    {
-        Error = error;
-        Succeeded = false;
-    }
+    public ContextModifyResult(bool succeeded = true) => Succeeded = succeeded;
 
-    public TEntity? Entity { get; }
-    public string? Error { get; }
-    public bool Succeeded { get; }
+    public TEntity? Entity { get; private set; }
+    public bool Succeeded { get; private set; }
 }

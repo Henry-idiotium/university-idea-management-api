@@ -1,5 +1,6 @@
 namespace UIM.Core.Controllers.Shared;
 
+[Route("api/[controller]")]
 public class UserController : SharedController<IUserService>
 {
     public UserController(IUserService service) : base(service) { }

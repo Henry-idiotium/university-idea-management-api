@@ -1,7 +1,6 @@
 namespace UIM.Core.Common.Repository;
 
-public interface IRepository<TEntity>
-    where TEntity : class, IEntity
+public interface IRepository<TEntity> where TEntity : class, IEntity
 {
     DbSet<TEntity> Set { get; }
     Task<ContextModifyResult<TEntity>> AddAsync(TEntity entity);

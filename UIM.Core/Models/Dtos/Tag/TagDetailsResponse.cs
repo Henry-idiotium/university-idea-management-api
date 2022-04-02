@@ -1,6 +1,6 @@
 namespace UIM.Core.Models.Dtos.Tag;
 
-public class TagDetailsResponse : TagDto, IResponse
+public class TagDetailsResponse : TagDto
 {
     public string? Id { get; set; }
     public DateTime CreatedDate { get; set; }

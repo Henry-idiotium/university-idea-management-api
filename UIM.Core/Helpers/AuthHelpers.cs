@@ -4,15 +4,16 @@ public static class AuthHelpers
 {
     private static readonly char[] punctuations = "!@#$%^&*()_-+=[{]};:>|./\\?".ToCharArray();
 
-    public static string GeneratePasswordWithNonAlphanumericCharacters(int length,
+    public static string GeneratePasswordWithNonAlphanumericCharacters(
+        int length,
         bool isFirstLetterCapital = false,
-        int numberOfNonAlphanumericCharacters = 0)
+        int numberOfNonAlphanumericCharacters = 0
+    )
     {
         if (length < 1 || length > 128)
             throw new ArgumentException(null, nameof(length));
 
-        if (numberOfNonAlphanumericCharacters > length
-            || numberOfNonAlphanumericCharacters < 0)
+        if (numberOfNonAlphanumericCharacters > length || numberOfNonAlphanumericCharacters < 0)
             throw new ArgumentException(null, nameof(numberOfNonAlphanumericCharacters));
 
         using var rng = RandomNumberGenerator.Create();
@@ -29,19 +30,27 @@ public static class AuthHelpers
 
             if (iter == 0 && isFirstLetterCapital)
             {
-                characterBuffer[iter] = (char)('A' + i - ((i > 10) ? (i > 36) ? (i > 62) ? 62 : 36 : 10 : i));
+                characterBuffer[iter] = (char)(
+                    'A' + i
+                    - (
+                        (i > 10)
+                            ? (i > 36)
+                                ? (i > 62)
+                                    ? 62
+                                    : 36
+                                : 10
+                            : i
+                    )
+                );
                 continue;
             }
 
             if (i < 10)
                 characterBuffer[iter] = (char)('0' + i);
-
             else if (i < 36)
                 characterBuffer[iter] = (char)('A' + i - 10);
-
             else if (i < 62)
                 characterBuffer[iter] = (char)('a' + i - 36);
-
             else
             {
                 characterBuffer[iter] = punctuations[i - 62];
@@ -49,7 +58,8 @@ public static class AuthHelpers
             }
         }
 
-        if (count >= numberOfNonAlphanumericCharacters) return new string(characterBuffer);
+        if (count >= numberOfNonAlphanumericCharacters)
+            return new string(characterBuffer);
 
         int j;
         var rand = new Random();
@@ -69,7 +79,8 @@ public static class AuthHelpers
 
     public static string GeneratePassword(int length, bool isFirstLetterCapital = false)
     {
-        var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789123456789123456789";
+        var chars =
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789123456789123456789";
         var charBuffer = new char[length];
         var random = new Random(Guid.NewGuid().GetHashCode());
 

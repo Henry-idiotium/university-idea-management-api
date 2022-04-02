@@ -8,6 +8,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     {
         _context = context;
 
+        Comments = new CommentRepository(context);
         Tags = new TagRepository(context);
         Departments = new DepartmentRepository(context);
         Ideas = new IdeaRepository(context);
@@ -15,6 +16,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
         Users = new UserRepository(context);
     }
 
+    public ICommentRepository Comments { get; private set; }
     public ITagRepository Tags { get; private set; }
     public IDepartmentRepository Departments { get; private set; }
     public IIdeaRepository Ideas { get; private set; }

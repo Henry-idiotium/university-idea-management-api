@@ -1,6 +1,6 @@
 namespace UIM.Core.Models.Dtos.Submission;
 
-public class SubmissionDetailsResponse : SubmissionDto, IResponse
+public class SubmissionDetailsResponse : SubmissionDto
 {
     public string? Id { get; set; }
     public string? CreatedBy { get; set; }

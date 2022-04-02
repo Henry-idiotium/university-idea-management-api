@@ -1,5 +1,6 @@
 namespace UIM.Core.Controllers.Admin;
 
+[Route("api/[controller]-management")]
 public class TagController : AdminController<ITagService>
 {
     private readonly IJwtService _jwtService;
@@ -9,13 +10,15 @@ public class TagController : AdminController<ITagService>
         _jwtService = jwtService;
     }
 
-    [HttpPost("api/[controller]-management")]
+    [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateTagRequest request)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)
@@ -27,7 +30,7 @@ public class TagController : AdminController<ITagService>
         return ResponseResult();
     }
 
-    [HttpDelete("api/[controller]-management/{id}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);
@@ -35,10 +38,7 @@ public class TagController : AdminController<ITagService>
         return ResponseResult();
     }
 
-    [HttpGet("api/[controller]s")]
-    public IActionResult Read() => ResponseResult(_service.FindAll());
-
-    [HttpGet("api/[controller]-management")]
+    [HttpGet("list")]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)
@@ -48,7 +48,7 @@ public class TagController : AdminController<ITagService>
         return ResponseResult(result);
     }
 
-    [HttpGet("api/[controller]-management/{id}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);
@@ -56,13 +56,15 @@ public class TagController : AdminController<ITagService>
         return ResponseResult(result);
     }
 
-    [HttpPut("api/[controller]-management/{id}")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromBody] UpdateTagRequest request, string id)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)

@@ -4,4 +4,5 @@ public interface IIdeaRepository : IRepository<Idea>
 {
     Task<bool> AddToTagAsync(Idea idea, Tag tag);
     Task<IEnumerable<Idea>> GetBySubmissionAsync(string submissionId);
+    IEnumerable<string> GetTags(string ideaId);
 }

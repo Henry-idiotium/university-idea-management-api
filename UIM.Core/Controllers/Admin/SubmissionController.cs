@@ -16,7 +16,9 @@ public class SubmissionController : AdminController<ISubmissionService>
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)
@@ -36,16 +38,6 @@ public class SubmissionController : AdminController<ISubmissionService>
         return ResponseResult();
     }
 
-    [HttpGet]
-    public async Task<IActionResult> Read([FromQuery] SieveModel request)
-    {
-        if (request == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
-        var result = await _service.FindAsync(request);
-        return ResponseResult(result);
-    }
-
     [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)
     {
@@ -60,7 +52,9 @@ public class SubmissionController : AdminController<ISubmissionService>
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)

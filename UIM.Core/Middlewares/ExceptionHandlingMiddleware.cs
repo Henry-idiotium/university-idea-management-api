@@ -28,7 +28,13 @@ public class HttpStatusExceptionHandlerMiddleware
         {
             if (ex is not HttpException
                 || ((HttpException)ex).Status == HttpStatusCode.InternalServerError)
-                _logger.LogError("HttpException: {message}", ex.Message);
+            {
+                _logger.LogError(@"{message} \n
+					👾👾👾👾👾👾👾👾 \n\t
+					Trace: {trace}",
+                    ex.Message,
+                    ex.StackTrace);
+            }
 
             await HandleExceptionAsync(context, ex);
         }

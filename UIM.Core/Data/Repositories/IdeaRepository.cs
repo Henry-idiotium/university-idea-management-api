@@ -13,8 +13,13 @@ public class IdeaRepository : Repository<Idea>, IIdeaRepository
 
     public async Task<IEnumerable<Idea>> GetBySubmissionAsync(string submissionId)
     {
-        return await _context.Ideas
-            .Where(_ => _.SubmissionId == submissionId)
-            .ToListAsync();
+        return await Set.Where(_ => _.SubmissionId == submissionId).ToListAsync();
     }
+
+    public IEnumerable<string> GetTags(string ideaId) =>
+        from idea in _context.Ideas
+        join ideaTag in _context.IdeaTags on idea.Id equals ideaTag.IdeaId
+        join tag in _context.Tags on ideaTag.TagId equals tag.Id
+        where ideaTag.IdeaId == ideaId
+        select tag.Name;
 }

@@ -1,6 +1,7 @@
 namespace UIM.Core.Models.Dtos.User;
 
-public class CreateUserRequest : UserDto, ICreateRequest
+public class CreateUserRequest : UserDto
 {
-    [Required] public string Email { get; set; } = default!;
+    [Required]
+    public string Email { get; set; } = default!;
 }

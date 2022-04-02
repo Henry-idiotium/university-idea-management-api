@@ -2,16 +2,12 @@ namespace UIM.Core.Services;
 
 public class SubmissionService : Service, ISubmissionService
 {
-    private readonly UserManager<AppUser> _userManager;
-
-    public SubmissionService(IMapper mapper,
+    public SubmissionService(
+        IMapper mapper,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork,
-        UserManager<AppUser> userManager)
-        : base(mapper, sieveProcessor, unitOfWork)
-    {
-        _userManager = userManager;
-    }
+        UserManager<AppUser> userManager
+    ) : base(mapper, sieveProcessor, unitOfWork, userManager) { }
 
     public async Task AddIdeaAsync(AddIdeaRequest request)
     {
@@ -32,13 +28,17 @@ public class SubmissionService : Service, ISubmissionService
         if (user == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        // TODO: Too redundant, please return to good old mapping after test
-        var submission = _mapper.Map<Submission>(request, opts =>
-            opts.AfterMap((src, dest) =>
-            {
-                dest.CreatedBy = user.Email;
-                dest.ModifiedBy = user.Email;
-            }));
+        var submission = _mapper.Map<Submission>(
+            request,
+            opts =>
+                opts.AfterMap(
+                    (src, dest) =>
+                    {
+                        dest.CreatedBy = user.Email;
+                        dest.ModifiedBy = user.Email;
+                    }
+                )
+        );
 
         var add = await _unitOfWork.Submissions.AddAsync(submission);
         if (!add.Succeeded)
@@ -53,12 +53,18 @@ public class SubmissionService : Service, ISubmissionService
             throw new HttpException(HttpStatusCode.BadRequest);
 
         // TODO: u seeing this
-        _mapper.Map(request, subToEdit, opts =>
-            opts.AfterMap((src, dest) =>
-            {
-                dest.ModifiedBy = user.Email;
-                dest.ModifiedDate = DateTime.Now;
-            }));
+        _mapper.Map(
+            request,
+            subToEdit,
+            opts =>
+                opts.AfterMap(
+                    (src, dest) =>
+                    {
+                        dest.ModifiedBy = user.Email;
+                        dest.ModifiedDate = DateTime.Now;
+                    }
+                )
+        );
 
         var edit = await _unitOfWork.Submissions.UpdateAsync(subToEdit);
         if (!edit.Succeeded)
@@ -67,7 +73,7 @@ public class SubmissionService : Service, ISubmissionService
 
     public async Task<SieveResponse> FindAsync(SieveModel model)
     {
-        if (model?.Page < 0 || model?.PageSize < 1)
+        if (model.Page < 0 || model.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var sortedSubs = _sieveProcessor.Apply(model, _unitOfWork.Submissions.Set);
@@ -76,9 +82,11 @@ public class SubmissionService : Service, ISubmissionService
 
         var mappedSubs = _mapper.Map<List<SubmissionDetailsResponse>>(sortedSubs);
 
-        return new(rows: mappedSubs,
+        return new(
+            rows: mappedSubs,
             index: model?.Page,
-            total: await _unitOfWork.Ideas.CountAsync());
+            total: await _unitOfWork.Ideas.CountAsync()
+        );
     }
 
     public async Task<SubmissionDetailsResponse> FindByIdAsync(string submissionId)

@@ -19,10 +19,10 @@ public class DepartmentController : AdminController<IDepartmentService>
         return ResponseResult();
     }
 
-    [HttpGet("api/[controller]s")]
+    [HttpGet("api/[controller]/list")]
     public IActionResult Read() => ResponseResult(_service.FindAll());
 
-    [HttpGet("api/[controller]-management")]
+    [HttpGet("api/[controller]-management/list")]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)

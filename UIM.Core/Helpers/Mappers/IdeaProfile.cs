@@ -7,7 +7,8 @@ public class IdeaProfile : Profile
         CreateMap<Idea, IdeaDetailsResponse>()
             .ForMember(
                 dest => dest.Id,
-                opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id)));
+                opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id))
+            );
 
         CreateMap<UpdateIdeaRequest, Idea>()
             .ForSourceMember(src => src.Id, opt => opt.DoNotValidate())

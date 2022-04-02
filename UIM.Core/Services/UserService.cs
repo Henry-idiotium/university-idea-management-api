@@ -5,17 +5,15 @@ namespace UIM.Core.Services;
 public class UserService : Service, IUserService
 {
     private readonly IEmailService _emailService;
-    private readonly UserManager<AppUser> _userManager;
 
     public UserService(
         IMapper mapper,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork,
         UserManager<AppUser> userManager,
-        IEmailService emailService)
-        : base(mapper, sieveProcessor, unitOfWork)
+        IEmailService emailService
+    ) : base(mapper, sieveProcessor, unitOfWork, userManager)
     {
-        _userManager = userManager;
         _emailService = emailService;
     }
 
@@ -25,7 +23,8 @@ public class UserService : Service, IUserService
         if (depObj == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var userToBeAdded = await _userManager.FindByEmailAsync(user.Email)
+        var userToBeAdded =
+            await _userManager.FindByEmailAsync(user.Email)
             ?? await _userManager.FindByIdAsync(user.Id);
 
         userToBeAdded.DepartmentId = depObj.Id;
@@ -37,8 +36,7 @@ public class UserService : Service, IUserService
     public async Task CreateAsync(CreateUserRequest request)
     {
         var userExist = await _userManager.FindByEmailAsync(request.Email);
-        if (userExist != null
-            || request.Role == EnvVars.System.Role.PwrUser)
+        if (userExist != null || request.Role == EnvVars.Role.PwrUser)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var newUser = _mapper.Map<AppUser>(request);
@@ -58,7 +56,8 @@ public class UserService : Service, IUserService
             receiver: newUser,
             receiverPassword: password,
             senderFullName: "Cecilia McDermott",
-            senderTitle: "Senior Integration Executive");
+            senderTitle: "Senior Integration Executive"
+        );
 
         if (!sendSucceeded)
         {
@@ -71,8 +70,8 @@ public class UserService : Service, IUserService
     {
         var userToEdit = await _userManager.FindByIdAsync(request.Id);
         var userIsAdmin =
-            userToEdit.Email == EnvVars.System.PwrUserAuth.Email
-            || userToEdit.UserName == EnvVars.System.PwrUserAuth.UserName;
+            userToEdit.Email == EnvVars.PwrUserAuth.Email
+            || userToEdit.UserName == EnvVars.PwrUserAuth.UserName;
 
         if (userIsAdmin || userToEdit == null)
             throw new HttpException(HttpStatusCode.BadRequest);
@@ -91,7 +90,7 @@ public class UserService : Service, IUserService
 
     public async Task<SieveResponse> FindAsync(SieveModel model)
     {
-        if (model?.Page < 0 || model?.PageSize < 1)
+        if (model.Page < 0 || model.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var sortedUsers = _sieveProcessor.Apply(model, _userManager.Users);
@@ -104,17 +103,26 @@ public class UserService : Service, IUserService
             var role = await _userManager.GetRolesAsync(user);
             var department = await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
 
-            mappedUsers.Add(_mapper.Map<UserDetailsResponse>(user, opt =>
-                opt.AfterMap((src, dest) =>
-                {
-                    dest.Department = department?.Name;
-                    dest.Role = role?.FirstOrDefault() ?? string.Empty;
-                })));
+            mappedUsers.Add(
+                _mapper.Map<UserDetailsResponse>(
+                    user,
+                    opt =>
+                        opt.AfterMap(
+                            (src, dest) =>
+                            {
+                                dest.Department = department?.Name;
+                                dest.Role = role?.FirstOrDefault() ?? string.Empty;
+                            }
+                        )
+                )
+            );
         }
 
-        return new(rows: mappedUsers,
+        return new(
+            rows: mappedUsers,
             index: model?.Page ?? 1,
-            total: await _userManager.Users.CountAsync());
+            total: await _userManager.Users.CountAsync()
+        );
     }
 
     public async Task<UserDetailsResponse> FindByEmailAsync(string email)
@@ -123,17 +131,24 @@ public class UserService : Service, IUserService
         if (user == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var department = user.DepartmentId == null ? null
-            : await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
+        var department =
+            user.DepartmentId == null
+                ? null
+                : await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
 
         var role = await _userManager.GetRolesAsync(user);
 
-        var mappedUser = _mapper.Map<UserDetailsResponse>(user, opt =>
-            opt.AfterMap((src, dest) =>
-            {
-                dest.Department = department?.Name;
-                dest.Role = role.First();
-            }));
+        var mappedUser = _mapper.Map<UserDetailsResponse>(
+            user,
+            opt =>
+                opt.AfterMap(
+                    (src, dest) =>
+                    {
+                        dest.Department = department?.Name;
+                        dest.Role = role.First();
+                    }
+                )
+        );
 
         return mappedUser;
     }
@@ -144,17 +159,24 @@ public class UserService : Service, IUserService
         if (user == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var department = user.DepartmentId == null ? null
-            : await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
+        var department =
+            user.DepartmentId == null
+                ? null
+                : await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
 
         var role = await _userManager.GetRolesAsync(user);
 
-        var mappedUser = _mapper.Map<UserDetailsResponse>(user, opt =>
-            opt.AfterMap((src, dest) =>
-            {
-                dest.Department = department?.Name;
-                dest.Role = role.First();
-            }));
+        var mappedUser = _mapper.Map<UserDetailsResponse>(
+            user,
+            opt =>
+                opt.AfterMap(
+                    (src, dest) =>
+                    {
+                        dest.Department = department?.Name;
+                        dest.Role = role.First();
+                    }
+                )
+        );
 
         return mappedUser;
     }
@@ -164,8 +186,8 @@ public class UserService : Service, IUserService
         var user = await _userManager.FindByIdAsync(userId);
 
         var userIsAdmin =
-            user.Email == EnvVars.System.PwrUserAuth.Email
-            || user.UserName == EnvVars.System.PwrUserAuth.UserName;
+            user.Email == EnvVars.PwrUserAuth.Email
+            || user.UserName == EnvVars.PwrUserAuth.UserName;
 
         if (userIsAdmin || user == null)
             throw new HttpException(HttpStatusCode.BadRequest);

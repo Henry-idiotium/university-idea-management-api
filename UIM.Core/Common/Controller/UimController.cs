@@ -6,7 +6,8 @@ public abstract class UimController : ControllerBase
     protected IActionResult ResponseResult(
         bool succeeded = true,
         string message = SuccessResponseMessages.RequestSucceeded,
-        object? result = null)
+        object? result = null
+    )
     {
         return Ok(new CoreResponse(succeeded, message, result));
     }
@@ -14,7 +15,8 @@ public abstract class UimController : ControllerBase
     protected IActionResult ResponseResult(
         object result,
         bool succeeded = true,
-        string message = SuccessResponseMessages.RequestSucceeded)
+        string message = SuccessResponseMessages.RequestSucceeded
+    )
     {
         return Ok(new CoreResponse(succeeded, message, result));
     }

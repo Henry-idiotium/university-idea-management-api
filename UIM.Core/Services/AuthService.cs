@@ -1,19 +1,18 @@
 namespace UIM.Core.Services;
 
-public class AuthService : IAuthService
+public class AuthService : Service, IAuthService
 {
     private readonly IJwtService _jwtService;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly UserManager<AppUser> _userManager;
 
     public AuthService(
-        IJwtService jwtService,
+        IMapper mapper,
+        SieveProcessor sieveProcessor,
+        IUnitOfWork unitOfWork,
         UserManager<AppUser> userManager,
-        IUnitOfWork unitOfWork)
+        IJwtService jwtService
+    ) : base(mapper, sieveProcessor, unitOfWork, userManager)
     {
         _jwtService = jwtService;
-        _userManager = userManager;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<AuthResponse> ExternalLoginAsync(ExternalAuthRequest request)
@@ -47,15 +46,12 @@ public class AuthService : IAuthService
 
     public async Task UpdatePasswordAsync(UpdatePasswordRequest request)
     {
-        if (request == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
         if (request.NewPassword != request.ConfirmNewPassword)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var user = await _userManager.FindByIdAsync(request.Id);
-        var pwdCorrect = await _userManager.CheckPasswordAsync(user, request?.OldPassword);
-        if (!pwdCorrect)
+        var oldPwdCorrect = await _userManager.CheckPasswordAsync(user, request?.OldPassword);
+        if (!oldPwdCorrect)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -76,7 +72,10 @@ public class AuthService : IAuthService
         if (!refreshToken.IsActive)
             throw new HttpException(HttpStatusCode.Forbidden);
 
-        await _unitOfWork.Users.RevokeRefreshTokenAsync(refreshToken, "Revoked without replacement");
+        await _unitOfWork.Users.RevokeRefreshTokenAsync(
+            refreshToken,
+            "Revoked without replacement"
+        );
     }
 
     public async Task<AuthResponse> RotateTokensAsync(RotateTokenRequest request)
@@ -88,8 +87,11 @@ public class AuthService : IAuthService
 
         if (ownedRefreshToken.IsRevoked)
             // revoke all descendant tokens in case this token has been compromised
-            await _unitOfWork.Users.RevokeRefreshTokenDescendantsAsync(ownedRefreshToken, user,
-                reason: $"Attempted reuse of revoked ancestor token: {request.RefreshToken}");
+            await _unitOfWork.Users.RevokeRefreshTokenDescendantsAsync(
+                ownedRefreshToken,
+                user,
+                reason: $"Attempted reuse of revoked ancestor token: {request.RefreshToken}"
+            );
 
         if (!ownedRefreshToken.IsActive)
             throw new HttpException(HttpStatusCode.Forbidden);
@@ -99,7 +101,8 @@ public class AuthService : IAuthService
         await _unitOfWork.Users.RevokeRefreshTokenAsync(
             token: ownedRefreshToken,
             reason: "Replaced by new token",
-            replacedByToken: refreshToken.Token);
+            replacedByToken: refreshToken.Token
+        );
         await _unitOfWork.Users.RemoveOutdatedRefreshTokensAsync(user);
 
         // Get principal from expired token

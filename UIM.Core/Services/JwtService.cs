@@ -13,7 +13,8 @@ public class JwtService : IJwtService
 
     public AccessToken GenerateAccessToken(IEnumerable<Claim> claims)
     {
-        if (claims == null) throw new ArgumentNullException(null);
+        if (claims == null)
+            throw new ArgumentNullException(null);
 
         var expireAt = DateTime.Now.AddDays(EnvVars.Jwt.AccessExpiredDate);
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -24,7 +25,8 @@ public class JwtService : IJwtService
             Expires = expireAt,
             SigningCredentials = new SigningCredentials(
                 key: new SymmetricSecurityKey(_jwtEncodedSecret),
-                algorithm: SecurityAlgorithms.HmacSha256Signature)
+                algorithm: SecurityAlgorithms.HmacSha256Signature
+            )
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -40,12 +42,12 @@ public class JwtService : IJwtService
 
         var roles = await _userManager.GetRolesAsync(user);
         var claims = new List<Claim>
-            {
-                new Claim(UimClaimTypes.Id, user.Id),
-                new Claim(UimClaimTypes.Name, user.UserName),
-                new Claim(UimClaimTypes.Email, user.Email),
-                new Claim(UimClaimTypes.Role, roles.First())
-            };
+        {
+            new Claim(UimClaimTypes.Id, user.Id),
+            new Claim(UimClaimTypes.Name, user.UserName),
+            new Claim(UimClaimTypes.Email, user.Email),
+            new Claim(UimClaimTypes.Role, roles.First())
+        };
 
         var expireAt = DateTime.Now.AddDays(EnvVars.Jwt.AccessExpiredDate!);
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -56,7 +58,8 @@ public class JwtService : IJwtService
             Expires = expireAt,
             SigningCredentials = new SigningCredentials(
                 key: new SymmetricSecurityKey(_jwtEncodedSecret),
-                algorithm: SecurityAlgorithms.HmacSha256Signature)
+                algorithm: SecurityAlgorithms.HmacSha256Signature
+            )
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -88,7 +91,8 @@ public class JwtService : IJwtService
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtToken = tokenHandler.ReadToken(token);
-            if (jwtToken == null) return null;
+            if (jwtToken == null)
+                return null;
 
             var validationParameters = new TokenValidationParameters()
             {
@@ -96,7 +100,6 @@ public class JwtService : IJwtService
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = false,
-
                 ValidIssuers = EnvVars.ValidOrigins,
                 ValidAudiences = EnvVars.ValidOrigins,
                 IssuerSigningKey = new SymmetricSecurityKey(_jwtEncodedSecret)
@@ -116,24 +119,26 @@ public class JwtService : IJwtService
         var tokenHandler = new JwtSecurityTokenHandler();
         try
         {
-            tokenHandler.ValidateToken(token, new TokenValidationParameters
-            {
-                ValidateLifetime = true,
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateIssuerSigningKey = true,
-
-                ClockSkew = TimeSpan.Zero,
-                ValidIssuers = EnvVars.ValidOrigins,
-                ValidAudiences = EnvVars.ValidOrigins,
-                IssuerSigningKey = new SymmetricSecurityKey(_jwtEncodedSecret),
-            }, out SecurityToken validatedToken);
+            tokenHandler.ValidateToken(
+                token,
+                new TokenValidationParameters
+                {
+                    ValidateLifetime = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero,
+                    ValidIssuers = EnvVars.ValidOrigins,
+                    ValidAudiences = EnvVars.ValidOrigins,
+                    IssuerSigningKey = new SymmetricSecurityKey(_jwtEncodedSecret),
+                },
+                out SecurityToken validatedToken
+            );
 
             var jwtToken = validatedToken as JwtSecurityToken;
-            var userId = jwtToken?.Claims
-                .FirstOrDefault(claim => claim.Type == UimClaimTypes.Id
-                                        && claim.Value != null)?
-                .Value;
+            var userId = jwtToken?.Claims.FirstOrDefault(
+                claim => claim.Type == UimClaimTypes.Id && claim.Value != null
+            )?.Value;
             return userId;
         }
         // When fails validation do notthing
@@ -147,7 +152,7 @@ public class JwtService : IJwtService
     {
         try
         {
-            var googleId = EnvVars.SocialAuth.GoogleClientId;
+            var googleId = EnvVars.SocialAuth.GapiClientId;
             if (googleId == null)
                 throw new HttpException(HttpStatusCode.BadRequest);
 

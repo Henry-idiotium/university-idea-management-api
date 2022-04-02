@@ -4,20 +4,20 @@ public class IdeaController : SharedController<IIdeaService>
 {
     private readonly IJwtService _jwtService;
 
-    public IdeaController(IIdeaService ideaService,
-        IJwtService jwtService)
-        : base(ideaService)
+    public IdeaController(IIdeaService ideaService, IJwtService jwtService) : base(ideaService)
     {
         _jwtService = jwtService;
     }
 
-    [HttpPost]
+    [HttpPost("api/[controller]")]
     public async Task<IActionResult> Create([FromBody] CreateIdeaRequest request)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)
@@ -29,10 +29,12 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult();
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("api/[controller]/{id}")]
     public async Task<IActionResult> Delete(string id)
     {
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)
@@ -44,7 +46,7 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult();
     }
 
-    [HttpGet]
+    [HttpGet("api/[controller]s")]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)
@@ -54,7 +56,7 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult(result);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("api/[controller]/{id}")]
     public async Task<IActionResult> Read(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);
@@ -62,13 +64,15 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult(result);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("api/[controller]/{id}")]
     public async Task<IActionResult> Update([FromBody] UpdateIdeaRequest request, string id)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)

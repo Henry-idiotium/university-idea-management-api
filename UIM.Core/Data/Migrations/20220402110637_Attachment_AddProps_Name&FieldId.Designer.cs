@@ -12,8 +12,8 @@ using UIM.Core.Data;
 namespace UIM.Core.Data.Migrations
 {
     [DbContext(typeof(UimContext))]
-    [Migration("20220322031752_Tag_Department_UpdateNamePropWithUniqueAttribute")]
-    partial class Tag_Department_UpdateNamePropWithUniqueAttribute
+    [Migration("20220402110637_Attachment_AddProps_Name&FieldId")]
+    partial class Attachment_AddProps_NameFieldId
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -190,6 +190,13 @@ namespace UIM.Core.Data.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Gender")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<bool>("IsDefaultPassword")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -236,6 +243,45 @@ namespace UIM.Core.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("UIM.Core.Models.Entities.Comment", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IdeaId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdeaId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Department", b =>
@@ -286,9 +332,6 @@ namespace UIM.Core.Data.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsAnonymous")
                         .HasColumnType("bit");
 
@@ -301,9 +344,6 @@ namespace UIM.Core.Data.Migrations
                     b.Property<string>("SubmissionId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("TagId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -594,6 +634,24 @@ namespace UIM.Core.Data.Migrations
                     b.Navigation("RefreshTokens");
                 });
 
+            modelBuilder.Entity("UIM.Core.Models.Entities.Comment", b =>
+                {
+                    b.HasOne("UIM.Core.Models.Entities.Idea", "Idea")
+                        .WithMany("Comments")
+                        .HasForeignKey("IdeaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UIM.Core.Models.Entities.AppUser", "User")
+                        .WithMany("Comments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Idea");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("UIM.Core.Models.Entities.Idea", b =>
                 {
                     b.HasOne("UIM.Core.Models.Entities.Submission", "Submission")
@@ -620,6 +678,10 @@ namespace UIM.Core.Data.Migrations
                             b1.Property<DateTime>("CreatedDate")
                                 .HasColumnType("datetime2");
 
+                            b1.Property<string>("FileId")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
                             b1.Property<string>("IdeaId")
                                 .IsRequired()
                                 .HasColumnType("nvarchar(450)");
@@ -629,6 +691,10 @@ namespace UIM.Core.Data.Migrations
 
                             b1.Property<DateTime>("ModifiedDate")
                                 .HasColumnType("datetime2");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
 
                             b1.Property<string>("Url")
                                 .IsRequired()
@@ -646,51 +712,7 @@ namespace UIM.Core.Data.Migrations
                             b1.Navigation("Idea");
                         });
 
-                    b.OwnsMany("UIM.Core.Models.Entities.Comment", "Comments", b1 =>
-                        {
-                            b1.Property<string>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasMaxLength(450)
-                                .HasColumnType("nvarchar(450)");
-
-                            b1.Property<string>("Content")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("CreatedBy")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<DateTime>("CreatedDate")
-                                .HasColumnType("datetime2");
-
-                            b1.Property<string>("IdeaId")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(450)");
-
-                            b1.Property<string>("ModifiedBy")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<DateTime>("ModifiedDate")
-                                .HasColumnType("datetime2");
-
-                            b1.Property<string>("Parrent")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("IdeaId");
-
-                            b1.ToTable("Comments");
-
-                            b1.WithOwner("Idea")
-                                .HasForeignKey("IdeaId");
-
-                            b1.Navigation("Idea");
-                        });
-
                     b.Navigation("Attachments");
-
-                    b.Navigation("Comments");
 
                     b.Navigation("Submission");
 
@@ -756,6 +778,8 @@ namespace UIM.Core.Data.Migrations
 
             modelBuilder.Entity("UIM.Core.Models.Entities.AppUser", b =>
                 {
+                    b.Navigation("Comments");
+
                     b.Navigation("Ideas");
 
                     b.Navigation("Likes");
@@ -770,6 +794,8 @@ namespace UIM.Core.Data.Migrations
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Idea", b =>
                 {
+                    b.Navigation("Comments");
+
                     b.Navigation("IdeaTags");
 
                     b.Navigation("Likes");

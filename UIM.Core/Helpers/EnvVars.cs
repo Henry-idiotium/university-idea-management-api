@@ -2,10 +2,8 @@ namespace UIM.Core.Helpers;
 
 public static class EnvVars
 {
-
     public static string ClientDomain => GetEnvVar("CLIENT_DOMAIN");
     public static bool UseEmailService => bool.Parse(GetEnvVar("USE_EMAIL_SERVICE"));
-    public static string UserProfilePath => GetEnvVar("USER_PROFILE_PATH");
     public static string CoreEnv => GetEnvVar("ASPNETCORE_ENVIRONMENT").ToLower();
     public static bool InitRolesPwrUser => bool.Parse(GetEnvVar("INIT_ROLES_PWRUSER"));
     public static string[] ValidOrigins
@@ -62,24 +60,21 @@ public static class EnvVars
 
     public static class SocialAuth
     {
-        public static string GoogleClientId => GetEnvVar("AUTH_GOOGLE_CLIENT_ID");
+        public static string GapiClientId => GetEnvVar("GAPI_CLIENT_ID");
     }
 
-    public static class System
+    public static class PwrUserAuth
     {
-        public static class PwrUserAuth
-        {
-            public static string Email => GetEnvVar("AUTH_PWRUSER_EMAIL");
-            public static string Password => GetEnvVar("AUTH_PWRUSER_PASSWORD");
-            public static string UserName => GetEnvVar("AUTH_PWRUSER_USERNAME");
-        }
+        public static string Email => GetEnvVar("AUTH_PWRUSER_EMAIL");
+        public static string Password => GetEnvVar("AUTH_PWRUSER_PASSWORD");
+        public static string UserName => GetEnvVar("AUTH_PWRUSER_USERNAME");
+    }
 
-        public static class Role
-        {
-            public static string Manager => GetEnvVar("SYSTEM_ROLE_MANAGER");
-            public static string PwrUser => GetEnvVar("SYSTEM_ROLE_PWRUSER");
-            public static string Staff => GetEnvVar("SYSTEM_ROLE_STAFF");
-            public static string Supervisor => GetEnvVar("SYSTEM_ROLE_SUP");
-        }
+    public static class Role
+    {
+        public static string Manager => GetEnvVar("SYSTEM_ROLE_MANAGER");
+        public static string PwrUser => GetEnvVar("SYSTEM_ROLE_PWRUSER");
+        public static string Staff => GetEnvVar("SYSTEM_ROLE_STAFF");
+        public static string Supervisor => GetEnvVar("SYSTEM_ROLE_SUP");
     }
 }

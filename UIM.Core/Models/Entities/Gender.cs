@@ -1,3 +1,8 @@
 namespace UIM.Core.Models.Entities;
 
-public enum Gender { Male, Female, Null }
+public enum Gender
+{
+    Male,
+    Female,
+    Null
+}

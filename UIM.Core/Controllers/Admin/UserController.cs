@@ -23,7 +23,7 @@ public class UserController : AdminController<IUserService>
         return ResponseResult();
     }
 
-    [HttpGet]
+    [HttpGet("list")]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)

@@ -20,4 +20,5 @@ public class AppUser : IdentityUser
     public virtual ICollection<View>? Views { get; set; }
     public virtual ICollection<Idea>? Ideas { get; set; }
     public virtual List<RefreshToken> RefreshTokens { get; set; } = default!;
+    public virtual List<Comment> Comments { get; set; } = default!;
 }

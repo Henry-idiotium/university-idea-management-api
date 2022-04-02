@@ -6,7 +6,8 @@ public class LowercaseDocumentFilter : IDocumentFilter
     {
         var paths = swaggerDoc.Paths.ToDictionary(
             entry => string.Join('/', entry.Key.Split('/').Select(x => x.ToLower())),
-            entry => entry.Value);
+            entry => entry.Value
+        );
 
         swaggerDoc.Paths = new OpenApiPaths();
 

@@ -5,9 +5,7 @@ public class IdeaController : AdminController<IIdeaService>
 {
     private readonly IJwtService _jwtService;
 
-    public IdeaController(IIdeaService ideaService,
-        IJwtService jwtService)
-        : base(ideaService)
+    public IdeaController(IIdeaService ideaService, IJwtService jwtService) : base(ideaService)
     {
         _jwtService = jwtService;
     }
@@ -18,7 +16,9 @@ public class IdeaController : AdminController<IIdeaService>
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)
@@ -33,7 +33,9 @@ public class IdeaController : AdminController<IIdeaService>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)
@@ -69,7 +71,9 @@ public class IdeaController : AdminController<IIdeaService>
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)

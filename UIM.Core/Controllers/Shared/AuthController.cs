@@ -1,12 +1,16 @@
 namespace UIM.Core.Controllers.Shared;
 
+[Route("api/[controller]")]
 public class AuthController : SharedController<IAuthService>
 {
     private readonly IJwtService _jwtService;
     private readonly IUserService _userService;
 
-    public AuthController(IAuthService authService, IUserService userService, IJwtService jwtService)
-        : base(authService)
+    public AuthController(
+        IAuthService authService,
+        IUserService userService,
+        IJwtService jwtService
+    ) : base(authService)
     {
         _userService = userService;
         _jwtService = jwtService;
@@ -15,7 +19,9 @@ public class AuthController : SharedController<IAuthService>
     [HttpGet("info")]
     public async Task<IActionResult> GetMeData()
     {
-        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
         var userId = _jwtService.Validate(token);
         if (userId == null)

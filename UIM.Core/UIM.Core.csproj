@@ -5,6 +5,8 @@
     <RootNamespace>UIM.Core</RootNamespace>
     <Nullable>Enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+	<VSCODE_VERBOSE_LOGGING>true</VSCODE_VERBOSE_LOGGING>
   </PropertyGroup>
 
   <ItemGroup>

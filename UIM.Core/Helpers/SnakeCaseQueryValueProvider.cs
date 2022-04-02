@@ -3,15 +3,15 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace UIM.Core.Helpers;
 
-public class SnakeCaseQueryValueProvider : QueryStringValueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider
+public class SnakeCaseQueryValueProvider
+    : QueryStringValueProvider,
+      Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider
 {
     public SnakeCaseQueryValueProvider(
         BindingSource bindingSource,
         IQueryCollection values,
-        CultureInfo culture)
-        : base(bindingSource, values, culture)
-    {
-    }
+        CultureInfo culture
+    ) : base(bindingSource, values, culture) { }
 
     public override bool ContainsPrefix(string prefix)
     {
@@ -36,7 +36,8 @@ public class SnakeCaseQueryValueProviderFactory : IValueProviderFactory
         var valueProvider = new SnakeCaseQueryValueProvider(
             BindingSource.Query,
             context.ActionContext.HttpContext.Request.Query,
-            CultureInfo.CurrentCulture);
+            CultureInfo.CurrentCulture
+        );
 
         context.ValueProviders.Add(valueProvider);
 
