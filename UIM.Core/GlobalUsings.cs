@@ -41,6 +41,7 @@ global using UIM.Core.Helpers.SieveExtensions;
 global using UIM.Core.Helpers.SieveExtensions.Configurations;
 global using UIM.Core.Middlewares;
 global using UIM.Core.Models.Dtos;
+global using UIM.Core.Models.Dtos.Attachment;
 global using UIM.Core.Models.Dtos.Auth;
 global using UIM.Core.Models.Dtos.Comment;
 global using UIM.Core.Models.Dtos.Department;

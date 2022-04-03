@@ -38,6 +38,16 @@ public class SubmissionController : AdminController<ISubmissionService>
         return ResponseResult();
     }
 
+    [HttpGet("list")]
+    public async Task<IActionResult> Read([FromQuery] SieveModel request)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var result = await _service.FindAsync(request);
+        return ResponseResult(result);
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)
     {

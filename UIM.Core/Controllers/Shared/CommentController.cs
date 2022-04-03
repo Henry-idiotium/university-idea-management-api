@@ -27,14 +27,14 @@ public class CommentController : SharedController<ICommentService>
         return ResponseResult();
     }
 
-    [HttpGet("list/{id}")]
-    public async Task<IActionResult> Read([FromQuery] SieveModel request, string id)
+    [HttpGet("list/{ideaId}")]
+    public async Task<IActionResult> Read([FromQuery] SieveModel request, string ideaId)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var entityId = EncryptHelpers.DecodeBase64Url(id);
-        var result = await _service.FindAsync(entityId, request);
+        var decodedIdeaId = EncryptHelpers.DecodeBase64Url(ideaId);
+        var result = await _service.FindAsync(decodedIdeaId, request);
         return ResponseResult(result);
     }
 

@@ -47,13 +47,14 @@ public class IdeaController : AdminController<IIdeaService>
         return ResponseResult();
     }
 
-    [HttpGet]
-    public async Task<IActionResult> Read([FromQuery] SieveModel request)
+    [HttpGet("list/{submissionId}")]
+    public async Task<IActionResult> Read([FromQuery] SieveModel request, string submissionId)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var result = await _service.FindAsync(request);
+        var decodedSubmissionId = EncryptHelpers.DecodeBase64Url(submissionId);
+        var result = await _service.FindAsync(decodedSubmissionId, request);
         return ResponseResult(result);
     }
 

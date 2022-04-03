@@ -15,7 +15,6 @@ public class TagService : Service, ITagService
         if (user == null || await _unitOfWork.Tags.GetByNameAsync(request.Name) != null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        // TODO: Too redundant, please return to good old mapping after test
         var tag = _mapper.Map<Tag>(
             request,
             opts =>
@@ -36,23 +35,14 @@ public class TagService : Service, ITagService
     public async Task EditAsync(UpdateTagRequest request)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
-        var tagToEdit = await _unitOfWork.Tags.GetByNameAsync(request.Name);
+        var tagToEdit = await _unitOfWork.Tags.GetByIdAsync(request.Id);
         if (user == null || tagToEdit == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        // TODO: u seeing this
         _mapper.Map(
             request,
             tagToEdit,
-            opts =>
-                opts.AfterMap(
-                    (src, dest) =>
-                    {
-                        dest.Name = src.Name;
-                        dest.ModifiedBy = user.Email;
-                        dest.ModifiedDate = DateTime.Now;
-                    }
-                )
+            opts => opts.AfterMap((src, dest) => dest.ModifiedBy = user.Email)
         );
 
         var edit = await _unitOfWork.Tags.UpdateAsync(tagToEdit);

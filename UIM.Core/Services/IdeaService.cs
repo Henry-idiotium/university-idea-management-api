@@ -30,7 +30,13 @@ public class IdeaService : Service, IIdeaService
         if (await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var idea = _mapper.Map<Idea>(request);
+        var idea = _mapper.Map<CreateIdeaRequest, Idea>(
+            request,
+            opt =>
+                opt.AfterMap(
+                    (src, dest) => dest.Attachments = _mapper.Map<List<Attachment>>(src.Attachments)
+                )
+        );
 
         var add = await _unitOfWork.Ideas.AddAsync(idea);
         if (!add.Succeeded)
@@ -55,19 +61,31 @@ public class IdeaService : Service, IIdeaService
         if (request.Tags != null)
             await AddTagsAsync(idea, request.Tags);
 
-        _mapper.Map(request, idea);
+        _mapper.Map(
+            request,
+            idea,
+            opt =>
+                opt.AfterMap(
+                    (src, dest) => dest.Attachments = _mapper.Map<List<Attachment>>(src.Attachments)
+                )
+        );
 
         var edit = await _unitOfWork.Ideas.UpdateAsync(idea);
         if (!edit.Succeeded)
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    public async Task<SieveResponse> FindAsync(SieveModel model)
+    public async Task<SieveResponse> FindAsync(string submissionId, SieveModel model)
     {
         if (model.Page < 0 || model.PageSize < 1)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var sortedIdeas = _sieveProcessor.Apply(model, _unitOfWork.Ideas.Set);
+        var sub = await _unitOfWork.Submissions.GetByIdAsync(submissionId);
+        if (sub == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var ideas = _unitOfWork.Ideas.Set.Where(_ => _.SubmissionId == submissionId);
+        var sortedIdeas = _sieveProcessor.Apply(model, ideas);
         if (sortedIdeas == null)
             throw new HttpException(HttpStatusCode.InternalServerError);
 
@@ -82,7 +100,9 @@ public class IdeaService : Service, IIdeaService
                             {
                                 dest.User = _mapper.Map<UserDetailsResponse>(idea.User);
                                 dest.Tags = _unitOfWork.Ideas.GetTags(idea.Id).ToArray();
-                                dest.SubmissionTitle = idea.Submission.Title;
+                                dest.Submission = _mapper.Map<SubmissionDetailsResponse>(
+                                    idea.Submission
+                                );
                             }
                         )
                 )

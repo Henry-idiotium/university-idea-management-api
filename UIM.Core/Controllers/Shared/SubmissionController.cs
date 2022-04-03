@@ -1,10 +1,11 @@
 namespace UIM.Core.Controllers.Shared;
 
+[Route("api/[controller]")]
 public class SubmissionController : SharedController<ISubmissionService>
 {
     public SubmissionController(ISubmissionService service) : base(service) { }
 
-    [HttpGet("api/[controller]s")]
+    [HttpGet("list")]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)
@@ -14,7 +15,7 @@ public class SubmissionController : SharedController<ISubmissionService>
         return ResponseResult(result);
     }
 
-    [HttpGet("api/[controller]/{id}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);

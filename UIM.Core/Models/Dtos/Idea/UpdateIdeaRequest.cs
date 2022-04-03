@@ -10,4 +10,5 @@ public class UpdateIdeaRequest : IdeaDto
     public string? UserId { get; set; }
     [Required]
     public string SubmissionId { get; set; } = default!;
+    public List<ModifyAttachmentRequest>? Attachments { get; set; }
 }

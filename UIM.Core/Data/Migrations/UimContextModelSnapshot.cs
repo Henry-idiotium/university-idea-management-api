@@ -279,7 +279,7 @@ namespace UIM.Core.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Department", b =>
@@ -310,7 +310,7 @@ namespace UIM.Core.Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Departments");
+                    b.ToTable("Departments", (string)null);
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Idea", b =>
@@ -356,7 +356,7 @@ namespace UIM.Core.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Ideas");
+                    b.ToTable("Ideas", (string)null);
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.IdeaTag", b =>
@@ -383,7 +383,7 @@ namespace UIM.Core.Data.Migrations
 
                     b.HasIndex("IdeaId");
 
-                    b.ToTable("IdeaTags");
+                    b.ToTable("IdeaTags", (string)null);
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Like", b =>
@@ -413,7 +413,7 @@ namespace UIM.Core.Data.Migrations
 
                     b.HasIndex("IdeaId");
 
-                    b.ToTable("Likes");
+                    b.ToTable("Likes", (string)null);
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Submission", b =>
@@ -453,7 +453,7 @@ namespace UIM.Core.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Submissions");
+                    b.ToTable("Submissions", (string)null);
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.Tag", b =>
@@ -485,7 +485,7 @@ namespace UIM.Core.Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
                 });
 
             modelBuilder.Entity("UIM.Core.Models.Entities.View", b =>
@@ -512,7 +512,7 @@ namespace UIM.Core.Data.Migrations
 
                     b.HasIndex("IdeaId");
 
-                    b.ToTable("Views");
+                    b.ToTable("Views", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -573,7 +573,7 @@ namespace UIM.Core.Data.Migrations
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.OwnsMany("UIM.Core.Models.Entities.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("UIM.Core.Models.Entities.AppUser.RefreshTokens#UIM.Core.Models.Entities.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("Id")
                                 .ValueGeneratedOnAdd()
@@ -619,7 +619,7 @@ namespace UIM.Core.Data.Migrations
 
                             b1.HasIndex("UserId");
 
-                            b1.ToTable("RefreshTokens");
+                            b1.ToTable("RefreshTokens", (string)null);
 
                             b1.WithOwner("User")
                                 .HasForeignKey("UserId");
@@ -663,7 +663,7 @@ namespace UIM.Core.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.OwnsMany("UIM.Core.Models.Entities.Attachment", "Attachments", b1 =>
+                    b.OwnsMany("UIM.Core.Models.Entities.Idea.Attachments#UIM.Core.Models.Entities.Attachment", "Attachments", b1 =>
                         {
                             b1.Property<string>("Id")
                                 .ValueGeneratedOnAdd()
@@ -702,7 +702,7 @@ namespace UIM.Core.Data.Migrations
 
                             b1.HasIndex("IdeaId");
 
-                            b1.ToTable("Attachments");
+                            b1.ToTable("Attachments", (string)null);
 
                             b1.WithOwner("Idea")
                                 .HasForeignKey("IdeaId");

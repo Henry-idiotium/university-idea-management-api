@@ -12,7 +12,7 @@ public class Idea : Entity
     public virtual ICollection<IdeaTag>? IdeaTags { get; set; }
     public virtual Submission Submission { get; set; } = default!;
     public virtual List<Comment> Comments { get; set; } = default!;
-    public virtual List<Attachment> Attachments { get; set; } = default!;
+    public virtual List<Attachment>? Attachments { get; set; }
     public virtual ICollection<Like>? Likes { get; set; }
     public virtual ICollection<View>? Views { get; set; }
 }

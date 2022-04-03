@@ -1,5 +1,6 @@
 namespace UIM.Core.Controllers.Shared;
 
+[Route("api/[controller]")]
 public class IdeaController : SharedController<IIdeaService>
 {
     private readonly IJwtService _jwtService;
@@ -9,7 +10,7 @@ public class IdeaController : SharedController<IIdeaService>
         _jwtService = jwtService;
     }
 
-    [HttpPost("api/[controller]")]
+    [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateIdeaRequest request)
     {
         if (request == null)
@@ -29,7 +30,7 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult();
     }
 
-    [HttpDelete("api/[controller]/{id}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
@@ -46,17 +47,18 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult();
     }
 
-    [HttpGet("api/[controller]s")]
-    public async Task<IActionResult> Read([FromQuery] SieveModel request)
+    [HttpGet("list/{submissionId}")]
+    public async Task<IActionResult> Read([FromQuery] SieveModel request, string submissionId)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var result = await _service.FindAsync(request);
+        var decodedSubmissionId = EncryptHelpers.DecodeBase64Url(submissionId);
+        var result = await _service.FindAsync(decodedSubmissionId, request);
         return ResponseResult(result);
     }
 
-    [HttpGet("api/[controller]/{id}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);
@@ -64,7 +66,7 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult(result);
     }
 
-    [HttpPut("api/[controller]/{id}")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromBody] UpdateIdeaRequest request, string id)
     {
         if (request == null)

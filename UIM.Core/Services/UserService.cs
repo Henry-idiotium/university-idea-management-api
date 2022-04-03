@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace UIM.Core.Services;
 
 public class UserService : Service, IUserService
@@ -177,7 +175,6 @@ public class UserService : Service, IUserService
                     }
                 )
         );
-
         return mappedUser;
     }
 
