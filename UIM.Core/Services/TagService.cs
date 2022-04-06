@@ -50,8 +50,8 @@ public class TagService : Service, ITagService
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    public IEnumerable<TagDetailsResponse> FindAll() =>
-        _mapper.Map<IEnumerable<TagDetailsResponse>>(_unitOfWork.Tags.Set);
+    public IEnumerable<SimpleTagResponse> FindAll() =>
+        _mapper.Map<IEnumerable<SimpleTagResponse>>(_unitOfWork.Tags.Set);
 
     public async Task<SieveResponse> FindAsync(SieveModel model)
     {

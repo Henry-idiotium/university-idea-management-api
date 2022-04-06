@@ -4,14 +4,14 @@ public class DepartmentController : AdminController<IDepartmentService>
 {
     public DepartmentController(IDepartmentService service) : base(service) { }
 
-    [HttpPost("api/[controller]-management")]
+    [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateDepartmentRequest request)
     {
         await _service.CreateAsync(request);
         return ResponseResult();
     }
 
-    [HttpDelete("api/[controller]-management/{id}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);
@@ -19,10 +19,10 @@ public class DepartmentController : AdminController<IDepartmentService>
         return ResponseResult();
     }
 
-    [HttpGet("api/[controller]/list")]
+    [HttpGet("list")]
     public IActionResult Read() => ResponseResult(_service.FindAll());
 
-    [HttpGet("api/[controller]-management/list")]
+    [HttpGet("table/list")]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)
@@ -32,7 +32,7 @@ public class DepartmentController : AdminController<IDepartmentService>
         return ResponseResult(result);
     }
 
-    [HttpGet("api/[controller]-management/{id}")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)
     {
         var entityId = EncryptHelpers.DecodeBase64Url(id);
@@ -40,7 +40,7 @@ public class DepartmentController : AdminController<IDepartmentService>
         return ResponseResult(result);
     }
 
-    [HttpPut("api/[controller]-management/{id}")]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromBody] UpdateDepartmentRequest request, string id)
     {
         if (request == null)

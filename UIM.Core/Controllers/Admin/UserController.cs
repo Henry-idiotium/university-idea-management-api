@@ -1,6 +1,5 @@
 namespace UIM.Core.Controllers;
 
-[Route("api/[controller]-management")]
 public class UserController : AdminController<IUserService>
 {
     public UserController(IUserService service) : base(service) { }
@@ -23,7 +22,7 @@ public class UserController : AdminController<IUserService>
         return ResponseResult();
     }
 
-    [HttpGet("list")]
+    [HttpGet("table/list")]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)

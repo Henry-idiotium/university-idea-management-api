@@ -9,19 +9,6 @@ public class SubmissionService : Service, ISubmissionService
         UserManager<AppUser> userManager
     ) : base(mapper, sieveProcessor, unitOfWork, userManager) { }
 
-    public async Task AddIdeaAsync(AddIdeaRequest request)
-    {
-        var submission = await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId);
-        var idea = await _unitOfWork.Ideas.GetByIdAsync(request.SubmissionId);
-        if (submission == null || idea == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
-        idea.SubmissionId = submission.Id;
-        var edit = await _unitOfWork.Ideas.UpdateAsync(idea);
-        if (!edit.Succeeded)
-            throw new HttpException(HttpStatusCode.InternalServerError);
-    }
-
     public async Task CreateAsync(CreateSubmissionRequest request)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
@@ -45,6 +32,8 @@ public class SubmissionService : Service, ISubmissionService
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
+    // TODO: Validate is_active, make it dynamic a bit
+
     public async Task EditAsync(UpdateSubmissionRequest request)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
@@ -52,7 +41,6 @@ public class SubmissionService : Service, ISubmissionService
         if (user == null || subToEdit == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        // TODO: u seeing this
         _mapper.Map(
             request,
             subToEdit,
@@ -87,6 +75,15 @@ public class SubmissionService : Service, ISubmissionService
             index: model?.Page,
             total: await _unitOfWork.Ideas.CountAsync()
         );
+    }
+
+    public IEnumerable<SimpleSubmissionResponse> FindAll()
+    {
+        var subs = _unitOfWork.Submissions.Set.Where(_ => _.IsActive);
+        if (subs == null)
+            throw new HttpException(HttpStatusCode.InternalServerError);
+
+        return _mapper.Map<List<SimpleSubmissionResponse>>(subs);
     }
 
     public async Task<SubmissionDetailsResponse> FindByIdAsync(string submissionId)

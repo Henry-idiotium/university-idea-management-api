@@ -44,6 +44,7 @@ global using UIM.Core.Models.Dtos;
 global using UIM.Core.Models.Dtos.Attachment;
 global using UIM.Core.Models.Dtos.Auth;
 global using UIM.Core.Models.Dtos.Comment;
+global using UIM.Core.Models.Dtos.Dashboard;
 global using UIM.Core.Models.Dtos.Department;
 global using UIM.Core.Models.Dtos.Idea;
 global using UIM.Core.Models.Dtos.Role;

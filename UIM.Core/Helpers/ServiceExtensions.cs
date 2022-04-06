@@ -43,18 +43,6 @@ public static class ServiceExtensions
         return services;
     }
 
-    public static IServiceCollection AddCorsExt(this IServiceCollection services)
-    {
-        services.AddCors(
-            _ =>
-                _.AddPolicy(
-                    "default",
-                    conf => conf.AllowAnyMethod().AllowAnyHeader().WithOrigins(EnvVars.ValidOrigins)
-                )
-        );
-        return services;
-    }
-
     public static IServiceCollection AddDIContainerExt(this IServiceCollection services)
     {
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -66,11 +54,13 @@ public static class ServiceExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IIdeaService, IdeaService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<ISubmissionService, SubmissionService>();
+        services.AddScoped<IGoogleDriveService, GoogleDriveService>();
 
         return services;
     }

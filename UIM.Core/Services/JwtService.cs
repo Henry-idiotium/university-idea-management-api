@@ -152,7 +152,7 @@ public class JwtService : IJwtService
     {
         try
         {
-            var googleId = EnvVars.SocialAuth.GapiClientId;
+            var googleId = EnvVars.Gapi.ClientId;
             if (googleId == null)
                 throw new HttpException(HttpStatusCode.BadRequest);
 

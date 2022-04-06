@@ -10,6 +10,8 @@ public class TagProfile : Profile
                 opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id))
             );
 
+        CreateMap<Tag, SimpleTagResponse>();
+
         CreateMap<CreateTagRequest, Tag>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.ToLower()))
             .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.Now))

@@ -11,7 +11,6 @@ var Configuration = builder.Configuration;
         .AddAuthenticationExt()
         .AddDIContainerExt()
         .Configure<SieveOptions>(Configuration.GetSection("Sieve"))
-        .AddCorsExt()
         .AddControllersExt()
         .AddSwaggerExt();
 }
@@ -33,7 +32,13 @@ var serviceProvider = app.Services;
 
     app.UseHttpsRedirection()
         .UseRouting()
-        .UseCors("default")
+        .UseCors(
+            x =>
+                x.AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .SetIsOriginAllowed(origin => true)
+                    .AllowCredentials()
+        )
         .UseAuthentication()
         .UseAuthorization()
         .UseHttpExceptionHandler()

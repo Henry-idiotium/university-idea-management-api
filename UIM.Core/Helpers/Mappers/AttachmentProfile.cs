@@ -10,10 +10,7 @@ public class AttachmentProfile : Profile
                 opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.IdeaId))
             );
 
-        CreateMap<ModifyAttachmentRequest, Attachment>()
-            .ForMember(
-                dest => dest.IdeaId,
-                opt => opt.MapFrom(src => EncryptHelpers.DecodeBase64Url(src.IdeaId))
-            );
+        CreateMap<UploadAttachmentRequest, Attachment>();
+        CreateMap<UpdateAttachmentRequest, Attachment>();
     }
 }

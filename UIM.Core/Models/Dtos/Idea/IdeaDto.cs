@@ -7,5 +7,5 @@ public abstract class IdeaDto
     [Required]
     public virtual string Content { get; set; } = default!;
     public virtual bool IsAnonymous { get; set; }
-    public virtual string[] Tags { get; set; } = default!;
+    public virtual string[]? Tags { get; set; }
 }

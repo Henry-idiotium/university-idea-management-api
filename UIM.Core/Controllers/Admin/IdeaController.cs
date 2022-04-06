@@ -1,6 +1,5 @@
 namespace UIM.Core.Controllers.Admin;
 
-[Route("api/[controller]-management")]
 public class IdeaController : AdminController<IIdeaService>
 {
     private readonly IJwtService _jwtService;
@@ -25,6 +24,7 @@ public class IdeaController : AdminController<IIdeaService>
             throw new HttpException(HttpStatusCode.Unauthorized);
 
         request.UserId = userId;
+        request.SubmissionId = EncryptHelpers.DecodeBase64Url(request.SubmissionId);
 
         await _service.CreateAsync(request);
         return ResponseResult();
@@ -47,8 +47,11 @@ public class IdeaController : AdminController<IIdeaService>
         return ResponseResult();
     }
 
-    [HttpGet("list/{submissionId}")]
-    public async Task<IActionResult> Read([FromQuery] SieveModel request, string submissionId)
+    [HttpGet("table/list/{submissionId}")]
+    public async Task<IActionResult> Read(
+        [FromQuery] SieveModel request,
+        string? submissionId = null
+    )
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);

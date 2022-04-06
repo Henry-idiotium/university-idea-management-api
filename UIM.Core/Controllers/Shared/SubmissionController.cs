@@ -5,7 +5,7 @@ public class SubmissionController : SharedController<ISubmissionService>
 {
     public SubmissionController(ISubmissionService service) : base(service) { }
 
-    [HttpGet("list")]
+    [HttpGet("table/list")]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)
@@ -14,6 +14,9 @@ public class SubmissionController : SharedController<ISubmissionService>
         var result = await _service.FindAsync(request);
         return ResponseResult(result);
     }
+
+    [HttpGet("list")]
+    public IActionResult Read() => ResponseResult(_service.FindAll());
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)

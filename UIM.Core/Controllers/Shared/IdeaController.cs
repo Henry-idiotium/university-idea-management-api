@@ -47,8 +47,11 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult();
     }
 
-    [HttpGet("list/{submissionId}")]
-    public async Task<IActionResult> Read([FromQuery] SieveModel request, string submissionId)
+    [HttpGet("table/list/{submissionId}")]
+    public async Task<IActionResult> Read(
+        [FromQuery] SieveModel request,
+        string? submissionId = null
+    )
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);

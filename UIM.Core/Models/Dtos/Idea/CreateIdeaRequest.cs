@@ -8,5 +8,5 @@ public class CreateIdeaRequest : IdeaDto
     public string? UserId { get; set; }
     [Required]
     public string SubmissionId { get; set; } = default!;
-    public List<ModifyAttachmentRequest>? Attachments { get; set; }
+    public List<UploadAttachmentRequest>? Attachments { get; set; }
 }

@@ -27,7 +27,7 @@ public class CommentController : SharedController<ICommentService>
         return ResponseResult();
     }
 
-    [HttpGet("list/{ideaId}")]
+    [HttpGet("table/list/{ideaId}")]
     public async Task<IActionResult> Read([FromQuery] SieveModel request, string ideaId)
     {
         if (request == null)

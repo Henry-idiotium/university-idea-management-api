@@ -10,10 +10,10 @@ public class SubmissionProfile : Profile
                 opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id))
             );
 
-        CreateMap<SubmissionDetailsResponse, Submission>()
+        CreateMap<Submission, SimpleSubmissionResponse>()
             .ForMember(
                 dest => dest.Id,
-                opt => opt.MapFrom(src => EncryptHelpers.DecodeBase64Url(src.Id))
+                opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id))
             );
 
         CreateMap<CreateSubmissionRequest, Submission>()
