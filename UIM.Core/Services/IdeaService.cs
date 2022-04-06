@@ -34,7 +34,7 @@ public class IdeaService : Service, IIdeaService
         if (await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var idea = _mapper.Map<CreateIdeaRequest, Idea>(request);
+        var idea = _mapper.Map<Idea>(request);
 
         if (request.Attachments != null && request.Attachments.Any())
         {

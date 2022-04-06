@@ -20,6 +20,7 @@ public class IdeaProfile : Profile
             .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate())
             .ForSourceMember(dest => dest.Attachments, opt => opt.DoNotValidate())
             .ForMember(dest => dest.Attachments, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.Now))
             .ForMember(dest => dest.ModifiedDate, opt => opt.MapFrom(src => DateTime.Now));
     }
 }
