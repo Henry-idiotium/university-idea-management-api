@@ -48,64 +48,34 @@ public class DashboardService : Service, IDashboardService
         return mappedSubs;
     }
 
-    public IEnumerable<TopIdea> TopIdeasInMonthYear(string month, string year)
+    public IEnumerable<TopIdea> TopIdeasInMonthYear(string year, string month )
     {
-        if (
-            !DateTime.TryParseExact(
-                year,
-                "yyyy",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out var tmpYear
-            )
-            || !DateTime.TryParseExact(
-                month,
-                "MM",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out var tmpMonth
-            )
-        )
-        {
-            throw new HttpException(HttpStatusCode.BadRequest);
-        }
-
-        var theYear = tmpYear.Year;
-        var theMonth = tmpMonth.Month;
+        var theYear = int.Parse(year);
+        var theMonth = int.Parse(month);
         var ideasInMonthYear = _unitOfWork.Ideas.Set.Where(
             _ => _.CreatedDate.Year == theYear && _.CreatedDate.Month == theMonth
-        );
-
-        var topIdeas = ideasInMonthYear.OrderByDescending(_ => _.Comments.Count);
-        var mappedIdeas = _mapper.Map<IEnumerable<TopIdea>>(topIdeas);
-
+        ).Include(x=>x.Comments);
+        var topIdeas = ideasInMonthYear.OrderBy(_ => _.Comments.Count);
+        var mappedIdeas = new List<TopIdea>();
+        foreach (var item in topIdeas)
+        {
+            mappedIdeas.Add(new()
+            {
+                Idea = new()
+                {
+                    Id = EncryptHelpers.EncodeBase64Url(item.Id),
+                    Title = item.Title
+                },
+                CommentNumber = item.Comments.Count
+            });
+        }
         return mappedIdeas;
     }
 
-    public IEnumerable<MonthActivity> ActivitiesOfEachDayInMonth(string month, string year)
+    public IEnumerable<MonthActivity> ActivitiesOfEachDayInMonth(string year, string month)
     {
-        if (
-            !DateTime.TryParseExact(
-                year,
-                "yyyy",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out var tmpYear
-            )
-            || !DateTime.TryParseExact(
-                month,
-                "MM",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out var tmpMonth
-            )
-        )
-        {
-            throw new HttpException(HttpStatusCode.BadRequest);
-        }
-
-        var theMonth = tmpMonth.Month;
-        var theYear = tmpYear.Year;
+        var theMonth = int.Parse(month);
+        var theYear = int.Parse(year);
         var theDays = DateTime.DaysInMonth(theYear, theMonth);
 
         var ideasInMonth = _unitOfWork.Ideas.Set.Where(
