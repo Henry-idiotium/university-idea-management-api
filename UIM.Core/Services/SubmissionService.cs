@@ -61,9 +61,6 @@ public class SubmissionService : Service, ISubmissionService
 
     public async Task<SieveResponse> FindAsync(SieveModel model)
     {
-        if (model.Page < 0 || model.PageSize < 1)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
         var sortedSubs = _sieveProcessor.Apply(model, _unitOfWork.Submissions.Set);
         if (sortedSubs == null)
             throw new HttpException(HttpStatusCode.InternalServerError);

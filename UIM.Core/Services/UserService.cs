@@ -88,9 +88,6 @@ public class UserService : Service, IUserService
 
     public async Task<SieveResponse> FindAsync(SieveModel model)
     {
-        if (model.Page < 0 || model.PageSize < 1)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
         var sortedUsers = _sieveProcessor.Apply(model, _userManager.Users);
         if (sortedUsers == null)
             throw new HttpException(HttpStatusCode.BadRequest);

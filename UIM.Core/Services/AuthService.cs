@@ -49,7 +49,7 @@ public class AuthService : Service, IAuthService
         if (request.NewPassword != request.ConfirmNewPassword)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var user = await _userManager.FindByIdAsync(request.Id);
+        var user = await _userManager.FindByIdAsync(request.Id!);
         var oldPwdCorrect = await _userManager.CheckPasswordAsync(user, request?.OldPassword);
         if (!oldPwdCorrect)
             throw new HttpException(HttpStatusCode.BadRequest);

@@ -5,8 +5,7 @@ namespace UIM.Core.Models.Dtos.Auth;
 public class UpdatePasswordRequest
 {
     [TJS.JsonIgnore]
-    [Required]
-    public string Id { get; set; } = default!;
+    public string? Id { get; set; }
     [Required]
     public string OldPassword { get; set; } = default!;
     [Required]

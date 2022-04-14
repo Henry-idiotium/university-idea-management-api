@@ -4,6 +4,13 @@ public class IdeaRepository : Repository<Idea>, IIdeaRepository
 {
     public IdeaRepository(UimContext context) : base(context) { }
 
+    // public async Task AddCommentAsync(Comment comment) => await _context.Comments.AddAsync(comment);
+    // public async Task AddLikenessAsync(Like like) => await _context.Likes.AddAsync(like);
+    // public void UpdateComment(Comment comment) => _context.Comments.Update(comment);
+    // public void DeleteComment(Comment comment) => _context.Comments.Remove(comment);
+
+    public void DeleteLikeness(Like like) => _context.Likes.Remove(like);
+
     public async Task<bool> AddToTagAsync(Idea idea, Tag tag)
     {
         await _context.IdeaTags.AddAsync(new IdeaTag { IdeaId = idea.Id, TagId = tag.Id });

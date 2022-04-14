@@ -31,10 +31,15 @@ public class IdeaService : Service, IIdeaService
 
     public async Task CreateAsync(CreateIdeaRequest request)
     {
-        if (await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null)
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        if (
+            user == null || await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null
+        )
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var idea = _mapper.Map<Idea>(request);
+        idea.CreatedBy = user.Email;
+        idea.ModifiedBy = user.Email;
 
         if (request.Attachments != null && request.Attachments.Any())
         {
@@ -121,12 +126,12 @@ public class IdeaService : Service, IIdeaService
 
     public async Task<SieveResponse> FindAsync(string submissionId, SieveModel model)
     {
-        if (model.Page < 0 || model.PageSize < 1)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
         var ideas = Enumerable.Empty<Idea>().AsQueryable();
 
-        if (await _unitOfWork.Submissions.GetByIdAsync(submissionId) == null)
+        if (
+            submissionId != string.Empty
+            && await _unitOfWork.Submissions.GetByIdAsync(submissionId) == null
+        )
             throw new HttpException(HttpStatusCode.BadRequest);
 
         if (submissionId != string.Empty)
@@ -138,7 +143,6 @@ public class IdeaService : Service, IIdeaService
         if (sortedIdeas == null)
             throw new HttpException(HttpStatusCode.InternalServerError);
 
-        // TODO: notice {item.User}, may return an exception
         var mappedIdeas = new List<IdeaDetailsResponse>();
         foreach (var idea in sortedIdeas)
         {

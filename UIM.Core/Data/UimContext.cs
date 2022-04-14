@@ -31,7 +31,7 @@ public class UimContext : IdentityDbContext<AppUser>
 #nullable disable
                 conf.Property(_ => _.Gender)
                     .HasMaxLength(10)
-                    .HasConversion(v => v.ToString(), v => (Gender?)Enum.Parse(typeof(Gender?), v));
+                    .HasConversion(v => v.ToString(), v => (Gender)Enum.Parse(typeof(Gender), v));
 #nullable enable
 
                 conf.OwnsMany(

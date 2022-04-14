@@ -38,9 +38,6 @@ public class CommentService : Service, ICommentService
 
     public async Task<SieveResponse> FindAsync(string ideaId, SieveModel model)
     {
-        if (model.Page < 0 || model.PageSize < 1)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         if (idea == null)
             throw new HttpException(HttpStatusCode.BadRequest);
@@ -64,9 +61,6 @@ public class CommentService : Service, ICommentService
         SieveModel model
     )
     {
-        if (model.Page < 0 || model.PageSize < 1)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         var user = await _userManager.FindByIdAsync(userId);
         if (idea == null || user == null)

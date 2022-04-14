@@ -47,11 +47,8 @@ public class IdeaController : AdminController<IIdeaService>
         return ResponseResult();
     }
 
-    [HttpGet("table/list/{submissionId}")]
-    public async Task<IActionResult> Read(
-        [FromQuery] SieveModel request,
-        string? submissionId = null
-    )
+    [HttpGet("table/list")]
+    public async Task<IActionResult> Read([FromQuery] SieveModel request, string? submissionId)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
