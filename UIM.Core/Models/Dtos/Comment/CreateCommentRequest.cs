@@ -5,7 +5,7 @@ namespace UIM.Core.Models.Dtos.Comment;
 public class CreateCommentRequest : CommentDto
 {
     [Required]
-    public string IdeaId { get; set; } = default!;
+    public string? IdeaId { get; set; }
     [TJS.JsonIgnore]
-    public string UserId { get; set; } = default!;
+    public string? UserId { get; set; }
 }
