@@ -251,7 +251,8 @@ public static class ServiceExtensions
                     Email = "quocdat.438317@gmail.com",
                     UserName = "best_staff_ever_7861",
                     CreatedDate = DateTime.Now,
-                    IsDefaultPassword = false
+                    IsDefaultPassword = false,
+                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
                 };
                 var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
                 if (existingMgr == null)
@@ -269,7 +270,8 @@ public static class ServiceExtensions
                     Email = "henry.test.dev.381872@gmail.com",
                     UserName = "best_manager_ever_a89y2412",
                     CreatedDate = DateTime.Now,
-                    IsDefaultPassword = false
+                    IsDefaultPassword = false,
+                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
                 };
                 var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
                 if (existingMgr == null)
@@ -287,7 +289,8 @@ public static class ServiceExtensions
                     Email = "manager@gmail.com",
                     UserName = "best_manager_ever_7861",
                     CreatedDate = DateTime.Now,
-                    IsDefaultPassword = false
+                    IsDefaultPassword = false,
+                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
                 };
                 var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
                 if (existingMgr == null)
@@ -305,7 +308,8 @@ public static class ServiceExtensions
                     Email = "bojejje@majpithu.st",
                     UserName = "aspernatur",
                     CreatedDate = DateTime.Now,
-                    IsDefaultPassword = false
+                    IsDefaultPassword = false,
+                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
                 };
                 var existingSupv = await userManager.FindByEmailAsync(supv.Email);
                 if (existingSupv == null)
@@ -323,7 +327,8 @@ public static class ServiceExtensions
                     Email = "aptu@mitep.pt",
                     UserName = "unde",
                     CreatedDate = DateTime.Now,
-                    IsDefaultPassword = false
+                    IsDefaultPassword = false,
+                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
                 };
                 var existingStaff = await userManager.FindByEmailAsync(staff.Email);
                 if (existingStaff == null)
@@ -346,7 +351,8 @@ public static class ServiceExtensions
                     Email = EnvVars.PwrUserAuth.Email,
                     UserName = EnvVars.PwrUserAuth.UserName,
                     CreatedDate = DateTime.Now,
-                    IsDefaultPassword = false
+                    IsDefaultPassword = false,
+                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
                 };
 
                 var createPowerUser = await userManager.CreateAsync(

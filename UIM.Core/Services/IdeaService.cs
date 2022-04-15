@@ -29,7 +29,7 @@ public class IdeaService : Service, IIdeaService
         }
     }
 
-    public async Task CreateAsync(CreateIdeaRequest request)
+    public async Task<SimpleIdeaResponse> CreateAsync(CreateIdeaRequest request)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (
@@ -47,7 +47,7 @@ public class IdeaService : Service, IIdeaService
             {
                 if (file?.Data?.Length > 0)
                 {
-                    var uniqueFileName = $"{Guid.NewGuid()}_{file.Name!}";
+                    var uniqueFileName = $"{file.Name!}_{Guid.NewGuid()}";
                     var metadata = _driveService.UploadFile(
                         new MemoryStream(file.Data),
                         uniqueFileName,
@@ -65,6 +65,8 @@ public class IdeaService : Service, IIdeaService
 
         if (request.Tags != null)
             await AddTagsAsync(add.Entity!, request.Tags);
+
+        return _mapper.Map<SimpleIdeaResponse>(add.Entity);
     }
 
     public async Task EditAsync(UpdateIdeaRequest request)
@@ -166,7 +168,6 @@ public class IdeaService : Service, IIdeaService
         if (idea == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        // TODO: notice {item.User}, may return an exception
         var mappedIdea = _mapper.Map<IdeaDetailsResponse>(idea);
         mappedIdea.User = _mapper.Map<UserDetailsResponse>(idea.User);
         mappedIdea.Tags = _unitOfWork.Ideas.GetTags(idea.Id).ToArray();
@@ -178,13 +179,19 @@ public class IdeaService : Service, IIdeaService
 
     public async Task RemoveAsync(string userId, string ideaId)
     {
+        var user = await _userManager.FindByIdAsync(userId);
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
-        if (idea == null)
+
+        if (!await _userManager.IsInRoleAsync(user, RoleNames.Admin) && idea?.UserId != user.Id)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var user = await _userManager.FindByIdAsync(userId);
-        if (!await _userManager.IsInRoleAsync(user, RoleNames.Admin) || idea.UserId != user.Id)
-            throw new HttpException(HttpStatusCode.BadRequest);
+        if (idea?.Attachments.Any() == true)
+        {
+            foreach (var file in idea.Attachments)
+            {
+                _driveService.DeleteFile(file.FileId);
+            }
+        }
 
         var delete = await _unitOfWork.Ideas.DeleteAsync(ideaId);
         if (!delete.Succeeded)

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UIM.Core.Data;
 
@@ -11,9 +12,10 @@ using UIM.Core.Data;
 namespace UIM.Core.Data.Migrations
 {
     [DbContext(typeof(UimContext))]
-    partial class UimContextModelSnapshot : ModelSnapshot
+    [Migration("20220414151611_AppUser_AddProp_Avatar")]
+    partial class AppUser_AddProp_Avatar
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

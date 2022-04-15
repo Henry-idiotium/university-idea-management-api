@@ -48,27 +48,23 @@ public class DashboardService : Service, IDashboardService
         return mappedSubs;
     }
 
-    public IEnumerable<TopIdea> TopIdeasInMonthYear(string year, string month )
+    public IEnumerable<TopIdea> TopIdeasInMonthYear(string year, string month)
     {
         var theYear = int.Parse(year);
         var theMonth = int.Parse(month);
-        var ideasInMonthYear = _unitOfWork.Ideas.Set.Where(
-            _ => _.CreatedDate.Year == theYear && _.CreatedDate.Month == theMonth
-        ).Include(x=>x.Comments);
+        var ideasInMonthYear = _unitOfWork.Ideas.Set
+            .Where(_ => _.CreatedDate.Year == theYear && _.CreatedDate.Month == theMonth)
+            .Include(x => x.Comments);
         var topIdeas = ideasInMonthYear.OrderBy(_ => _.Comments.Count);
         var mappedIdeas = new List<TopIdea>();
         foreach (var item in topIdeas)
-        {
-            mappedIdeas.Add(new()
-            {
-                Idea = new()
+            mappedIdeas.Add(
+                new()
                 {
-                    Id = EncryptHelpers.EncodeBase64Url(item.Id),
-                    Title = item.Title
-                },
-                CommentNumber = item.Comments.Count
-            });
-        }
+                    Idea = _mapper.Map<SimpleIdeaResponse>(item),
+                    CommentNumber = item.Comments.Count
+                }
+            );
         return mappedIdeas;
     }
 

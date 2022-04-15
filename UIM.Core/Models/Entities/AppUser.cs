@@ -7,6 +7,7 @@ public class AppUser : IdentityUser
     public Gender? Gender { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public bool IsDefaultPassword { get; set; } = true;
+    public string Avatar { get; set; } = default!;
 
     private DateTime? createdDate;
     public DateTime CreatedDate

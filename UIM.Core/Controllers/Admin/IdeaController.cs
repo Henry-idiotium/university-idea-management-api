@@ -26,8 +26,8 @@ public class IdeaController : AdminController<IIdeaService>
         request.UserId = userId;
         request.SubmissionId = EncryptHelpers.DecodeBase64Url(request.SubmissionId);
 
-        await _service.CreateAsync(request);
-        return ResponseResult();
+        var response = await _service.CreateAsync(request);
+        return ResponseResult(response);
     }
 
     [HttpDelete("{id}")]

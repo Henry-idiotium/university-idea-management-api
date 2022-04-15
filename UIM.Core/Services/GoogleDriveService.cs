@@ -30,12 +30,25 @@ public class GoogleDriveService : IGoogleDriveService
         );
     }
 
-    public void DeleteFile(string fileId) => _driveService.Files.Delete(fileId).Execute();
+    public void DeleteFile(string fileId)
+    {
+        try
+        {
+            if (!EnvVars.UseGoogleDrive)
+            {
+                return;
+            }
+            _driveService.Files.Delete(fileId).Execute();
+        }
+        catch { }
+    }
 
     public Attachment UploadFile(Stream file, string name, string description, string mime)
     {
         if (!EnvVars.UseGoogleDrive)
+        {
             return new();
+        }
 
         var metadata = new Google.Apis.Drive.v3.Data.File
         {

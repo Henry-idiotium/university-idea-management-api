@@ -40,6 +40,9 @@ public class UserService : Service, IUserService
         var newUser = _mapper.Map<AppUser>(request);
         var password = AuthHelpers.GeneratePassword(8, true);
 
+        if (request.Avatar.IsNullOrEmpty())
+            request.Avatar = await DiceBearHelpers.GetAvatarAsync();
+
         var userCreated = await _userManager.CreateAsync(newUser, password);
         await AddToDepartmentAsync(newUser, request.Department);
         await _userManager.AddToRoleAsync(newUser, request.Role);

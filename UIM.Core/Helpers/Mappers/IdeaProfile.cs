@@ -10,6 +10,12 @@ public class IdeaProfile : Profile
                 opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id))
             );
 
+        CreateMap<Idea, SimpleIdeaResponse>()
+            .ForMember(
+                dest => dest.Id,
+                opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id))
+            );
+
         CreateMap<UpdateIdeaRequest, Idea>()
             .ForSourceMember(src => src.Id, opt => opt.DoNotValidate())
             .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate())
