@@ -21,11 +21,11 @@ public class UserProfile : Profile
             );
 
         CreateMap<CreateUserRequest, AppUser>()
+            .ForSourceMember(src => src.Department, opt => opt.DoNotValidate())
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
             .ForMember(dest => dest.Likes, opt => opt.Ignore())
             .ForMember(dest => dest.Views, opt => opt.Ignore())
             .ForMember(dest => dest.Department, opt => opt.Ignore())
-            .ForSourceMember(src => src.Department, opt => opt.DoNotValidate())
             .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.Now))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Phone))
             .ForMember(dest => dest.PhoneNumberConfirmed, opt => opt.MapFrom(src => true));
@@ -37,6 +37,6 @@ public class UserProfile : Profile
             .ForMember(dest => dest.Department, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.Now))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.Phone))
-            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName.ToLower()));
+            .ForMember(dest => dest.PhoneNumberConfirmed, opt => opt.MapFrom(src => true));
     }
 }

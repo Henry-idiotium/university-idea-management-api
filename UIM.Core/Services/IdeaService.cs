@@ -32,9 +32,8 @@ public class IdeaService : Service, IIdeaService
     public async Task<SimpleIdeaResponse> CreateAsync(CreateIdeaRequest request)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
-        if (
-            user == null || await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null
-        )
+        var submission = await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId);
+        if (user == null || submission == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var idea = _mapper.Map<Idea>(request);
@@ -148,11 +147,12 @@ public class IdeaService : Service, IIdeaService
         var mappedIdeas = new List<IdeaDetailsResponse>();
         foreach (var idea in sortedIdeas)
         {
+            var submission = await _unitOfWork.Submissions.GetByIdAsync(idea.SubmissionId);
             var mappedIdea = _mapper.Map<IdeaDetailsResponse>(idea);
             mappedIdea.User = _mapper.Map<UserDetailsResponse>(idea.User);
             mappedIdea.Tags = _unitOfWork.Ideas.GetTags(idea.Id).ToArray();
             mappedIdea.Attachments = _mapper.Map<AttachmentDetailsResponse[]>(idea.Attachments);
-            mappedIdea.Submission = _mapper.Map<SubmissionDetailsResponse>(idea.Submission);
+            mappedIdea.Submission = _mapper.Map<SubmissionDetailsResponse>(submission);
             mappedIdeas.Add(mappedIdea);
         }
         return new(

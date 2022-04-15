@@ -35,6 +35,10 @@ public static class ServiceExtensions
                 opt =>
                     opt.InvalidModelStateResponseFactory = context =>
                     {
+                        foreach (var item in context.ModelState)
+                            foreach (var err in item.Value.Errors)
+                                Console.WriteLine(err.ErrorMessage);
+
                         var result = new ValidationFailedResult();
                         result.ContentTypes.Add(MediaTypeNames.Application.Json);
                         return result;

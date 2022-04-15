@@ -6,8 +6,7 @@ public abstract class UserDto
     public string FullName { get; set; } = default!;
     [Required]
     public string Role { get; set; } = default!;
-    [Required]
-    public string Avatar { get; set; } = default!;
+    public string? Avatar { get; set; }
     public string? Department { get; set; }
     public string? Phone { get; set; }
     public string? Gender { get; set; }

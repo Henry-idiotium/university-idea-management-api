@@ -32,8 +32,6 @@ public class SubmissionService : Service, ISubmissionService
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    // TODO: Validate is_active, make it dynamic a bit
-
     public async Task EditAsync(UpdateSubmissionRequest request)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
