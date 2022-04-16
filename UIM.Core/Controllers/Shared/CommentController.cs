@@ -29,7 +29,7 @@ public class CommentController : SharedController<ICommentService>
     }
 
     [HttpGet("list/{ideaId}")]
-    public async Task<IActionResult> Read(string ideaId)
+    public async Task<IActionResult> Read(string ideaId, int? minItems)
     {
         var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
             .Split(" ")
@@ -39,7 +39,10 @@ public class CommentController : SharedController<ICommentService>
         if (userId == null)
             throw new HttpException(HttpStatusCode.Unauthorized);
 
-        var result = await _service.FindAllAsync(EncryptHelpers.DecodeBase64Url(ideaId));
+        var result = await _service.FindAllAsync(
+            EncryptHelpers.DecodeBase64Url(ideaId),
+            minItems ?? 0
+        );
         return ResponseResult(result);
     }
 

@@ -25,6 +25,13 @@ public class IdeaRepository : Repository<Idea>, IIdeaRepository
         return added > 0;
     }
 
+    public void RemoveAllTags(Idea idea)
+    {
+        var ideaTags = _context.IdeaTags.Where(_ => _.IdeaId == idea.Id);
+        if (ideaTags != null && ideaTags.Any())
+            _context.IdeaTags.RemoveRange(ideaTags);
+    }
+
     public async Task<IEnumerable<Idea>> GetBySubmissionAsync(string submissionId)
     {
         return await Set.Where(_ => _.SubmissionId == submissionId).ToListAsync();

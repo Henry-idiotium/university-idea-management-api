@@ -36,13 +36,16 @@ public class CommentService : Service, ICommentService
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    public async Task<IEnumerable<CommentDetailsResponse>> FindAllAsync(string ideaId)
+    public async Task<IEnumerable<CommentDetailsResponse>> FindAllAsync(string ideaId, int minItems)
     {
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         if (idea == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var comments = _unitOfWork.Comments.Set.Where(_ => _.IdeaId == ideaId);
+        if (minItems != 0)
+            comments = comments.Take(minItems);
+
         var mappedComments = new List<CommentDetailsResponse>();
         foreach (var comment in comments ?? Enumerable.Empty<Comment>().AsQueryable())
         {

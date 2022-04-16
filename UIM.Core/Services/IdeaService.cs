@@ -135,7 +135,10 @@ public class IdeaService : Service, IIdeaService
         }
 
         if (request.Tags != null)
+        {
+            _unitOfWork.Ideas.RemoveAllTags(idea);
             await AddTagsAsync(idea, request.Tags);
+        }
 
         _mapper.Map(request, idea);
 
