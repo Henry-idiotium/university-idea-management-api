@@ -36,29 +36,29 @@ public class CommentService : Service, ICommentService
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    public async Task<SieveResponse> FindAsync(string ideaId, SieveModel model)
+    public async Task<IEnumerable<CommentDetailsResponse>> FindAllAsync(string ideaId)
     {
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         if (idea == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var comments = _unitOfWork.Comments.Set.Where(_ => _.UserId == ideaId);
-        var sorted = _sieveProcessor.Apply(model, comments);
-        if (sorted == null)
-            throw new HttpException(HttpStatusCode.InternalServerError);
+        var comments = _unitOfWork.Comments.Set.Where(_ => _.IdeaId == ideaId);
+        var mappedComments = new List<CommentDetailsResponse>();
+        foreach (var comment in comments ?? Enumerable.Empty<Comment>().AsQueryable())
+        {
+            var mappedComment = _mapper.Map<CommentDetailsResponse>(comment);
+            mappedComment.User = _mapper.Map<SimpleUserResponse>(comment.User);
+            mappedComment.Idea = _mapper.Map<SimpleIdeaResponse>(comment.Idea);
 
-        var mappedComments = _mapper.Map<IEnumerable<CommentDetailsResponse>>(sorted);
-        return new(
-            rows: mappedComments,
-            index: model?.Page ?? 1,
-            total: await _unitOfWork.Comments.CountAsync()
-        );
+            mappedComments.Add(mappedComment);
+        }
+        return mappedComments;
     }
 
-    public async Task<SieveResponse> FindManyByUserIdAsync(
+    // DEPRECATED: STUPID LOGIC
+    public async Task<IEnumerable<CommentDetailsResponse>> FindAllByUserIdAsync(
         string ideaId,
-        string userId,
-        SieveModel model
+        string userId
     )
     {
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
@@ -66,17 +66,19 @@ public class CommentService : Service, ICommentService
         if (idea == null || user == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var comments = _unitOfWork.Comments.Set.Where(_ => _.UserId == ideaId);
-        var sorted = _sieveProcessor.Apply(model, comments);
-        if (sorted == null)
-            throw new HttpException(HttpStatusCode.InternalServerError);
+        var comments = _unitOfWork.Comments.Set
+            .Where(_ => _.IdeaId == ideaId)
+            .Where(_ => _.UserId == userId);
+        var mappedComments = new List<CommentDetailsResponse>();
+        foreach (var comment in comments ?? Enumerable.Empty<Comment>().AsQueryable())
+        {
+            var mappedComment = _mapper.Map<CommentDetailsResponse>(comment);
+            mappedComment.User = _mapper.Map<SimpleUserResponse>(user);
+            mappedComment.Idea = _mapper.Map<SimpleIdeaResponse>(comment.Idea);
 
-        var mappedComments = _mapper.Map<IEnumerable<CommentDetailsResponse>>(sorted);
-        return new(
-            rows: mappedComments,
-            index: model?.Page ?? 1,
-            total: await _unitOfWork.Comments.CountAsync()
-        );
+            mappedComments.Add(mappedComment);
+        }
+        return mappedComments;
     }
 
     public async Task<CommentDetailsResponse> FindByIdAsync(string id)

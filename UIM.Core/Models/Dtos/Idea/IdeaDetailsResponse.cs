@@ -7,6 +7,7 @@ public class IdeaDetailsResponse : IdeaDto
     public UserDetailsResponse? User { get; set; }
     public virtual AttachmentDetailsResponse[]? Attachments { get; set; }
     public string? CreatedBy { get; set; }
+    public int CommentsCount { get; set; }
     public DateTime CreatedDate { get; set; }
     public string? ModifiedBy { get; set; }
     public DateTime ModifiedDate { get; set; }

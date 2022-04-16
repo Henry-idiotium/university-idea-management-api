@@ -6,6 +6,10 @@ public class IdeaProfile : Profile
     {
         CreateMap<Idea, IdeaDetailsResponse>()
             .ForMember(
+                dest => dest.CommentsCount,
+                opt => opt.MapFrom(src => src.Comments != null ? src.Comments.Count : 0)
+            )
+            .ForMember(
                 dest => dest.Id,
                 opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id))
             );

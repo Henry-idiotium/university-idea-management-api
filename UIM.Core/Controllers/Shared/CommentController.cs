@@ -22,19 +22,24 @@ public class CommentController : SharedController<ICommentService>
             throw new HttpException(HttpStatusCode.Unauthorized);
 
         request.UserId = userId;
+        request.IdeaId = EncryptHelpers.DecodeBase64Url(request.IdeaId);
 
         await _service.CreateAsync(request);
         return ResponseResult();
     }
 
-    [HttpGet("table/list/{ideaId}")]
-    public async Task<IActionResult> Read([FromQuery] SieveModel request, string ideaId)
+    [HttpGet("list/{ideaId}")]
+    public async Task<IActionResult> Read(string ideaId)
     {
-        if (request == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
 
-        var decodedIdeaId = EncryptHelpers.DecodeBase64Url(ideaId);
-        var result = await _service.FindAsync(decodedIdeaId, request);
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        var result = await _service.FindAllAsync(EncryptHelpers.DecodeBase64Url(ideaId));
         return ResponseResult(result);
     }
 
@@ -49,8 +54,7 @@ public class CommentController : SharedController<ICommentService>
         if (userId == null)
             throw new HttpException(HttpStatusCode.Unauthorized);
 
-        var entityId = EncryptHelpers.DecodeBase64Url(id);
-        await _service.RemoveAsync(entityId, userId);
+        await _service.RemoveAsync(EncryptHelpers.DecodeBase64Url(id), userId);
         return ResponseResult();
     }
 

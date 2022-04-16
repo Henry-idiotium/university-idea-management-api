@@ -148,8 +148,9 @@ public class IdeaService : Service, IIdeaService
         foreach (var idea in sortedIdeas)
         {
             var submission = await _unitOfWork.Submissions.GetByIdAsync(idea.SubmissionId);
+            var user = await _userManager.FindByIdAsync(idea.UserId);
             var mappedIdea = _mapper.Map<IdeaDetailsResponse>(idea);
-            mappedIdea.User = _mapper.Map<UserDetailsResponse>(idea.User);
+            mappedIdea.User = _mapper.Map<UserDetailsResponse>(user);
             mappedIdea.Tags = _unitOfWork.Ideas.GetTags(idea.Id).ToArray();
             mappedIdea.Attachments = _mapper.Map<AttachmentDetailsResponse[]>(idea.Attachments);
             mappedIdea.Submission = _mapper.Map<SubmissionDetailsResponse>(submission);

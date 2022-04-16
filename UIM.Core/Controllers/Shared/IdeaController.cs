@@ -25,9 +25,10 @@ public class IdeaController : SharedController<IIdeaService>
             throw new HttpException(HttpStatusCode.Unauthorized);
 
         request.UserId = userId;
+        request.SubmissionId = EncryptHelpers.DecodeBase64Url(request.SubmissionId);
 
-        await _service.CreateAsync(request);
-        return ResponseResult();
+        var response = await _service.CreateAsync(request);
+        return ResponseResult(response);
     }
 
     [HttpDelete("{id}")]

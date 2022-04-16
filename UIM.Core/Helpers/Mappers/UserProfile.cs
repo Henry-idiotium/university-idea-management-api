@@ -20,6 +20,12 @@ public class UserProfile : Profile
                 opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id))
             );
 
+        CreateMap<AppUser, SimpleUserResponse>()
+            .ForMember(
+                dest => dest.Id,
+                opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id))
+            );
+
         CreateMap<CreateUserRequest, AppUser>()
             .ForSourceMember(src => src.Department, opt => opt.DoNotValidate())
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
