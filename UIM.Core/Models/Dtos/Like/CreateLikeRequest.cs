@@ -8,4 +8,5 @@ public class CreateLikeRequest
     public string? UserId { get; set; }
     [Required]
     public string IdeaId { get; set; } = default!;
+    public bool IsLike { get; set; }
 }

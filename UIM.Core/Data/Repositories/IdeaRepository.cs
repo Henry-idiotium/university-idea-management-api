@@ -4,11 +4,17 @@ public class IdeaRepository : Repository<Idea>, IIdeaRepository
 {
     public IdeaRepository(UimContext context) : base(context) { }
 
-    public async Task<bool> AddLikenessAsync(Like like)
+    public IEnumerable<Like> GetLikes(string ideaId) =>
+        _context.Likes.Where(_ => _.IdeaId == ideaId && _.IsLike);
+
+    public IEnumerable<Like> GetDisikes(string ideaId) =>
+        _context.Likes.Where(_ => _.IdeaId == ideaId && _.IsLike);
+
+    public async Task<Like> AddLikenessAsync(Like like)
     {
-        await _context.Likes.AddAsync(like);
-        var added = await _context.SaveChangesAsync();
-        return added > 0;
+        var entry = await _context.Likes.AddAsync(like);
+        await _context.SaveChangesAsync();
+        return entry.Entity;
     }
 
     public bool DeleteLikeness(Like like)

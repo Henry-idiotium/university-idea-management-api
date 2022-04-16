@@ -17,7 +17,7 @@ public class IdeaService : Service, IIdeaService
         _driveService = driveService;
     }
 
-    public async Task AddLikenessAsync(CreateLikeRequest request)
+    public async Task<LikeDetailsResponse> AddLikenessAsync(CreateLikeRequest request)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
         var idea = await _unitOfWork.Ideas.GetByIdAsync(request.IdeaId);
@@ -25,7 +25,27 @@ public class IdeaService : Service, IIdeaService
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var like = _mapper.Map<Like>(request);
-        var add = await _unitOfWork.Ideas.AddLikenessAsync(like);
+
+        var entity = await _unitOfWork.Ideas.AddLikenessAsync(like);
+        if (entity == null)
+            throw new HttpException(HttpStatusCode.InternalServerError);
+
+        return _mapper.Map<LikeDetailsResponse>(entity);
+    }
+
+    public async Task DeleteLikenessAsync(string userId, string ideaId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
+        if (idea == null || user == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var deleted = _unitOfWork.Ideas.DeleteLikeness(
+            new Like { IdeaId = ideaId, UserId = userId }
+        );
+
+        if (!deleted)
+            throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
     public async Task AddTagsAsync(Idea idea, string[] tags)

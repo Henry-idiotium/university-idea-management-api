@@ -1,3 +1,5 @@
+using UIM.Core.Models.Dtos.Like;
+
 namespace UIM.Core.Helpers.Mappers;
 
 public class CommentProfile : Profile
@@ -17,5 +19,7 @@ public class CommentProfile : Profile
         CreateMap<UpdateCommentRequest, Comment>()
             .ForSourceMember(src => src.Id, opt => opt.DoNotValidate())
             .ForMember(dest => dest.ModifiedDate, opt => opt.MapFrom(src => DateTime.Now));
+
+        CreateMap<CreateLikeRequest, Like>();
     }
 }

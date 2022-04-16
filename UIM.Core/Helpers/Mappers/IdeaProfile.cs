@@ -23,7 +23,6 @@ public class IdeaProfile : Profile
         CreateMap<UpdateIdeaRequest, Idea>()
             .ForSourceMember(src => src.Id, opt => opt.DoNotValidate())
             .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate())
-            .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.Now))
             .ForMember(dest => dest.ModifiedDate, opt => opt.MapFrom(src => DateTime.Now));
 
         CreateMap<CreateIdeaRequest, Idea>()

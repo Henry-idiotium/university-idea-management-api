@@ -1,3 +1,5 @@
+using UIM.Core.Models.Dtos.Like;
+
 namespace UIM.Core.Controllers.Shared;
 
 [Route("api/[controller]")]
@@ -8,6 +10,42 @@ public class IdeaController : SharedController<IIdeaService>
     public IdeaController(IIdeaService ideaService, IJwtService jwtService) : base(ideaService)
     {
         _jwtService = jwtService;
+    }
+
+    [HttpPost("like")]
+    public async Task<IActionResult> AddLike(CreateLikeRequest request)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        request.UserId = userId;
+
+        var response = await _service.AddLikenessAsync(request);
+        return ResponseResult(response);
+    }
+
+    [HttpDelete("like/{ideaId}")]
+    public async Task<IActionResult> RemoveLike(string ideaId)
+    {
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        await _service.DeleteLikenessAsync(userId, EncryptHelpers.DecodeBase64Url(ideaId));
+
+        return ResponseResult();
     }
 
     [HttpPost]
