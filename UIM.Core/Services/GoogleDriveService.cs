@@ -45,11 +45,6 @@ public class GoogleDriveService : IGoogleDriveService
 
     public Attachment UploadFile(Stream file, string name, string description, string mime)
     {
-        if (!EnvVars.UseGoogleDrive)
-        {
-            return new();
-        }
-
         var metadata = new Google.Apis.Drive.v3.Data.File
         {
             Name = name,
