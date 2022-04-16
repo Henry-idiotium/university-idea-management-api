@@ -1,3 +1,5 @@
+using UIM.Core.Models.Dtos.Like;
+
 namespace UIM.Core.Services;
 
 public class IdeaService : Service, IIdeaService
@@ -13,6 +15,17 @@ public class IdeaService : Service, IIdeaService
     ) : base(mapper, sieveProcessor, unitOfWork, userManager)
     {
         _driveService = driveService;
+    }
+
+    public async Task AddLikenessAsync(CreateLikeRequest request)
+    {
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        var idea = await _unitOfWork.Ideas.GetByIdAsync(request.IdeaId);
+        if (idea == null || user == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var like = _mapper.Map<Like>(request);
+        var add = await _unitOfWork.Ideas.AddLikenessAsync(like);
     }
 
     public async Task AddTagsAsync(Idea idea, string[] tags)
@@ -40,20 +53,23 @@ public class IdeaService : Service, IIdeaService
         idea.CreatedBy = user.Email;
         idea.ModifiedBy = user.Email;
 
-        if (request.Attachments != null && request.Attachments.Any())
+        if (EnvVars.UseGoogleDrive)
         {
-            foreach (var file in request.Attachments)
+            if (request.Attachments != null && request.Attachments.Any())
             {
-                if (file?.Data?.Length > 0)
+                foreach (var file in request.Attachments)
                 {
-                    var uniqueFileName = $"{file.Name!}_{Guid.NewGuid()}";
-                    var metadata = _driveService.UploadFile(
-                        new MemoryStream(file.Data),
-                        uniqueFileName,
-                        file.Description!,
-                        file.Mime!
-                    );
-                    idea.Attachments.Add(metadata);
+                    if (file?.Data?.Length > 0)
+                    {
+                        var uniqueFileName = $"{file.Name!}_{Guid.NewGuid()}";
+                        var metadata = _driveService.UploadFile(
+                            new MemoryStream(file.Data),
+                            uniqueFileName,
+                            file.Description!,
+                            file.Mime!
+                        );
+                        idea.Attachments.Add(metadata);
+                    }
                 }
             }
         }
@@ -80,38 +96,41 @@ public class IdeaService : Service, IIdeaService
         )
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        // Update attachment
-        if (request.Attachments != null && request.Attachments.Any())
+        if (EnvVars.UseGoogleDrive)
         {
-            foreach (var file in idea.Attachments)
+            // Update attachment
+            if (request.Attachments != null && request.Attachments.Any())
             {
-                var fileExistsInRequest = request.Attachments.FirstOrDefault(
-                    _ => _.FileId == file.FileId
-                );
-                if (fileExistsInRequest == null)
+                foreach (var file in idea.Attachments)
                 {
-                    _driveService.DeleteFile(file.FileId);
-                    idea.Attachments.Remove(file);
+                    var fileExistsInRequest = request.Attachments.FirstOrDefault(
+                        _ => _.FileId == file.FileId
+                    );
+                    if (fileExistsInRequest == null)
+                    {
+                        _driveService.DeleteFile(file.FileId);
+                        idea.Attachments.Remove(file);
+                    }
                 }
-            }
-            foreach (var file in request.Attachments)
-            {
-                var fileIsExists = idea.Attachments.Where(_ => _.FileId == file.FileId).Any();
-                if (fileIsExists || !(file?.Data?.Length > 0))
-                    continue;
+                foreach (var file in request.Attachments)
+                {
+                    var fileIsExists = idea.Attachments.Where(_ => _.FileId == file.FileId).Any();
+                    if (fileIsExists || !(file?.Data?.Length > 0))
+                        continue;
 
-                using var stream = new MemoryStream();
-                file.Data.CopyTo(stream);
+                    using var stream = new MemoryStream();
+                    file.Data.CopyTo(stream);
 
-                var uniqueFileName = $"{Guid.NewGuid()}_{file.Name!}";
-                var metadata = _driveService.UploadFile(
-                    stream,
-                    uniqueFileName,
-                    file.Description!,
-                    file.Mime!
-                );
-                metadata.IdeaId = idea.Id;
-                idea.Attachments.Add(metadata);
+                    var uniqueFileName = $"{Guid.NewGuid()}_{file.Name!}";
+                    var metadata = _driveService.UploadFile(
+                        stream,
+                        uniqueFileName,
+                        file.Description!,
+                        file.Mime!
+                    );
+                    metadata.IdeaId = idea.Id;
+                    idea.Attachments.Add(metadata);
+                }
             }
         }
 

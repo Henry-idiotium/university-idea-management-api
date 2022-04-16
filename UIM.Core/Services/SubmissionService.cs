@@ -68,7 +68,7 @@ public class SubmissionService : Service, ISubmissionService
         return new(
             rows: mappedSubs,
             index: model?.Page,
-            total: await _unitOfWork.Ideas.CountAsync()
+            total: await _unitOfWork.Submissions.CountAsync()
         );
     }
 
