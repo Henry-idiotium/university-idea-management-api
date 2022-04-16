@@ -80,9 +80,8 @@ public class IdeaController : AdminController<IIdeaService>
         if (userId == null)
             throw new HttpException(HttpStatusCode.Unauthorized);
 
-        var entityId = EncryptHelpers.DecodeBase64Url(id);
-
-        request.Id = entityId;
+        request.Id = EncryptHelpers.DecodeBase64Url(id);
+        request.SubmissionId = EncryptHelpers.DecodeBase64Url(request.SubmissionId);
         request.UserId = userId;
 
         await _service.EditAsync(request);

@@ -74,9 +74,9 @@ public class IdeaService : Service, IIdeaService
         var idea = await _unitOfWork.Ideas.GetByIdAsync(request.Id);
 
         if (
-            !await _userManager.IsInRoleAsync(user, RoleNames.Admin)
-            || idea?.UserId != user.Id
+            (!await _userManager.IsInRoleAsync(user, RoleNames.Admin) && idea?.UserId != user.Id)
             || await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null
+            || idea == null
         )
             throw new HttpException(HttpStatusCode.BadRequest);
 
