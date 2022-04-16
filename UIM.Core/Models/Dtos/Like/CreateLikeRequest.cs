@@ -6,7 +6,7 @@ public class CreateLikeRequest
 {
     [TJS.JsonIgnore]
     public string? UserId { get; set; }
-    [Required]
-    public string IdeaId { get; set; } = default!;
+    [TJS.JsonIgnore]
+    public string? IdeaId { get; set; }
     public bool IsLike { get; set; }
 }

@@ -194,8 +194,14 @@ public class IdeaService : Service, IIdeaService
             var mappedIdea = _mapper.Map<IdeaDetailsResponse>(idea);
             mappedIdea.User = _mapper.Map<UserDetailsResponse>(user);
             mappedIdea.Tags = _unitOfWork.Ideas.GetTags(idea.Id).ToArray();
+            mappedIdea.Likes = _unitOfWork.Ideas.GetLikes(idea.Id).Count();
+            mappedIdea.Dislikes = _unitOfWork.Ideas.GetDisikes(idea.Id).Count();
             mappedIdea.Attachments = _mapper.Map<AttachmentDetailsResponse[]>(idea.Attachments);
             mappedIdea.Submission = _mapper.Map<SubmissionDetailsResponse>(submission);
+            mappedIdea.CommentsCount = _unitOfWork.Comments.Set
+                .Where(_ => _.IdeaId == idea.Id)
+                .Count();
+
             mappedIdeas.Add(mappedIdea);
         }
         return new(

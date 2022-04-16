@@ -8,4 +8,6 @@ public interface IIdeaRepository : IRepository<Idea>
     Task<IEnumerable<Idea>> GetBySubmissionAsync(string submissionId);
     IEnumerable<string> GetTags(string ideaId);
     void RemoveAllTags(Idea idea);
+    IEnumerable<Like> GetLikes(string ideaId);
+    IEnumerable<Like> GetDisikes(string ideaId);
 }

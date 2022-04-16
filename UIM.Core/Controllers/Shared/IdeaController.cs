@@ -12,8 +12,8 @@ public class IdeaController : SharedController<IIdeaService>
         _jwtService = jwtService;
     }
 
-    [HttpPost("like")]
-    public async Task<IActionResult> AddLike(CreateLikeRequest request)
+    [HttpPost("like/{ideaId}")]
+    public async Task<IActionResult> AddLike(CreateLikeRequest request, string ideaId)
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
@@ -26,6 +26,7 @@ public class IdeaController : SharedController<IIdeaService>
         if (userId == null)
             throw new HttpException(HttpStatusCode.Unauthorized);
 
+        request.IdeaId = EncryptHelpers.DecodeBase64Url(ideaId);
         request.UserId = userId;
 
         var response = await _service.AddLikenessAsync(request);
