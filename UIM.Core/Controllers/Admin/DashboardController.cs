@@ -11,6 +11,10 @@ public class DashboardController : UimController
         _dashboardService = dashboardService;
     }
 
+    [HttpGet("total-all")]
+    public async Task<IActionResult> ReadTotalAllAspects() =>
+        ResponseResult(await _dashboardService.TotalAllAspectsAsync());
+
     [HttpGet("sum-submissions")]
     public IActionResult ReadSubmissionsSums(string year) =>
         ResponseResult(_dashboardService.SubmissionsSumForEachMonthInYear(year));

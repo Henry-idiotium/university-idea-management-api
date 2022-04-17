@@ -2,7 +2,7 @@ namespace UIM.Core.Models.Dtos.Attachment;
 
 public class UpdateAttachmentRequest
 {
-    public IFormFile? Data { get; set; }
+    public byte[]? Data { get; set; }
     public string? FileId { get; set; }
     public string? Name { get; set; }
     public string? Description { get; set; }

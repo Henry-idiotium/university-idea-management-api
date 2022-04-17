@@ -4,10 +4,12 @@ public class IdeaRepository : Repository<Idea>, IIdeaRepository
 {
     public IdeaRepository(UimContext context) : base(context) { }
 
+    public IEnumerable<Like> GetAllLikeness() => _context.Likes;
+
     public IEnumerable<Like> GetLikes(string ideaId) =>
         _context.Likes.Where(_ => _.IdeaId == ideaId && _.IsLike);
 
-    public IEnumerable<Like> GetDisikes(string ideaId) =>
+    public IEnumerable<Like> GetDislikes(string ideaId) =>
         _context.Likes.Where(_ => _.IdeaId == ideaId && !_.IsLike);
 
     public Like? GetLikenessByUser(string ideaId, string userId) =>

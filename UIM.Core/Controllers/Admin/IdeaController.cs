@@ -9,6 +9,85 @@ public class IdeaController : AdminController<IIdeaService>
         _jwtService = jwtService;
     }
 
+    [HttpPost("like/{ideaId}")]
+    public async Task<IActionResult> AddLike(CreateLikeRequest request, string ideaId)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        request.IdeaId = EncryptHelpers.DecodeBase64Url(ideaId);
+        request.UserId = userId;
+
+        var response = await _service.AddLikenessAsync(request);
+        return ResponseResult(response);
+    }
+
+    [HttpPost("view/{ideaId}")]
+    public async Task<IActionResult> AddView(string ideaId)
+    {
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        await _service.AddViewAsync(
+            new CreateViewRequest
+            {
+                UserId = userId,
+                IdeaId = EncryptHelpers.DecodeBase64Url(ideaId),
+            }
+        );
+        return ResponseResult();
+    }
+
+    [HttpPut("like/{ideaId}")]
+    public async Task<IActionResult> UpdateLike(CreateLikeRequest request, string ideaId)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        request.IdeaId = EncryptHelpers.DecodeBase64Url(ideaId);
+        request.UserId = userId;
+
+        var response = await _service.UpdateLikenessAsync(request);
+        return ResponseResult(response);
+    }
+
+    [HttpDelete("like/{ideaId}")]
+    public async Task<IActionResult> RemoveLike(string ideaId)
+    {
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        await _service.DeleteLikenessAsync(userId, EncryptHelpers.DecodeBase64Url(ideaId));
+
+        return ResponseResult();
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateIdeaRequest request)
     {
@@ -50,9 +129,6 @@ public class IdeaController : AdminController<IIdeaService>
     [HttpGet("table/list")]
     public async Task<IActionResult> Read([FromQuery] SieveModel request, string? submissionId)
     {
-        if (request == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 

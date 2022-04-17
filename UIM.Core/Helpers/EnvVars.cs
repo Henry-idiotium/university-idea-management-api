@@ -24,7 +24,13 @@ public static class EnvVars
             public static string ApiKey => GetEnvVar("SENDGRID_API_KEY");
             public static string SenderEmail => GetEnvVar("SENDGRID_SENDER_EMAIL");
             public static string SenderName => GetEnvVar("SENDGRID_SENDER_NAME");
-            public static string TemplateId => GetEnvVar("SENDGRID_TEMPLATE_ID");
+            public static class Templates
+            {
+                public static string Welcome => GetEnvVar("SENDGRID_TEMPLATE_WELCOME");
+                public static string NewPost => GetEnvVar("SENDGRID_TEMPLATE_NEW_POST");
+                public static string SomeoneCommented =>
+                    GetEnvVar("SENDGRID_TEMPLATE_SOMEONE_COMMENTED");
+            }
         }
     }
 

@@ -2,10 +2,16 @@ namespace UIM.Core.Services.Interfaces;
 
 public interface IEmailService
 {
-    Task<bool> SendWelcomeEmailAsync(
+    Task<bool> SendNotifyNewlyCreatedPostAsync(
         AppUser receiver,
-        string receiverPassword,
-        string senderFullName,
-        string senderTitle
+        AppUser author,
+        Idea newIdea,
+        Submission submission
     );
+    Task<bool> SendNotifySomeoneCommentedAsync(
+        AppUser receiver,
+        Idea receiverIdea,
+        string commentContent
+    );
+    Task<bool> SendWelcomeEmailAsync(AppUser receiver, string receiverPassword);
 }

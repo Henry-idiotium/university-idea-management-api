@@ -11,7 +11,18 @@ public class DashboardService : Service, IDashboardService
         UserManager<AppUser> userManager
     ) : base(mapper, sieveProcessor, unitOfWork, userManager) { }
 
-    // TOODL Datetime format to iso
+    public async Task<AllTotal> TotalAllAspectsAsync()
+    {
+        var likeness = _unitOfWork.Ideas.GetAllLikeness();
+        return new()
+        {
+            TotalSubmissions = await _unitOfWork.Submissions.CountAsync(),
+            TotalComments = await _unitOfWork.Comments.CountAsync(),
+            TotalDislikes = likeness?.Where(_ => !_.IsLike)?.Count() ?? 0,
+            TotalLikes = likeness?.Where(_ => _.IsLike)?.Count() ?? 0,
+            TotalIdeas = await _unitOfWork.Ideas.CountAsync(),
+        };
+    }
 
     public IEnumerable<SubmissionsSum> SubmissionsSumForEachMonthInYear(string year)
     {

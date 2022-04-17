@@ -2,22 +2,38 @@ namespace UIM.Core.Services;
 
 public class CommentService : Service, ICommentService
 {
+    private readonly IEmailService _emailService;
+
     public CommentService(
         IMapper mapper,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork,
-        UserManager<AppUser> userManager
-    ) : base(mapper, sieveProcessor, unitOfWork, userManager) { }
+        UserManager<AppUser> userManager,
+        IEmailService emailService
+    ) : base(mapper, sieveProcessor, unitOfWork, userManager)
+    {
+        _emailService = emailService;
+    }
 
     public async Task CreateAsync(CreateCommentRequest request)
     {
-        if (await _unitOfWork.Ideas.GetByIdAsync(request.IdeaId) == null)
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        var idea = await _unitOfWork.Ideas.GetByIdAsync(request.IdeaId);
+        if (user == null || idea == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
         var comment = _mapper.Map<Comment>(request);
 
         var add = await _unitOfWork.Comments.AddAsync(comment);
         if (!add.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
+
+        var sendSucceeded = await _emailService.SendNotifySomeoneCommentedAsync(
+            receiver: await _userManager.FindByIdAsync(idea.UserId),
+            commentContent: comment.Content,
+            receiverIdea: idea
+        );
+        if (!sendSucceeded)
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 

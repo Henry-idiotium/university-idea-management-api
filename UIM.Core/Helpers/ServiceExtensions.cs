@@ -4,7 +4,6 @@ namespace UIM.Core.Helpers;
 
 public static class ServiceExtensions
 {
-    // Vanilla authorize attribute cannot obtain role claims
     public static IServiceCollection AddAuthenticationExt(this IServiceCollection services)
     {
         services.AddAuthentication(
@@ -244,105 +243,6 @@ public static class ServiceExtensions
                 if (!roleExist)
                     await roleManager.CreateAsync(new IdentityRole(name));
             }
-
-            #region 📌📌📌 NOTE: DEV ONLY ⚡ Init Random User
-            var randoPwd = "qwe123";
-            {
-                var mgr = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Bettie Snyder",
-                    Email = "quocdat.438317@gmail.com",
-                    UserName = "best_staff_ever_7861",
-                    CreatedDate = DateTime.Now,
-                    IsDefaultPassword = false,
-                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
-                };
-                var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
-                if (existingMgr == null)
-                {
-                    var createUser = await userManager.CreateAsync(mgr, randoPwd);
-                    if (createUser.Succeeded)
-                        await userManager.AddToRoleAsync(mgr, EnvVars.Role.Staff);
-                }
-            }
-            {
-                var mgr = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Samuel Wolfe",
-                    Email = "henry.test.dev.381872@gmail.com",
-                    UserName = "best_manager_ever_a89y2412",
-                    CreatedDate = DateTime.Now,
-                    IsDefaultPassword = false,
-                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
-                };
-                var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
-                if (existingMgr == null)
-                {
-                    var createUser = await userManager.CreateAsync(mgr, randoPwd);
-                    if (createUser.Succeeded)
-                        await userManager.AddToRoleAsync(mgr, EnvVars.Role.Manager);
-                }
-            }
-            {
-                var mgr = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Spencer Yost",
-                    Email = "manager@gmail.com",
-                    UserName = "best_manager_ever_7861",
-                    CreatedDate = DateTime.Now,
-                    IsDefaultPassword = false,
-                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
-                };
-                var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
-                if (existingMgr == null)
-                {
-                    var createUser = await userManager.CreateAsync(mgr, randoPwd);
-                    if (createUser.Succeeded)
-                        await userManager.AddToRoleAsync(mgr, EnvVars.Role.Manager);
-                }
-            }
-            {
-                var supv = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Jeff Wells",
-                    Email = "bojejje@majpithu.st",
-                    UserName = "aspernatur",
-                    CreatedDate = DateTime.Now,
-                    IsDefaultPassword = false,
-                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
-                };
-                var existingSupv = await userManager.FindByEmailAsync(supv.Email);
-                if (existingSupv == null)
-                {
-                    var createUser = await userManager.CreateAsync(supv, randoPwd);
-                    if (createUser.Succeeded)
-                        await userManager.AddToRoleAsync(supv, EnvVars.Role.Supervisor);
-                }
-            }
-            {
-                var staff = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Madge Valdez",
-                    Email = "aptu@mitep.pt",
-                    UserName = "unde",
-                    CreatedDate = DateTime.Now,
-                    IsDefaultPassword = false,
-                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
-                };
-                var existingStaff = await userManager.FindByEmailAsync(staff.Email);
-                if (existingStaff == null)
-                {
-                    var createUser = await userManager.CreateAsync(staff, randoPwd);
-                    if (createUser.Succeeded)
-                        await userManager.AddToRoleAsync(staff, EnvVars.Role.Staff);
-                }
-            }
-            #endregion
 
             // Create a super user who will maintain the system
             var existingPwrUser = await userManager.FindByEmailAsync(EnvVars.PwrUserAuth.Email);

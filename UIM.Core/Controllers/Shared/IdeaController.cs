@@ -1,5 +1,3 @@
-using UIM.Core.Models.Dtos.Like;
-
 namespace UIM.Core.Controllers.Shared;
 
 [Route("api/[controller]")]

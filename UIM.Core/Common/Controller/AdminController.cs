@@ -1,6 +1,6 @@
 namespace UIM.Core.Common.Controller;
 
-[JwtAuthorize(RoleNames.Admin)]
+[JwtAuthorize(RoleNames.Admin, RoleNames.Manager)]
 [Route("api/[controller]-management")]
 public abstract class AdminController<TService> : UimController
 {

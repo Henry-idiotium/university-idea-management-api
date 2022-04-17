@@ -41,6 +41,10 @@ public class IdeaProfile : Profile
         CreateMap<UpdateIdeaRequest, Idea>()
             .ForSourceMember(src => src.Id, opt => opt.DoNotValidate())
             .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate())
+            .ForMember(dest => dest.Attachments, opt => opt.Ignore())
+            .ForMember(dest => dest.IdeaTags, opt => opt.Ignore())
+            .ForMember(dest => dest.Comments, opt => opt.Ignore())
+            .ForMember(dest => dest.Likes, opt => opt.Ignore())
             .ForMember(dest => dest.ModifiedDate, opt => opt.MapFrom(src => DateTime.Now));
 
         CreateMap<CreateIdeaRequest, Idea>()

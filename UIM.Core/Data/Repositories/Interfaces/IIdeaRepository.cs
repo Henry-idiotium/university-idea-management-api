@@ -9,9 +9,10 @@ public interface IIdeaRepository : IRepository<Idea>
     IEnumerable<string> GetTags(string ideaId);
     void RemoveAllTags(Idea idea);
     IEnumerable<Like> GetLikes(string ideaId);
-    IEnumerable<Like> GetDisikes(string ideaId);
+    IEnumerable<Like> GetDislikes(string ideaId);
     Like? GetLikenessByUser(string ideaId, string userId);
     Like UpdateLikeness(Like like);
     Task<bool> AddViewAsync(View view);
     IEnumerable<View> GetViews(string ideaId);
+    IEnumerable<Like> GetAllLikeness();
 }

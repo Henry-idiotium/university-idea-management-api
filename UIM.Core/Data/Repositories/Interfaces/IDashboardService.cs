@@ -5,4 +5,5 @@ public interface IDashboardService
     IEnumerable<MonthActivity> ActivitiesOfEachDayInMonth(string month, string year);
     IEnumerable<SubmissionsSum> SubmissionsSumForEachMonthInYear(string year);
     IEnumerable<TopIdea> TopIdeasInMonthYear(string month, string year);
+    Task<AllTotal> TotalAllAspectsAsync();
 }

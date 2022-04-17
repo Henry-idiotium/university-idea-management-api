@@ -3,30 +3,19 @@ namespace UIM.Core.Services;
 public class IdeaService : Service, IIdeaService
 {
     private readonly IGoogleDriveService _driveService;
+    private readonly IEmailService _emailService;
 
     public IdeaService(
         IMapper mapper,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork,
         UserManager<AppUser> userManager,
-        IGoogleDriveService driveService
+        IGoogleDriveService driveService,
+        IEmailService emailService
     ) : base(mapper, sieveProcessor, unitOfWork, userManager)
     {
         _driveService = driveService;
-    }
-
-    public async Task AddViewAsync(CreateViewRequest request)
-    {
-        var user = await _userManager.FindByIdAsync(request.UserId);
-        var idea = await _unitOfWork.Ideas.GetByIdAsync(request.IdeaId);
-        if (idea == null || user == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
-        var view = _mapper.Map<View>(request);
-        view.CreatedDate = DateTime.Now;
-        view.CreatedBy = user.Email;
-
-        await _unitOfWork.Ideas.AddViewAsync(view);
+        _emailService = emailService;
     }
 
     public async Task<MediumIdeaResponse> AddLikenessAsync(CreateLikeRequest request)
@@ -48,52 +37,7 @@ public class IdeaService : Service, IIdeaService
 
         var upIdea = _mapper.Map<MediumIdeaResponse>(await _unitOfWork.Ideas.GetByIdAsync(idea.Id));
         upIdea.Likes = _unitOfWork.Ideas.GetLikes(idea.Id).Count();
-        upIdea.Dislikes = _unitOfWork.Ideas.GetDisikes(idea.Id).Count();
-        upIdea.RequesterIsLike = _unitOfWork.Ideas.GetLikenessByUser(idea.Id, user.Id)?.IsLike;
-
-        return upIdea;
-    }
-
-    public async Task DeleteLikenessAsync(string userId, string ideaId)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-        var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
-        if (idea == null || user == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
-        var deleted = _unitOfWork.Ideas.DeleteLikeness(
-            new Like { IdeaId = ideaId, UserId = userId }
-        );
-
-        if (!deleted)
-            throw new HttpException(HttpStatusCode.InternalServerError);
-    }
-
-    public async Task<MediumIdeaResponse> UpdateLikenessAsync(CreateLikeRequest request)
-    {
-        var user = await _userManager.FindByIdAsync(request.UserId);
-        var idea = await _unitOfWork.Ideas.GetByIdAsync(request.IdeaId);
-        if (idea == null || user == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
-        var like = _unitOfWork.Ideas.GetLikenessByUser(idea.Id, user.Id);
-        Like entity;
-
-        if (like == null)
-            throw new HttpException(HttpStatusCode.InternalServerError);
-
-        if (request.IsLike == null)
-            _unitOfWork.Ideas.DeleteLikeness(like);
-        else
-        {
-            entity = _unitOfWork.Ideas.UpdateLikeness(_mapper.Map(request, like));
-            if (entity == null)
-                throw new HttpException(HttpStatusCode.InternalServerError);
-        }
-
-        var upIdea = _mapper.Map<MediumIdeaResponse>(await _unitOfWork.Ideas.GetByIdAsync(idea.Id));
-        upIdea.Likes = _unitOfWork.Ideas.GetLikes(idea.Id).Count();
-        upIdea.Dislikes = _unitOfWork.Ideas.GetDisikes(idea.Id).Count();
+        upIdea.Dislikes = _unitOfWork.Ideas.GetDislikes(idea.Id).Count();
         upIdea.RequesterIsLike = _unitOfWork.Ideas.GetLikenessByUser(idea.Id, user.Id)?.IsLike;
 
         return upIdea;
@@ -111,6 +55,20 @@ public class IdeaService : Service, IIdeaService
             if (!added)
                 throw new HttpException(HttpStatusCode.InternalServerError);
         }
+    }
+
+    public async Task AddViewAsync(CreateViewRequest request)
+    {
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        var idea = await _unitOfWork.Ideas.GetByIdAsync(request.IdeaId);
+        if (idea == null || user == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var view = _mapper.Map<View>(request);
+        view.CreatedDate = DateTime.Now;
+        view.CreatedBy = user.Email;
+
+        await _unitOfWork.Ideas.AddViewAsync(view);
     }
 
     public async Task<SimpleIdeaResponse> CreateAsync(CreateIdeaRequest request)
@@ -132,7 +90,7 @@ public class IdeaService : Service, IIdeaService
                 {
                     if (file?.Data?.Length > 0)
                     {
-                        var uniqueFileName = $"{file.Name!}_{Guid.NewGuid()}";
+                        var uniqueFileName = $"{Guid.NewGuid().ToString()[..5]}_{file.Name!}";
                         var metadata = _driveService.UploadFile(
                             new MemoryStream(file.Data),
                             uniqueFileName,
@@ -146,24 +104,54 @@ public class IdeaService : Service, IIdeaService
         }
 
         var add = await _unitOfWork.Ideas.AddAsync(idea);
-        if (!add.Succeeded)
+        if (!add.Succeeded || add.Entity == null)
             throw new HttpException(HttpStatusCode.InternalServerError);
 
         if (request.Tags != null)
             await AddTagsAsync(add.Entity!, request.Tags);
 
+        var receiver = (await _userManager.GetUsersInRoleAsync(EnvVars.Role.Supervisor))
+            .Where(_ => _.DepartmentId == user.DepartmentId)
+            .FirstOrDefault();
+
+        var sendSucceeded = await _emailService.SendNotifyNewlyCreatedPostAsync(
+            receiver: receiver ?? await _userManager.FindByEmailAsync(EnvVars.PwrUserAuth.Email),
+            submission: submission,
+            newIdea: add.Entity,
+            author: user
+        );
+        if (!sendSucceeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
+
         return _mapper.Map<SimpleIdeaResponse>(add.Entity);
+    }
+
+    public async Task DeleteLikenessAsync(string userId, string ideaId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
+        if (idea == null || user == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var deleted = _unitOfWork.Ideas.DeleteLikeness(
+            new Like { IdeaId = ideaId, UserId = userId }
+        );
+
+        if (!deleted)
+            throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
     public async Task EditAsync(UpdateIdeaRequest request)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
         var idea = await _unitOfWork.Ideas.GetByIdAsync(request.Id);
-
+        var submission = await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId);
         if (
-            (!await _userManager.IsInRoleAsync(user, RoleNames.Admin) && idea?.UserId != user.Id)
-            || await _unitOfWork.Submissions.GetByIdAsync(request.SubmissionId) == null
-            || idea == null
+            idea == null
+            || submission == null
+            || !await _userManager.IsInRoleAsync(user, RoleNames.Admin)
+                && !await _userManager.IsInRoleAsync(user, RoleNames.Manager)
+                && idea?.UserId != user.Id
         )
             throw new HttpException(HttpStatusCode.BadRequest);
 
@@ -172,35 +160,24 @@ public class IdeaService : Service, IIdeaService
             // Update attachment
             if (request.Attachments != null && request.Attachments.Any())
             {
+                idea.Attachments = new();
                 foreach (var file in idea.Attachments)
-                {
-                    var fileExistsInRequest = request.Attachments.FirstOrDefault(
-                        _ => _.FileId == file.FileId
-                    );
-                    if (fileExistsInRequest == null)
-                    {
-                        _driveService.DeleteFile(file.FileId);
-                        idea.Attachments.Remove(file);
-                    }
-                }
+                    _driveService.DeleteFile(file.FileId);
+
                 foreach (var file in request.Attachments)
                 {
-                    var fileIsExists = idea.Attachments.Where(_ => _.FileId == file.FileId).Any();
-                    if (fileIsExists || !(file?.Data?.Length > 0))
-                        continue;
-
-                    using var stream = new MemoryStream();
-                    file.Data.CopyTo(stream);
-
-                    var uniqueFileName = $"{Guid.NewGuid()}_{file.Name!}";
-                    var metadata = _driveService.UploadFile(
-                        stream,
-                        uniqueFileName,
-                        file.Description!,
-                        file.Mime!
-                    );
-                    metadata.IdeaId = idea.Id;
-                    idea.Attachments.Add(metadata);
+                    if (file?.Data?.Length > 0)
+                    {
+                        var uniqueFileName = $"{Guid.NewGuid().ToString()[..5]}_{file.Name!}";
+                        var metadata = _driveService.UploadFile(
+                            new MemoryStream(file.Data),
+                            uniqueFileName,
+                            file.Description!,
+                            file.Mime!
+                        );
+                        metadata.IdeaId = idea.Id;
+                        idea.Attachments.Add(metadata);
+                    }
                 }
             }
         }
@@ -248,7 +225,7 @@ public class IdeaService : Service, IIdeaService
             mappedIdea.User = _mapper.Map<UserDetailsResponse>(ideaUser);
             mappedIdea.Tags = _unitOfWork.Ideas.GetTags(idea.Id).ToArray();
             mappedIdea.Likes = _unitOfWork.Ideas.GetLikes(idea.Id).Count();
-            mappedIdea.Dislikes = _unitOfWork.Ideas.GetDisikes(idea.Id).Count();
+            mappedIdea.Dislikes = _unitOfWork.Ideas.GetDislikes(idea.Id).Count();
             mappedIdea.Attachments = _mapper.Map<AttachmentDetailsResponse[]>(idea.Attachments);
             mappedIdea.Submission = _mapper.Map<SubmissionDetailsResponse>(submission);
             mappedIdea.Views = _unitOfWork.Ideas.GetViews(idea.Id).Count();
@@ -264,10 +241,13 @@ public class IdeaService : Service, IIdeaService
 
             mappedIdeas.Add(mappedIdea);
         }
+
         return new(
             rows: mappedIdeas,
             index: model?.Page,
-            total: await _unitOfWork.Ideas.CountAsync()
+            total: submissionId.IsNullOrEmpty()
+              ? await _unitOfWork.Ideas.CountAsync()
+              : await ideas.Where(_ => _.SubmissionId == submissionId).CountAsync()
         );
     }
 
@@ -286,7 +266,7 @@ public class IdeaService : Service, IIdeaService
         mappedIdea.User = _mapper.Map<UserDetailsResponse>(ideaUser);
         mappedIdea.Tags = _unitOfWork.Ideas.GetTags(idea.Id).ToArray();
         mappedIdea.Likes = _unitOfWork.Ideas.GetLikes(idea.Id).Count();
-        mappedIdea.Dislikes = _unitOfWork.Ideas.GetDisikes(idea.Id).Count();
+        mappedIdea.Dislikes = _unitOfWork.Ideas.GetDislikes(idea.Id).Count();
         mappedIdea.Attachments = _mapper.Map<AttachmentDetailsResponse[]>(idea.Attachments);
         mappedIdea.Submission = _mapper.Map<SubmissionDetailsResponse>(submission);
         mappedIdea.Views = _unitOfWork.Ideas.GetViews(idea.Id).Count();
@@ -320,5 +300,35 @@ public class IdeaService : Service, IIdeaService
         var delete = await _unitOfWork.Ideas.DeleteAsync(ideaId);
         if (!delete.Succeeded)
             throw new HttpException(HttpStatusCode.BadRequest);
+    }
+
+    public async Task<MediumIdeaResponse> UpdateLikenessAsync(CreateLikeRequest request)
+    {
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        var idea = await _unitOfWork.Ideas.GetByIdAsync(request.IdeaId);
+        if (idea == null || user == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var like = _unitOfWork.Ideas.GetLikenessByUser(idea.Id, user.Id);
+        Like entity;
+
+        if (like == null)
+            throw new HttpException(HttpStatusCode.InternalServerError);
+
+        if (request.IsLike == null)
+            _unitOfWork.Ideas.DeleteLikeness(like);
+        else
+        {
+            entity = _unitOfWork.Ideas.UpdateLikeness(_mapper.Map(request, like));
+            if (entity == null)
+                throw new HttpException(HttpStatusCode.InternalServerError);
+        }
+
+        var upIdea = _mapper.Map<MediumIdeaResponse>(await _unitOfWork.Ideas.GetByIdAsync(idea.Id));
+        upIdea.Likes = _unitOfWork.Ideas.GetLikes(idea.Id).Count();
+        upIdea.Dislikes = _unitOfWork.Ideas.GetDislikes(idea.Id).Count();
+        upIdea.RequesterIsLike = _unitOfWork.Ideas.GetLikenessByUser(idea.Id, user.Id)?.IsLike;
+
+        return upIdea;
     }
 }

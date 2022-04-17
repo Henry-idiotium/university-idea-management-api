@@ -55,9 +55,7 @@ public class UserService : Service, IUserService
 
         var sendSucceeded = await _emailService.SendWelcomeEmailAsync(
             receiver: newUser,
-            receiverPassword: password,
-            senderFullName: "Cecilia McDermott",
-            senderTitle: "Senior Integration Executive"
+            receiverPassword: password
         );
 
         if (!sendSucceeded)
@@ -89,6 +87,7 @@ public class UserService : Service, IUserService
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
+    // TODO: fix gender retun data
     public async Task<SieveResponse> FindAsync(SieveModel model)
     {
         var sortedUsers = _sieveProcessor.Apply(model, _userManager.Users);
