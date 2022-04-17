@@ -53,16 +53,38 @@ public class IdeaController : AdminController<IIdeaService>
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var decodedSubmissionId = EncryptHelpers.DecodeBase64Url(submissionId);
-        var result = await _service.FindAsync(decodedSubmissionId, request);
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        var result = await _service.FindAsync(
+            EncryptHelpers.DecodeBase64Url(submissionId),
+            userId,
+            request
+        );
         return ResponseResult(result);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)
     {
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
         var entityId = EncryptHelpers.DecodeBase64Url(id);
-        var result = await _service.FindByIdAsync(entityId);
+        var result = await _service.FindByIdAsync(entityId, userId);
         return ResponseResult(result);
     }
 

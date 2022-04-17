@@ -49,10 +49,10 @@ public class CommentService : Service, ICommentService
         var mappedComments = new List<CommentDetailsResponse>();
         foreach (var comment in comments ?? Enumerable.Empty<Comment>().AsQueryable())
         {
+            var userComment = await _userManager.FindByIdAsync(comment.UserId);
             var mappedComment = _mapper.Map<CommentDetailsResponse>(comment);
-            mappedComment.User = _mapper.Map<SimpleUserResponse>(comment.User);
-            mappedComment.Idea = _mapper.Map<SimpleIdeaResponse>(comment.Idea);
-
+            mappedComment.User = _mapper.Map<SimpleUserResponse>(userComment);
+            mappedComment.Idea = _mapper.Map<SimpleIdeaResponse>(idea);
             mappedComments.Add(mappedComment);
         }
         return mappedComments;

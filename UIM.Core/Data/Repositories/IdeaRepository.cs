@@ -8,12 +8,39 @@ public class IdeaRepository : Repository<Idea>, IIdeaRepository
         _context.Likes.Where(_ => _.IdeaId == ideaId && _.IsLike);
 
     public IEnumerable<Like> GetDisikes(string ideaId) =>
-        _context.Likes.Where(_ => _.IdeaId == ideaId && _.IsLike);
+        _context.Likes.Where(_ => _.IdeaId == ideaId && !_.IsLike);
+
+    public Like? GetLikenessByUser(string ideaId, string userId) =>
+        _context.Likes.Where(_ => _.IdeaId == ideaId).FirstOrDefault(_ => _.UserId == userId);
+
+    public IEnumerable<View> GetViews(string ideaId) =>
+        _context.Views.Where(_ => _.IdeaId == ideaId);
+
+    public async Task<bool> AddViewAsync(View view)
+    {
+        try
+        {
+            await _context.Views.AddAsync(view);
+            var added = await _context.SaveChangesAsync();
+            return added > 0;
+        }
+        catch
+        {
+            return true;
+        }
+    }
 
     public async Task<Like> AddLikenessAsync(Like like)
     {
         var entry = await _context.Likes.AddAsync(like);
         await _context.SaveChangesAsync();
+        return entry.Entity;
+    }
+
+    public Like UpdateLikeness(Like like)
+    {
+        var entry = _context.Likes.Update(like);
+        _context.SaveChanges();
         return entry.Entity;
     }
 

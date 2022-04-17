@@ -33,6 +33,48 @@ public class IdeaController : SharedController<IIdeaService>
         return ResponseResult(response);
     }
 
+    [HttpPost("view/{ideaId}")]
+    public async Task<IActionResult> AddView(string ideaId)
+    {
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        await _service.AddViewAsync(
+            new CreateViewRequest
+            {
+                UserId = userId,
+                IdeaId = EncryptHelpers.DecodeBase64Url(ideaId),
+            }
+        );
+        return ResponseResult();
+    }
+
+    [HttpPut("like/{ideaId}")]
+    public async Task<IActionResult> UpdateLike(CreateLikeRequest request, string ideaId)
+    {
+        if (request == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        request.IdeaId = EncryptHelpers.DecodeBase64Url(ideaId);
+        request.UserId = userId;
+
+        var response = await _service.UpdateLikenessAsync(request);
+        return ResponseResult(response);
+    }
+
     [HttpDelete("like/{ideaId}")]
     public async Task<IActionResult> RemoveLike(string ideaId)
     {
@@ -93,16 +135,35 @@ public class IdeaController : SharedController<IIdeaService>
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var decodedSubmissionId = EncryptHelpers.DecodeBase64Url(submissionId);
-        var result = await _service.FindAsync(decodedSubmissionId, request);
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
+        var result = await _service.FindAsync(
+            EncryptHelpers.DecodeBase64Url(submissionId),
+            userId,
+            request
+        );
         return ResponseResult(result);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Read(string id)
     {
+        var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?
+            .Split(" ")
+            .Last();
+
+        var userId = _jwtService.Validate(token);
+        if (userId == null)
+            throw new HttpException(HttpStatusCode.Unauthorized);
+
         var entityId = EncryptHelpers.DecodeBase64Url(id);
-        var result = await _service.FindByIdAsync(entityId);
+        var result = await _service.FindByIdAsync(entityId, userId);
         return ResponseResult(result);
     }
 

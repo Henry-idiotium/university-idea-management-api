@@ -8,5 +8,5 @@ public class CreateLikeRequest
     public string? UserId { get; set; }
     [TJS.JsonIgnore]
     public string? IdeaId { get; set; }
-    public bool IsLike { get; set; }
+    public bool? IsLike { get; set; }
 }
