@@ -4,22 +4,22 @@
 
 namespace UIM.Core.Data.Migrations
 {
-    public partial class AppUser_AddProp_IsDefaultPassword : Migration
+    public partial class AppUser_AddProp_Avatar : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "IsDefaultPassword",
+            migrationBuilder.AddColumn<string>(
+                name: "Avatar",
                 table: "AspNetUsers",
-                type: "bit",
+                type: "nvarchar(max)",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: "");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "IsDefaultPassword",
+                name: "Avatar",
                 table: "AspNetUsers");
         }
     }

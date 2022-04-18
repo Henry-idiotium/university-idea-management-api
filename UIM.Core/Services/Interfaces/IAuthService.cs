@@ -6,5 +6,5 @@ public interface IAuthService
     Task<AuthResponse> LoginAsync(LoginRequest request);
     Task RevokeRefreshToken(string token);
     Task<AuthResponse> RotateTokensAsync(RotateTokenRequest request);
-    Task UpdatePasswordAsync(string userId, UpdatePasswordRequest request);
+    Task UpdatePasswordAsync(UpdatePasswordRequest request);
 }

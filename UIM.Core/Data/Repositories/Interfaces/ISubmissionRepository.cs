@@ -1,5 +1,3 @@
 namespace UIM.Core.Data.Repositories.Interfaces;
 
-public interface ISubmissionRepository : IRepository<Submission>
-{
-}
+public interface ISubmissionRepository : IRepository<Submission> { }

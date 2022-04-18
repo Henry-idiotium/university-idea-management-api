@@ -6,6 +6,10 @@ public interface IUserRepository
     AppUser GetByRefreshToken(string token);
     RefreshToken GetRefreshToken(string token);
     Task<bool> RemoveOutdatedRefreshTokensAsync(AppUser user);
-    Task<bool> RevokeRefreshTokenAsync(RefreshToken token, string? reason = null, string? replacedByToken = null);
+    Task<bool> RevokeRefreshTokenAsync(
+        RefreshToken token,
+        string? reason = null,
+        string? replacedByToken = null
+    );
     Task<bool> RevokeRefreshTokenDescendantsAsync(RefreshToken token, AppUser user, string reason);
 }

@@ -3,7 +3,8 @@ namespace UIM.Core.Helpers.Attributes;
 [AttributeUsage(
     AttributeTargets.Class | AttributeTargets.Method,
     Inherited = true,
-    AllowMultiple = true)]
+    AllowMultiple = true
+)]
 public class JwtAuthorizeAttribute : Attribute, IAuthorizationFilter
 {
     private readonly IList<string> _roles;
@@ -17,9 +18,11 @@ public class JwtAuthorizeAttribute : Attribute, IAuthorizationFilter
     {
         // Skip authorization if action is decorated with [AllowAnonymous] attribute
         var allowAnonymous = context.ActionDescriptor.EndpointMetadata
-            .OfType<AllowAnonymousAttribute>().Any();
+            .OfType<AllowAnonymousAttribute>()
+            .Any();
 
-        if (allowAnonymous) return;
+        if (allowAnonymous)
+            return;
 
         var userClaims = context.HttpContext.User.Claims;
         var userId = userClaims.FirstOrDefault(_ => _.Type == UimClaimTypes.Id)?.Value;
@@ -27,19 +30,17 @@ public class JwtAuthorizeAttribute : Attribute, IAuthorizationFilter
 
         if (userId == null || (_roles.Any() && !_roles.Contains(role!)))
         {
-            context.Result = new JsonResult(new CoreResponse
-            (
-                succeeded: false,
-                message: ErrorResponseMessages.Unauthorized
-            ),
-            new JsonSerializerSettings
-            {
-                Formatting = Formatting.Indented,
-                ContractResolver = new DefaultContractResolver
+            context.Result = new JsonResult(
+                new CoreResponse(succeeded: false, message: ErrorResponseMessages.Unauthorized),
+                new JsonSerializerSettings
                 {
-                    NamingStrategy = new SnakeCaseNamingStrategy()
+                    Formatting = Formatting.Indented,
+                    ContractResolver = new DefaultContractResolver
+                    {
+                        NamingStrategy = new SnakeCaseNamingStrategy()
+                    }
                 }
-            })
+            )
             {
                 StatusCode = StatusCodes.Status401Unauthorized
             };

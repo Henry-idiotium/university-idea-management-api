@@ -6,6 +6,8 @@ public class SubmissionSieveConfig : ISieveConfiguration
     {
         mapp.Property<Submission>(_ => _.Title).CanSort().CanFilter();
         mapp.Property<Submission>(_ => _.Description).CanSort().CanFilter();
+        mapp.Property<Submission>(_ => _.InitialDate).CanSort().CanSort();
+        mapp.Property<Submission>(_ => _.FinalDate).CanSort().CanSort();
         mapp.Property<Submission>(_ => _.CreatedBy).CanSort().CanSort();
         mapp.Property<Submission>(_ => _.ModifiedBy).CanSort().CanSort();
         mapp.Property<Submission>(_ => _.CreatedDate).CanSort().CanSort();

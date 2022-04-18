@@ -2,6 +2,7 @@ namespace UIM.Core.Common.UnitOfWork;
 
 public interface IUnitOfWork
 {
+    ICommentRepository Comments { get; }
     IDepartmentRepository Departments { get; }
     IIdeaRepository Ideas { get; }
     ISubmissionRepository Submissions { get; }

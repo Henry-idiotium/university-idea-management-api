@@ -11,8 +11,10 @@ public class HttpStatusExceptionHandlerMiddleware
     private readonly ILogger _logger;
     private readonly RequestDelegate _next;
 
-    public HttpStatusExceptionHandlerMiddleware(RequestDelegate next,
-        ILogger<HttpStatusExceptionHandlerMiddleware> logger)
+    public HttpStatusExceptionHandlerMiddleware(
+        RequestDelegate next,
+        ILogger<HttpStatusExceptionHandlerMiddleware> logger
+    )
     {
         _next = next;
         _logger = logger;
@@ -26,9 +28,11 @@ public class HttpStatusExceptionHandlerMiddleware
         }
         catch (Exception ex)
         {
-            if (ex is not HttpException
-                || ((HttpException)ex).Status == HttpStatusCode.InternalServerError)
-                _logger.LogError("HttpException: {message}", ex.Message);
+            if (
+                ex is not HttpException
+                || ((HttpException)ex).Status == HttpStatusCode.InternalServerError
+            )
+                _logger.LogError(@"{message}\nTrace: {trace}", ex.Message, ex.StackTrace);
 
             await HandleExceptionAsync(context, ex);
         }
@@ -46,20 +50,22 @@ public class HttpStatusExceptionHandlerMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = code;
 
-        var response = JsonConvert.SerializeObject(new CoreResponse
-        (
-            message: (exception.Message != null) && (exception is HttpException) ?
-                      exception.Message : ErrorResponseMessages.UnexpectedError,
-            succeeded: false
-        ),
-        new JsonSerializerSettings
-        {
-            Formatting = Formatting.Indented,
-            ContractResolver = new DefaultContractResolver
+        var response = JsonConvert.SerializeObject(
+            new CoreResponse(
+                message: (exception.Message != null) && (exception is HttpException)
+                  ? exception.Message
+                  : ErrorResponseMessages.UnexpectedError,
+                succeeded: false
+            ),
+            new JsonSerializerSettings
             {
-                NamingStrategy = new SnakeCaseNamingStrategy()
+                Formatting = Formatting.Indented,
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new SnakeCaseNamingStrategy()
+                }
             }
-        });
+        );
 
         await context.Response.WriteAsync(response);
     }

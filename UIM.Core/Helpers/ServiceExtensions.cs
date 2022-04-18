@@ -1,98 +1,97 @@
 using System.Net.Mime;
-using Init = UIM.Core.Helpers.EnvVars.System;
 
 namespace UIM.Core.Helpers;
 
 public static class ServiceExtensions
 {
-    // Vanilla authorize attribute cannot obtain role claims
     public static IServiceCollection AddAuthenticationExt(this IServiceCollection services)
     {
-        services
-            .AddAuthentication(_ =>
+        services.AddAuthentication(
+            _ =>
             {
                 _.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 _.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            });
+            }
+        );
         return services;
     }
 
     public static IServiceCollection AddControllersExt(this IServiceCollection services)
     {
-        services.AddControllers(options =>
-        {
-            options.ValueProviderFactories.Add(new SnakeCaseQueryValueProviderFactory());
-        })
-        .AddNewtonsoftJson(options =>
-        {
-            options.SerializerSettings.ContractResolver = new DefaultContractResolver
-            {
-                NamingStrategy = new SnakeCaseNamingStrategy()
-            };
-        })
-        .ConfigureApiBehaviorOptions(opt =>
-        {
-            opt.InvalidModelStateResponseFactory = context =>
-            {
-                var result = new ValidationFailedResult();
-                result.ContentTypes.Add(MediaTypeNames.Application.Json);
-                return result;
-            };
-        });
-        return services;
-    }
+        services
+            .AddControllers(
+                options =>
+                    options.ValueProviderFactories.Add(new SnakeCaseQueryValueProviderFactory())
+            )
+            .AddNewtonsoftJson(
+                options =>
+                    options.SerializerSettings.ContractResolver = new DefaultContractResolver
+                    {
+                        NamingStrategy = new SnakeCaseNamingStrategy()
+                    }
+            )
+            .ConfigureApiBehaviorOptions(
+                opt =>
+                    opt.InvalidModelStateResponseFactory = context =>
+                    {
+                        foreach (var item in context.ModelState)
+                            foreach (var err in item.Value.Errors)
+                                Console.WriteLine(err.ErrorMessage);
 
-    public static IServiceCollection AddCorsExt(this IServiceCollection services)
-    {
-        services.AddCors(_ =>
-        {
-            _.AddPolicy("default", conf =>
-                conf.AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .WithOrigins(EnvVars.ValidOrigins));
-        });
+                        var result = new ValidationFailedResult();
+                        result.ContentTypes.Add(MediaTypeNames.Application.Json);
+                        return result;
+                    }
+            );
         return services;
     }
 
     public static IServiceCollection AddDIContainerExt(this IServiceCollection services)
     {
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<SieveProcessor>();
         services.AddScoped<ISieveProcessor, AppSieveProcessor>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
         // Services
         services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<ITagService, TagService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IIdeaService, IdeaService>();
         services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IRoleService, RoleService>();
-        services.AddScoped<ITagService, TagService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<ISubmissionService, SubmissionService>();
+        services.AddScoped<IGoogleDriveService, GoogleDriveService>();
 
         return services;
     }
 
-    public static IServiceCollection AddDbContextExt(this IServiceCollection services, string localDbConnectionString)
+    public static IServiceCollection AddDbContextExt(
+        this IServiceCollection services,
+        string localDbConnectionString
+    )
     {
         if (EnvVars.CoreEnv == "development")
             services.AddDbContextPool<UimContext>(_ => _.UseSqlServer(localDbConnectionString));
         else
         {
-            services.AddDbContextPool<UimContext>(_ =>
-            {
-                _.UseNpgsql($@"
-                    Port={EnvVars.Pgsql.Port};
-                    Server={EnvVars.Pgsql.Host};
-                    Database={EnvVars.Pgsql.Db};
-                    User Id={EnvVars.Pgsql.UserId};
-                    Pooling={EnvVars.Pgsql.Pooling}
-                    sslmode={EnvVars.Pgsql.SslMode};
-                    Password={EnvVars.Pgsql.Password};
-                    Trust Server Certificate={EnvVars.Pgsql.TrustServer};
-                    Integrated Security={EnvVars.Pgsql.IntegratedSecurity};
-                ");
-            });
+            services.AddDbContextPool<UimContext>(
+                _ =>
+                    _.UseNpgsql(
+                        $@"
+						Port={EnvVars.Pgsql.Port};
+						Server={EnvVars.Pgsql.Host};
+						Database={EnvVars.Pgsql.Db};
+						User Id={EnvVars.Pgsql.UserId};
+						Pooling={EnvVars.Pgsql.Pooling}
+						sslmode={EnvVars.Pgsql.SslMode};
+						Password={EnvVars.Pgsql.Password};
+						Trust Server Certificate={EnvVars.Pgsql.TrustServer};
+						Integrated Security={EnvVars.Pgsql.IntegratedSecurity};"
+                    )
+            );
         }
         return services;
     }
@@ -102,45 +101,57 @@ public static class ServiceExtensions
         if (EnvVars.CoreEnv == "development")
         {
             services
-                .AddIdentity<AppUser, IdentityRole>(_ =>
-                {
-                    _.SignIn.RequireConfirmedEmail = false;
-                    _.SignIn.RequireConfirmedAccount = false;
-                    _.SignIn.RequireConfirmedPhoneNumber = false;
-                })
+                .AddIdentity<AppUser, IdentityRole>(
+                    _ =>
+                    {
+                        _.SignIn.RequireConfirmedEmail = false;
+                        _.SignIn.RequireConfirmedAccount = false;
+                        _.SignIn.RequireConfirmedPhoneNumber = false;
+                    }
+                )
                 .AddEntityFrameworkStores<UimContext>()
-                .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
+                .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(
+                    TokenOptions.DefaultProvider
+                );
 
-            services.Configure<IdentityOptions>(_ =>
-            {
-                _.Password.RequiredLength = 0;
-                _.Password.RequireDigit = false;
-                _.Password.RequiredUniqueChars = 0;
-                _.Password.RequireUppercase = false;
-                _.Password.RequireLowercase = false;
-                _.Password.RequireNonAlphanumeric = false;
-            });
+            services.Configure<IdentityOptions>(
+                _ =>
+                {
+                    _.Password.RequiredLength = 0;
+                    _.Password.RequireDigit = false;
+                    _.Password.RequiredUniqueChars = 0;
+                    _.Password.RequireUppercase = false;
+                    _.Password.RequireLowercase = false;
+                    _.Password.RequireNonAlphanumeric = false;
+                }
+            );
         }
         else
         {
             services
-                .AddIdentity<AppUser, IdentityRole>(_ =>
-                {
-                    _.SignIn.RequireConfirmedEmail = false;
-                    _.SignIn.RequireConfirmedAccount = true;
-                    _.SignIn.RequireConfirmedPhoneNumber = false;
-                })
+                .AddIdentity<AppUser, IdentityRole>(
+                    _ =>
+                    {
+                        _.SignIn.RequireConfirmedEmail = false;
+                        _.SignIn.RequireConfirmedAccount = true;
+                        _.SignIn.RequireConfirmedPhoneNumber = false;
+                    }
+                )
                 .AddEntityFrameworkStores<UimContext>()
-                .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
+                .AddTokenProvider<DataProtectorTokenProvider<AppUser>>(
+                    TokenOptions.DefaultProvider
+                );
 
-            services.Configure<IdentityOptions>(_ =>
-            {
-                _.Password.RequireDigit = true;
-                _.Password.RequiredUniqueChars = 0;
-                _.Password.RequireUppercase = false;
-                _.Password.RequireLowercase = false;
-                _.Password.RequiredLength = default;
-            });
+            services.Configure<IdentityOptions>(
+                _ =>
+                {
+                    _.Password.RequireDigit = true;
+                    _.Password.RequiredUniqueChars = 0;
+                    _.Password.RequireUppercase = false;
+                    _.Password.RequireLowercase = false;
+                    _.Password.RequiredLength = default;
+                }
+            );
         }
         return services;
     }
@@ -150,7 +161,10 @@ public static class ServiceExtensions
         services.AddAutoMapper(
             typeof(UserProfile),
             typeof(IdeaProfile),
-            typeof(SimpleEntitiesProfile),
+            typeof(RoleProfile),
+            typeof(TagProfile),
+            typeof(CommentProfile),
+            typeof(DepartmentProfile),
             typeof(SubmissionProfile)
         );
         return services;
@@ -158,57 +172,71 @@ public static class ServiceExtensions
 
     public static IServiceCollection AddSwaggerExt(this IServiceCollection services)
     {
-        services.AddSwaggerGen(_ =>
-        {
-            _.OperationFilter<SnakecasingParameOperationFilter>();
-            _.DocumentFilter<LowercaseDocumentFilter>();
-            _.SwaggerDoc("v1", new OpenApiInfo { Title = "UIM", Version = "v1" });
-            _.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        services.AddSwaggerGen(
+            _ =>
             {
-                Description = "JWT Authorization header using the Bearer scheme." +
-                              "\nEnter 'Bearer' [space] and then your token in the text input below." +
-                              "\nExample: 'Bearer 12345abcdef'",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer"
-            });
-            _.AddSecurityRequirement(new OpenApiSecurityRequirement()
-            {
+                _.OperationFilter<SnakecasingParameOperationFilter>();
+                _.DocumentFilter<LowercaseDocumentFilter>();
+                _.SwaggerDoc("v1", new OpenApiInfo { Title = "UIM", Version = "v1" });
+                _.AddSecurityDefinition(
+                    "Bearer",
+                    new OpenApiSecurityScheme
                     {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            },
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
-                        },
-                        new List<string>()
+                        Description =
+                            "JWT Authorization header using the Bearer scheme."
+                            + "\nEnter 'Bearer' [space] and then your token in the text input below."
+                            + "\nExample: 'Bearer 12345abcdef'",
+                        Name = "Authorization",
+                        In = ParameterLocation.Header,
+                        Type = SecuritySchemeType.ApiKey,
+                        Scheme = "Bearer"
                     }
-            });
-        });
+                );
+                _.AddSecurityRequirement(
+                    new OpenApiSecurityRequirement()
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                                },
+                                Scheme = "oauth2",
+                                Name = "Bearer",
+                                In = ParameterLocation.Header,
+                            },
+                            new List<string>()
+                        }
+                    }
+                );
+            }
+        );
         return services;
     }
 
-    public static async Task InitRolesPowerUser(this IServiceCollection services, IServiceScope scope)
+    public static async Task InitRolesPowerUser(this IServiceCollection _, IServiceScope scope)
     {
         if (EnvVars.InitRolesPwrUser)
         {
-            var userManager = (UserManager<AppUser>)scope.ServiceProvider.GetService(typeof(UserManager<AppUser>))!;
-            var roleManager = (RoleManager<IdentityRole>)scope.ServiceProvider.GetService(typeof(RoleManager<IdentityRole>))!;
+            var userManager =
+                (UserManager<AppUser>)scope.ServiceProvider.GetService(
+                    typeof(UserManager<AppUser>)
+                )!;
+            var roleManager =
+                (RoleManager<IdentityRole>)scope.ServiceProvider.GetService(
+                    typeof(RoleManager<IdentityRole>)
+                )!;
 
             // Initializing custom roles
             var roleNames = new List<string>
-                {
-                    Init.Role.Staff,
-                    Init.Role.PwrUser,
-                    Init.Role.Manager,
-                    Init.Role.Supervisor,
-                };
+            {
+                EnvVars.Role.Staff,
+                EnvVars.Role.PwrUser,
+                EnvVars.Role.Manager,
+                EnvVars.Role.Supervisor,
+            };
             foreach (var name in roleNames)
             {
                 var roleExist = await roleManager.RoleExistsAsync(name);
@@ -216,81 +244,34 @@ public static class ServiceExtensions
                     await roleManager.CreateAsync(new IdentityRole(name));
             }
 
-            #region 📌📌📌 NOTE: DEV ONLY ⚡ Init Random User 
-            var randoPwd = "qwe123";
-            {
-                var mgr = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Spencer Yost",
-                    Email = "manager@gmail.com",
-                    UserName = "best_manager_ever_7861",
-                    CreatedDate = DateTime.UtcNow,
-                };
-                var existingMgr = await userManager.FindByEmailAsync(mgr.Email);
-                if (existingMgr == null)
-                {
-                    var createUser = await userManager.CreateAsync(mgr, randoPwd);
-                    if (createUser.Succeeded) await userManager.AddToRoleAsync(mgr, Init.Role.Manager);
-                }
-            }
-            {
-                var supv = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Jeff Wells",
-                    Email = "bojejje@majpithu.st",
-                    UserName = "aspernatur",
-                    CreatedDate = DateTime.UtcNow,
-                };
-                var existingSupv = await userManager.FindByEmailAsync(supv.Email);
-                if (existingSupv == null)
-                {
-                    var createUser = await userManager.CreateAsync(supv, randoPwd);
-                    if (createUser.Succeeded) await userManager.AddToRoleAsync(supv, Init.Role.Supervisor);
-                }
-            }
-            {
-                var staff = new AppUser
-                {
-                    EmailConfirmed = true,
-                    FullName = "Madge Valdez",
-                    Email = "aptu@mitep.pt",
-                    UserName = "unde",
-                    CreatedDate = DateTime.UtcNow,
-                };
-                var existingStaff = await userManager.FindByEmailAsync(staff.Email);
-                if (existingStaff == null)
-                {
-                    var createUser = await userManager.CreateAsync(staff, randoPwd);
-                    if (createUser.Succeeded) await userManager.AddToRoleAsync(staff, Init.Role.Staff);
-                }
-            }
-            #endregion
-
             // Create a super user who will maintain the system
-            var existingPwrUser = await userManager.FindByEmailAsync(Init.PwrUserAuth.Email);
+            var existingPwrUser = await userManager.FindByEmailAsync(EnvVars.PwrUserAuth.Email);
             if (existingPwrUser == null)
             {
                 var pwrUser = new AppUser
                 {
                     EmailConfirmed = true,
                     FullName = "Henry David",
-                    Email = Init.PwrUserAuth.Email,
-                    UserName = Init.PwrUserAuth.UserName,
-                    CreatedDate = DateTime.UtcNow,
+                    Email = EnvVars.PwrUserAuth.Email,
+                    UserName = EnvVars.PwrUserAuth.UserName,
+                    CreatedDate = DateTime.Now,
+                    IsDefaultPassword = false,
+                    Avatar = await DiceBearHelpers.GetAvatarAsync(Sprites.Micah),
                 };
 
-                var createPowerUser = await userManager.CreateAsync(pwrUser, Init.PwrUserAuth.Password);
+                var createPowerUser = await userManager.CreateAsync(
+                    pwrUser,
+                    EnvVars.PwrUserAuth.Password
+                );
                 if (createPowerUser.Succeeded)
-                    await userManager.AddToRoleAsync(pwrUser, Init.Role.PwrUser);
+                    await userManager.AddToRoleAsync(pwrUser, EnvVars.Role.PwrUser);
             }
             else
             {
-                // Add add poweruser to admin role if not 
+                // Add add poweruser to admin role if not
                 var pwrUserRoles = await userManager.GetRolesAsync(existingPwrUser);
                 if (pwrUserRoles.Count == 0)
-                    await userManager.AddToRoleAsync(existingPwrUser, Init.Role.PwrUser);
+                    await userManager.AddToRoleAsync(existingPwrUser, EnvVars.Role.PwrUser);
             }
         }
     }

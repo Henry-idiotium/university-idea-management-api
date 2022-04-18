@@ -1,6 +1,8 @@
 namespace UIM.Core.Models.Dtos.Department;
 
-public class DepartmentDetailsResponse : IResponse
+public class DepartmentDetailsResponse : DepartmentDto
 {
-    [Required] public string Name { get; set; } = default!;
+    public string? Id { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public DateTime ModifiedDate { get; set; }
 }

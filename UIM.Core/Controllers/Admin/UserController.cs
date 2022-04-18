@@ -22,7 +22,7 @@ public class UserController : AdminController<IUserService>
         return ResponseResult();
     }
 
-    [HttpGet]
+    [HttpGet("table/list")]
     public async Task<IActionResult> Read([FromQuery] SieveModel request)
     {
         if (request == null)
@@ -48,7 +48,9 @@ public class UserController : AdminController<IUserService>
 
         var entityId = EncryptHelpers.DecodeBase64Url(id);
 
-        await _service.EditAsync(entityId, request);
+        request.Id = entityId;
+
+        await _service.EditAsync(request);
         return ResponseResult();
     }
 }

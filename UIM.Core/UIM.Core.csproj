@@ -5,11 +5,15 @@
     <RootNamespace>UIM.Core</RootNamespace>
     <Nullable>Enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	<SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+	<VSCODE_VERBOSE_LOGGING>true</VSCODE_VERBOSE_LOGGING>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+    <PackageReference Include="google.apis.drive.v3" Version="1.56.0.2601" />
     <PackageReference Include="Sieve" Version="2.5.4" />
+    <PackageReference Include="RestSharp" Version="107.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
   </ItemGroup>
 
@@ -38,8 +42,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SendGrid" Version="9.26.0"/>
-    <PackageReference Include="SendGrid.Extensions.DependencyInjection" Version="1.0.1"/>  
+    <PackageReference Include="SendGrid" Version="9.26.0" />
+    <PackageReference Include="SendGrid.Extensions.DependencyInjection" Version="1.0.1" />  
   </ItemGroup>
 
 </Project>

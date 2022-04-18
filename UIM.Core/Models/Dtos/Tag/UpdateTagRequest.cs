@@ -1,7 +1,11 @@
+using TJS = System.Text.Json.Serialization;
+
 namespace UIM.Core.Models.Dtos.Tag;
 
-public class UpdateTagRequest : IUpdateRequest
+public class UpdateTagRequest : TagDto
 {
-    [Required] public string OldName { get; set; } = default!;
-    [Required] public string NewName { get; set; } = default!;
+    [TJS.JsonIgnore]
+    public string? Id { get; set; }
+    [TJS.JsonIgnore]
+    public string? UserId { get; set; }
 }

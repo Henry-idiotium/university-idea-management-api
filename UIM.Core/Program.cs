@@ -1,6 +1,7 @@
 var builder = WebApplication.CreateBuilder(args);
 var Configuration = builder.Configuration;
 
+
 // Add services to the container.
 {
     builder.Services
@@ -9,17 +10,17 @@ var Configuration = builder.Configuration;
         .AddIdentityExt()
         .AddAuthenticationExt()
         .AddDIContainerExt()
-
         .Configure<SieveOptions>(Configuration.GetSection("Sieve"))
-
-        .AddCorsExt()
         .AddControllersExt()
         .AddSwaggerExt();
 }
 
+
 var app = builder.Build();
 var env = app.Environment;
 var serviceProvider = app.Services;
+
+
 // Configure the HTTP request pipeline.
 {
     if (env.IsDevelopment())
@@ -31,14 +32,17 @@ var serviceProvider = app.Services;
 
     app.UseHttpsRedirection()
         .UseRouting()
-        .UseCors("default")
-
+        .UseCors(
+            x =>
+                x.AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .SetIsOriginAllowed(origin => true)
+                    .AllowCredentials()
+        )
         .UseAuthentication()
         .UseAuthorization()
-
         .UseHttpExceptionHandler()
         .UseJwt()
-
         .UseEndpoints(endpoints => endpoints.MapControllers());
 
     builder.Services.InitRolesPowerUser(serviceProvider.CreateScope()).Wait();

@@ -8,7 +8,6 @@ public class UserSieveConfig : ISieveConfiguration
         mapp.Property<AppUser>(_ => _.FullName).CanFilter().CanSort();
         mapp.Property<AppUser>(_ => _.Email).CanFilter().CanSort();
         mapp.Property<AppUser>(_ => _.CreatedDate).CanFilter().CanSort();
-        mapp.Property<AppUser>(_ => _.DateOfBirth).CanFilter().CanSort()
-            .HasName("birth_date");
+        mapp.Property<AppUser>(_ => _.DateOfBirth).CanFilter().CanSort().HasName("birth_date");
     }
 }
