@@ -9,5 +9,4 @@ public abstract class SubmissionDto
     public virtual DateTime InitialDate { get; set; }
     [Required]
     public virtual DateTime FinalDate { get; set; }
-    public virtual bool? IsActive { get; set; }
 }

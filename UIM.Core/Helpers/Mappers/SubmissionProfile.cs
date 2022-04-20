@@ -17,7 +17,7 @@ public class SubmissionProfile : Profile
             );
 
         CreateMap<CreateSubmissionRequest, Submission>()
-            .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive ?? true))
+            .ForMember(dest => dest.IsFullyClose, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.Now))
             .ForMember(dest => dest.ModifiedDate, opt => opt.MapFrom(src => DateTime.Now));
 

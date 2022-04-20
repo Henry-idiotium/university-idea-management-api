@@ -22,6 +22,10 @@ public class IdeaRepository : Repository<Idea>, IIdeaRepository
     {
         try
         {
+            var viewExists = await _context.Views.FindAsync(view);
+            if (viewExists != null)
+                return true;
+
             await _context.Views.AddAsync(view);
             var added = await _context.SaveChangesAsync();
             return added > 0;

@@ -74,9 +74,9 @@ public class SubmissionService : Service, ISubmissionService
 
     public IEnumerable<SimpleSubmissionResponse> FindAll()
     {
-        var subs = _unitOfWork.Submissions.Set.Where(_ => _.IsActive);
-        if (subs == null)
-            throw new HttpException(HttpStatusCode.InternalServerError);
+        var subs = _unitOfWork.Submissions.Set.AsEnumerable().Where(_ => _.IsFullyClose == null);
+        if (subs.IsNullOrEmpty())
+            return new List<SimpleSubmissionResponse>();
 
         return _mapper.Map<List<SimpleSubmissionResponse>>(subs);
     }

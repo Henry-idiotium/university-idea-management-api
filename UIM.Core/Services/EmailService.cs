@@ -78,7 +78,7 @@ public class EmailService : IEmailService
 
         message.AddTo(new EmailAddress(receiver.Email, receiver.FullName));
 
-        var subject = "UIM - Someone Has Commented on Your Idea";
+        var subject = "UIM - Someone has commented on your idea";
         message.SetTemplateData(
             new
             {

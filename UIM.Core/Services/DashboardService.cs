@@ -52,8 +52,8 @@ public class DashboardService : Service, IDashboardService
                 new()
                 {
                     Month = i.ToString(),
-                    ActiveSubmissions = subsInMonth.Where(_ => _.IsActive).Count(),
-                    InactiveSubmissions = subsInMonth.Where(_ => !_.IsActive).Count(),
+                    ActiveSubmissions = subsInMonth.Where(_ => _.IsFullyClose != true).Count(),
+                    InactiveSubmissions = subsInMonth.Where(_ => _.IsFullyClose == true).Count(),
                 }
             );
         }

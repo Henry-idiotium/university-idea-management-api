@@ -17,6 +17,15 @@ public static class EnvVars
         }
     }
 
+    private static string GetEnvVar(string variable)
+    {
+        var result = Environment.GetEnvironmentVariable(variable);
+        if (result == null)
+            throw new ArgumentNullException(result, "EnvVars");
+
+        return result;
+    }
+
     public static class ExternalProvider
     {
         public static class SendGrid
@@ -26,10 +35,10 @@ public static class EnvVars
             public static string SenderName => GetEnvVar("SENDGRID_SENDER_NAME");
             public static class Templates
             {
-                public static string Welcome => GetEnvVar("SENDGRID_TEMPLATE_WELCOME");
                 public static string NewPost => GetEnvVar("SENDGRID_TEMPLATE_NEW_POST");
                 public static string SomeoneCommented =>
                     GetEnvVar("SENDGRID_TEMPLATE_SOMEONE_COMMENTED");
+                public static string Welcome => GetEnvVar("SENDGRID_TEMPLATE_WELCOME");
             }
         }
     }
@@ -82,14 +91,5 @@ public static class EnvVars
         public static string PwrUser => GetEnvVar("SYSTEM_ROLE_PWRUSER");
         public static string Staff => GetEnvVar("SYSTEM_ROLE_STAFF");
         public static string Supervisor => GetEnvVar("SYSTEM_ROLE_SUP");
-    }
-
-    private static string GetEnvVar(string variable)
-    {
-        var result = Environment.GetEnvironmentVariable(variable);
-        if (result == null)
-            throw new ArgumentNullException(result, "EnvVars");
-
-        return result;
     }
 }
