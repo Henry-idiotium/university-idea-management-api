@@ -62,11 +62,12 @@ public class EmailService : IEmailService
 
     public async Task<bool> SendNotifySomeoneCommentedAsync(
         AppUser receiver,
+        AppUser commenter,
         Idea receiverIdea,
         string commentContent
     )
     {
-        if (EnvVars.UseEmailService)
+        if (!EnvVars.UseEmailService)
             return true;
 
         var client = new SendGridClient(SG.ApiKey);
@@ -84,7 +85,8 @@ public class EmailService : IEmailService
             {
                 subject,
                 preheader = subject,
-                receiver = new { full_name = receiver.FullName, },
+                receiver = new { full_name = receiver.FullName },
+                commenter = new { full_name = commenter.FullName, email = commenter.Email },
                 comment = new { content = commentContent },
                 idea = new
                 {

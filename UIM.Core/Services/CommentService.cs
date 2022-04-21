@@ -31,6 +31,7 @@ public class CommentService : Service, ICommentService
         var sendSucceeded = await _emailService.SendNotifySomeoneCommentedAsync(
             receiver: await _userManager.FindByIdAsync(idea.UserId),
             commentContent: comment.Content,
+            commenter: user,
             receiverIdea: idea
         );
         if (!sendSucceeded)
@@ -52,18 +53,21 @@ public class CommentService : Service, ICommentService
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    public async Task<IEnumerable<CommentDetailsResponse>> FindAllAsync(string ideaId, int minItems)
+    public async Task<SieveCommentResponse> FindAllAsync(string ideaId, bool isInitial)
     {
         var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
         if (idea == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var comments = _unitOfWork.Comments.Set.Where(_ => _.IdeaId == ideaId);
-        if (minItems != 0)
-            comments = comments.Take(minItems);
+        var comments = _unitOfWork.Comments.Set
+            .Where(_ => _.IdeaId == ideaId)
+            .OrderByDescending(_ => _.CreatedDate)
+            .AsQueryable();
+
+        var returnComments = isInitial ? comments.Take(3) : comments.Skip(3);
 
         var mappedComments = new List<CommentDetailsResponse>();
-        foreach (var comment in comments ?? Enumerable.Empty<Comment>().AsQueryable())
+        foreach (var comment in returnComments ?? Enumerable.Empty<Comment>().AsQueryable())
         {
             var userComment = await _userManager.FindByIdAsync(comment.UserId);
             var mappedComment = _mapper.Map<CommentDetailsResponse>(comment);
@@ -71,33 +75,7 @@ public class CommentService : Service, ICommentService
             mappedComment.Idea = _mapper.Map<SimpleIdeaResponse>(idea);
             mappedComments.Add(mappedComment);
         }
-        return mappedComments;
-    }
-
-    // DEPRECATED: STUPID LOGIC
-    public async Task<IEnumerable<CommentDetailsResponse>> FindAllByUserIdAsync(
-        string ideaId,
-        string userId
-    )
-    {
-        var idea = await _unitOfWork.Ideas.GetByIdAsync(ideaId);
-        var user = await _userManager.FindByIdAsync(userId);
-        if (idea == null || user == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
-        var comments = _unitOfWork.Comments.Set
-            .Where(_ => _.IdeaId == ideaId)
-            .Where(_ => _.UserId == userId);
-        var mappedComments = new List<CommentDetailsResponse>();
-        foreach (var comment in comments ?? Enumerable.Empty<Comment>().AsQueryable())
-        {
-            var mappedComment = _mapper.Map<CommentDetailsResponse>(comment);
-            mappedComment.User = _mapper.Map<SimpleUserResponse>(user);
-            mappedComment.Idea = _mapper.Map<SimpleIdeaResponse>(comment.Idea);
-
-            mappedComments.Add(mappedComment);
-        }
-        return mappedComments;
+        return new(mappedComments, comments != null ? await comments.CountAsync() : 0);
     }
 
     public async Task<CommentDetailsResponse> FindByIdAsync(string id)

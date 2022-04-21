@@ -10,6 +10,7 @@ public interface IEmailService
     );
     Task<bool> SendNotifySomeoneCommentedAsync(
         AppUser receiver,
+        AppUser commenter,
         Idea receiverIdea,
         string commentContent
     );

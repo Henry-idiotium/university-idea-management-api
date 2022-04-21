@@ -4,17 +4,17 @@ public class IdeaProfile : Profile
 {
     public IdeaProfile()
     {
+        CreateMap<Idea, ViewDetailsResponse>();
+
         CreateMap<Idea, IdeaDetailsResponse>()
-            .ForMember(
+            /* .ForMember(
                 dest => dest.CommentsCount,
                 opt => opt.MapFrom(src => src.Comments != null ? src.Comments.Count : 0)
-            )
+            ) */
             .ForMember(
                 dest => dest.Id,
                 opt => opt.MapFrom(src => EncryptHelpers.EncodeBase64Url(src.Id))
             );
-
-        CreateMap<Idea, ViewDetailsResponse>();
 
         CreateMap<CreateViewRequest, View>()
             .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.Now))
@@ -41,17 +41,19 @@ public class IdeaProfile : Profile
         CreateMap<UpdateIdeaRequest, Idea>()
             .ForSourceMember(src => src.Id, opt => opt.DoNotValidate())
             .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate())
+            .ForSourceMember(dest => dest.UserId, opt => opt.DoNotValidate())
+            .ForMember(dest => dest.ModifiedDate, opt => opt.MapFrom(src => DateTime.Now))
             .ForMember(dest => dest.Attachments, opt => opt.Ignore())
             .ForMember(dest => dest.IdeaTags, opt => opt.Ignore())
             .ForMember(dest => dest.Comments, opt => opt.Ignore())
-            .ForMember(dest => dest.Likes, opt => opt.Ignore())
-            .ForMember(dest => dest.ModifiedDate, opt => opt.MapFrom(src => DateTime.Now));
+            .ForMember(dest => dest.UserId, opt => opt.Ignore())
+            .ForMember(dest => dest.Likes, opt => opt.Ignore());
 
         CreateMap<CreateIdeaRequest, Idea>()
             .ForSourceMember(dest => dest.Tags, opt => opt.DoNotValidate())
             .ForSourceMember(dest => dest.Attachments, opt => opt.DoNotValidate())
-            .ForMember(dest => dest.Attachments, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.Now))
-            .ForMember(dest => dest.ModifiedDate, opt => opt.MapFrom(src => DateTime.Now));
+            .ForMember(dest => dest.ModifiedDate, opt => opt.MapFrom(src => DateTime.Now))
+            .ForMember(dest => dest.Attachments, opt => opt.Ignore());
     }
 }

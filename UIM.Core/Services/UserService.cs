@@ -87,13 +87,9 @@ public class UserService : Service, IUserService
             throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
-    // TODO: fix gender retun data
     public async Task<SieveResponse> FindAsync(SieveModel model)
     {
         var sortedUsers = _sieveProcessor.Apply(model, _userManager.Users);
-        if (sortedUsers == null)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
         var mappedUsers = new List<UserDetailsResponse>();
         foreach (var user in sortedUsers)
         {
@@ -146,7 +142,6 @@ public class UserService : Service, IUserService
                     }
                 )
         );
-
         return mappedUser;
     }
 

@@ -189,6 +189,7 @@ public class IdeaService : Service, IIdeaService
         }
 
         _mapper.Map(request, idea);
+        idea.ModifiedBy = user.Email;
 
         var edit = await _unitOfWork.Ideas.UpdateAsync(idea);
         if (!edit.Succeeded)
@@ -211,7 +212,11 @@ public class IdeaService : Service, IIdeaService
         else
             ideas = _unitOfWork.Ideas.Set;
 
-        var sortedIdeas = _sieveProcessor.Apply(model, ideas);
+        var sortedIdeas = _sieveProcessor
+            .Apply(model, ideas)
+            .OrderByDescending(_ => _.CreatedDate)
+            .AsQueryable();
+
         if (sortedIdeas == null)
             throw new HttpException(HttpStatusCode.InternalServerError);
 
@@ -234,10 +239,6 @@ public class IdeaService : Service, IIdeaService
                 idea.Id,
                 requestUser.Id
             )?.IsLike;
-
-            mappedIdea.CommentsCount = _unitOfWork.Comments.Set
-                .Where(_ => _.IdeaId == idea.Id)
-                .Count();
 
             mappedIdeas.Add(mappedIdea);
         }
@@ -275,8 +276,6 @@ public class IdeaService : Service, IIdeaService
             idea.Id,
             requestUser.Id
         )?.IsLike;
-
-        mappedIdea.CommentsCount = _unitOfWork.Comments.Set.Where(_ => _.IdeaId == idea.Id).Count();
 
         return mappedIdea;
     }

@@ -22,8 +22,10 @@ public class IdeaRepository : Repository<Idea>, IIdeaRepository
     {
         try
         {
-            var viewExists = await _context.Views.FindAsync(view);
-            if (viewExists != null)
+            var viewExists = _context.Views
+                .Where(_ => _.UserId == view.UserId && _.IdeaId == view.IdeaId)
+                .AsEnumerable();
+            if (!viewExists.IsNullOrEmpty())
                 return true;
 
             await _context.Views.AddAsync(view);

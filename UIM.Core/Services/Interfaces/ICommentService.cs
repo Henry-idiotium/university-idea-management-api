@@ -4,8 +4,7 @@ public interface ICommentService
 {
     Task CreateAsync(CreateCommentRequest request);
     Task EditAsync(UpdateCommentRequest request);
-    Task<IEnumerable<CommentDetailsResponse>> FindAllAsync(string ideaId, int minItems);
-    Task<IEnumerable<CommentDetailsResponse>> FindAllByUserIdAsync(string ideaId, string userId);
+    Task<SieveCommentResponse> FindAllAsync(string ideaId, bool isInitial);
     Task<CommentDetailsResponse> FindByIdAsync(string entityId);
     Task RemoveAsync(string entityId, string userId);
 }
