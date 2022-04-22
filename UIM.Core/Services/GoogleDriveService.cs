@@ -35,9 +35,8 @@ public class GoogleDriveService : IGoogleDriveService
         try
         {
             if (!EnvVars.UseGoogleDrive)
-            {
                 return;
-            }
+
             _driveService.Files.Delete(fileId).Execute();
         }
         catch { }

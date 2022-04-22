@@ -7,6 +7,7 @@ public static class EnvVars
     public static bool InitRolesPwrUser => bool.Parse(GetEnvVar("INIT_ROLES_PWRUSER"));
     public static bool UseEmailService => bool.Parse(GetEnvVar("USE_EMAIL_SERVICE"));
     public static bool UseGoogleDrive => bool.Parse(GetEnvVar("USE_GOOGLE_DRIVE"));
+
     public static string[] ValidOrigins
     {
         get
@@ -91,5 +92,11 @@ public static class EnvVars
         public static string PwrUser => GetEnvVar("SYSTEM_ROLE_PWRUSER");
         public static string Staff => GetEnvVar("SYSTEM_ROLE_STAFF");
         public static string Supervisor => GetEnvVar("SYSTEM_ROLE_SUP");
+    }
+
+    public static class Rsa
+    {
+        public static string PrivateKey => GetEnvVar("RSA_PRIVATE_KEY");
+        public static string PublicKey => GetEnvVar("RSA_PUBLIC_KEY");
     }
 }

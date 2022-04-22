@@ -4,15 +4,9 @@ namespace UIM.Core.Controllers.Shared;
 public class AuthController : SharedController<IAuthService>
 {
     private readonly IJwtService _jwtService;
-    private readonly IUserService _userService;
 
-    public AuthController(
-        IAuthService authService,
-        IUserService userService,
-        IJwtService jwtService
-    ) : base(authService)
+    public AuthController(IAuthService authService, IJwtService jwtService) : base(authService)
     {
-        _userService = userService;
         _jwtService = jwtService;
     }
 
@@ -27,7 +21,7 @@ public class AuthController : SharedController<IAuthService>
         if (userId == null)
             throw new HttpException(HttpStatusCode.Unauthorized);
 
-        var user = await _userService.FindByIdAsync(userId);
+        var user = await _service.GetMeDataAsync(userId);
         return ResponseResult(user);
     }
 
@@ -55,6 +49,8 @@ public class AuthController : SharedController<IAuthService>
     {
         if (request == null)
             throw new HttpException(HttpStatusCode.BadRequest);
+
+        request.Password = EncryptHelpers.DecryptRsa(request.Password);
 
         var response = await _service.LoginAsync(request);
         return ResponseResult(response);

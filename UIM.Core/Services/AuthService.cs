@@ -3,16 +3,19 @@ namespace UIM.Core.Services;
 public class AuthService : Service, IAuthService
 {
     private readonly IJwtService _jwtService;
+    private readonly IUserService _userService;
 
     public AuthService(
         IMapper mapper,
         SieveProcessor sieveProcessor,
         IUnitOfWork unitOfWork,
         UserManager<AppUser> userManager,
-        IJwtService jwtService
+        IJwtService jwtService,
+        IUserService userService
     ) : base(mapper, sieveProcessor, unitOfWork, userManager)
     {
         _jwtService = jwtService;
+        _userService = userService;
     }
 
     public async Task<AuthResponse> ExternalLoginAsync(ExternalAuthRequest request)
@@ -30,6 +33,9 @@ public class AuthService : Service, IAuthService
         return new(accessToken, refreshToken.Token);
     }
 
+    public async Task<UserDetailsResponse> GetMeDataAsync(string id) =>
+        await _userService.FindByIdAsync(id);
+
     public async Task<AuthResponse> LoginAsync(LoginRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request?.Email);
@@ -42,28 +48,6 @@ public class AuthService : Service, IAuthService
         await _unitOfWork.Users.AddRefreshTokenAsync(user, refreshToken);
 
         return new(accessToken, refreshToken.Token);
-    }
-
-    public async Task UpdatePasswordAsync(UpdatePasswordRequest request)
-    {
-        if (request.NewPassword != request.ConfirmNewPassword)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
-        var user = await _userManager.FindByIdAsync(request.Id!);
-        var oldPwdCorrect = await _userManager.CheckPasswordAsync(user, request?.OldPassword);
-        if (!oldPwdCorrect)
-            throw new HttpException(HttpStatusCode.BadRequest);
-
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var pwdReset = await _userManager.ResetPasswordAsync(user, token, request?.NewPassword);
-
-        if (!pwdReset.Succeeded)
-            throw new HttpException(HttpStatusCode.InternalServerError);
-
-        user.IsDefaultPassword = false;
-        var userUpdated = await _userManager.UpdateAsync(user);
-        if (!userUpdated.Succeeded)
-            throw new HttpException(HttpStatusCode.InternalServerError);
     }
 
     public async Task RevokeRefreshToken(string token)
@@ -112,5 +96,27 @@ public class AuthService : Service, IAuthService
 
         var accessToken = _jwtService.GenerateAccessToken(principal.Claims);
         return new(accessToken, refreshToken.Token);
+    }
+
+    public async Task UpdatePasswordAsync(UpdatePasswordRequest request)
+    {
+        if (request.NewPassword != request.ConfirmNewPassword)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var user = await _userManager.FindByIdAsync(request.Id!);
+        var oldPwdCorrect = await _userManager.CheckPasswordAsync(user, request?.OldPassword);
+        if (!oldPwdCorrect)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var pwdReset = await _userManager.ResetPasswordAsync(user, token, request?.NewPassword);
+
+        if (!pwdReset.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
+
+        user.IsDefaultPassword = false;
+        var userUpdated = await _userManager.UpdateAsync(user);
+        if (!userUpdated.Succeeded)
+            throw new HttpException(HttpStatusCode.InternalServerError);
     }
 }

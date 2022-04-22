@@ -37,6 +37,7 @@ global using UIM.Core.Data.Repositories.Interfaces;
 global using UIM.Core.Helpers;
 global using UIM.Core.Helpers.Attributes;
 global using UIM.Core.Helpers.Mappers;
+global using UIM.Core.Helpers.Rsa;
 global using UIM.Core.Helpers.SieveExtensions;
 global using UIM.Core.Helpers.SieveExtensions.Configurations;
 global using UIM.Core.Middlewares;
