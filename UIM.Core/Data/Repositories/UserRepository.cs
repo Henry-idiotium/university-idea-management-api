@@ -14,7 +14,7 @@ public class UserRepository : IUserRepository
         return created > 0;
     }
 
-    public AppUser GetByRefreshToken(string? token)
+    public AppUser GetByRefreshToken(string token)
     {
         var user = _context.Users.First(
             u => u.Id == u.RefreshTokens.First(t => t.Token == token).UserId

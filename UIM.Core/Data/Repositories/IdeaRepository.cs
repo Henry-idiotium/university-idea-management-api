@@ -15,8 +15,13 @@ public class IdeaRepository : Repository<Idea>, IIdeaRepository
     public Like? GetLikenessByUser(string ideaId, string userId) =>
         _context.Likes.Where(_ => _.IdeaId == ideaId).FirstOrDefault(_ => _.UserId == userId);
 
-    public IEnumerable<View> GetViews(string ideaId) =>
-        _context.Views.Where(_ => _.IdeaId == ideaId);
+    public IEnumerable<View> GetViews(string? ideaId = null)
+    {
+        if (ideaId != null)
+            return _context.Views.Where(_ => _.IdeaId == ideaId);
+        else
+            return _context.Views;
+    }
 
     public async Task<bool> AddViewAsync(View view)
     {

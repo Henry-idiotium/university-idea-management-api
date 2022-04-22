@@ -13,6 +13,6 @@ public interface IIdeaRepository : IRepository<Idea>
     Like? GetLikenessByUser(string ideaId, string userId);
     Like UpdateLikeness(Like like);
     Task<bool> AddViewAsync(View view);
-    IEnumerable<View> GetViews(string ideaId);
+    IEnumerable<View> GetViews(string? ideaId = null);
     IEnumerable<Like> GetAllLikeness();
 }

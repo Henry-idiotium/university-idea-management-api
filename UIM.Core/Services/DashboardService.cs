@@ -16,46 +16,43 @@ public class DashboardService : Service, IDashboardService
         var likeness = _unitOfWork.Ideas.GetAllLikeness();
         return new()
         {
-            TotalSubmissions = await _unitOfWork.Submissions.CountAsync(),
-            TotalComments = await _unitOfWork.Comments.CountAsync(),
-            TotalDislikes = likeness?.Where(_ => !_.IsLike)?.Count() ?? 0,
-            TotalLikes = likeness?.Where(_ => _.IsLike)?.Count() ?? 0,
             TotalIdeas = await _unitOfWork.Ideas.CountAsync(),
+            TotalViews = _unitOfWork.Ideas.GetViews().Count(),
+            TotalComments = await _unitOfWork.Comments.CountAsync(),
+            TotalLikes = likeness?.Where(_ => _.IsLike)?.Count() ?? 0,
+            TotalSubmissions = await _unitOfWork.Submissions.CountAsync(),
+            TotalDislikes = likeness?.Where(_ => !_.IsLike)?.Count() ?? 0,
         };
     }
 
     public IEnumerable<SubmissionsSum> SubmissionsSumForEachMonthInYear(string year)
     {
-        if (
-            !DateTime.TryParseExact(
-                year,
-                "yyyy",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out var tmpYear
-            )
-        )
-        {
-            throw new HttpException(HttpStatusCode.BadRequest);
-        }
-
-        var theYear = tmpYear.Year;
         var submissionsInYear = _unitOfWork.Submissions.Set.Where(
-            _ => _.InitialDate.Year == theYear
+            _ => _.InitialDate.Year == int.Parse(year)
         );
 
         var mappedSubs = new List<SubmissionsSum>();
+
         for (var i = 1; i <= 12; i++)
         {
-            var subsInMonth = submissionsInYear.Where(_ => _.InitialDate.Month == i);
-            mappedSubs.Add(
-                new()
+            var subsInMonth = submissionsInYear.Where(_ => _.InitialDate.Month == i).AsEnumerable();
+            SubmissionsSum sub = new();
+
+            if (!subsInMonth.IsNullOrEmpty())
+            {
+                sub.Month = i.ToString();
+                sub.ActiveSubmissions = subsInMonth.Where(_ => _.IsFullyClose != true).Count();
+                sub.InactiveSubmissions = subsInMonth.Where(_ => _.IsFullyClose == true).Count();
+            }
+            else
+                sub = new()
                 {
                     Month = i.ToString(),
-                    ActiveSubmissions = subsInMonth.Where(_ => _.IsFullyClose != true).Count(),
-                    InactiveSubmissions = subsInMonth.Where(_ => _.IsFullyClose == true).Count(),
-                }
-            );
+                    ActiveSubmissions = 0,
+                    InactiveSubmissions = 0,
+                };
+
+            mappedSubs.Add(sub);
         }
 
         return mappedSubs;
@@ -68,7 +65,8 @@ public class DashboardService : Service, IDashboardService
         var ideasInMonthYear = _unitOfWork.Ideas.Set
             .Where(_ => _.CreatedDate.Year == theYear && _.CreatedDate.Month == theMonth)
             .Include(x => x.Comments);
-        var topIdeas = ideasInMonthYear.OrderBy(_ => _.Comments.Count);
+        var topIdeas = ideasInMonthYear.OrderByDescending(_ => _.Comments.Count).Take(3);
+
         var mappedIdeas = new List<TopIdea>();
         foreach (var item in topIdeas)
             mappedIdeas.Add(
@@ -94,17 +92,14 @@ public class DashboardService : Service, IDashboardService
         var commentsInMonth = new List<Comment>();
         var likesInMonth = new List<Like>();
         var dislikesInMonth = new List<Like>();
+        var viewsInMonth = new List<View>();
+
         foreach (var idea in ideasInMonth)
         {
-            if (idea.Comments != null && idea.Comments.Any())
-            {
-                commentsInMonth.AddRange(idea.Comments);
-            }
-            if (idea.Likes != null && idea.Likes.Any())
-            {
-                likesInMonth.AddRange(idea.Likes.Where(_ => _.IsLike));
-                dislikesInMonth.AddRange(idea.Likes.Where(_ => !_.IsLike));
-            }
+            viewsInMonth.AddRange(_unitOfWork.Ideas.GetViews(idea.Id));
+            commentsInMonth.AddRange(_unitOfWork.Comments.Set.Where(_ => _.IdeaId == idea.Id));
+            likesInMonth.AddRange(_unitOfWork.Ideas.GetLikes(idea.Id));
+            dislikesInMonth.AddRange(_unitOfWork.Ideas.GetDislikes(idea.Id));
         }
 
         var activitiesList = new List<MonthActivity>();
@@ -118,6 +113,7 @@ public class DashboardService : Service, IDashboardService
                     TotalLikes = likesInMonth.Where(_ => _.CreatedDate.Day == i).Count(),
                     TotalComments = commentsInMonth.Where(_ => _.CreatedDate.Day == i).Count(),
                     TotalDislikes = dislikesInMonth.Where(_ => _.CreatedDate.Day == i).Count(),
+                    TotalViews = viewsInMonth.Where(_ => _.CreatedDate.Day == i).Count(),
                 }
             );
         }
