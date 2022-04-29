@@ -85,6 +85,11 @@ public class DashboardService : Service, IDashboardService
         var theYear = int.Parse(year);
         var theDays = DateTime.DaysInMonth(theYear, theMonth);
 
+        Console.WriteLine("-------------------------------------------");
+        Console.WriteLine(theYear);
+        Console.WriteLine(theMonth);
+        Console.WriteLine("-------------------------------------------");
+
         var ideasInMonth = _unitOfWork.Ideas.Set.Where(
             _ => _.CreatedDate.Year == theYear && _.CreatedDate.Month == theMonth
         );
@@ -103,7 +108,7 @@ public class DashboardService : Service, IDashboardService
         }
 
         var activitiesList = new List<MonthActivity>();
-        for (var i = 1; i < theDays; i++)
+        for (var i = 1; i <= theDays; i++)
         {
             activitiesList.Add(
                 new()
