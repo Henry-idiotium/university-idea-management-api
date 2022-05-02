@@ -7,5 +7,6 @@ public interface ISubmissionService
     IEnumerable<SimpleSubmissionResponse> FindAll();
     Task<SieveResponse> FindAsync(SieveModel model);
     Task<SubmissionDetailsResponse> FindByIdAsync(string entityId);
+    Task MockCreateAsync(CreateSubmissionRequest request);
     Task RemoveAsync(string entityId);
 }

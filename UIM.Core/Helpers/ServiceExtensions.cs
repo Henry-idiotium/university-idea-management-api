@@ -50,7 +50,6 @@ public static class ServiceExtensions
     {
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<SieveProcessor>();
-        services.AddScoped<ISieveProcessor, AppSieveProcessor>();
         // Services
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<ITagService, TagService>();

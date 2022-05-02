@@ -8,5 +8,6 @@ public interface IUserService
     Task<SieveResponse> FindAsync(SieveModel model);
     Task<UserDetailsResponse> FindByEmailAsync(string email);
     Task<UserDetailsResponse> FindByIdAsync(string entityId);
+    Task MockCreateAsync(CreateUserRequest request, string password);
     Task RemoveAsync(string entityId);
 }

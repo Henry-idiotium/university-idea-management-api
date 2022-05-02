@@ -126,6 +126,33 @@ public class IdeaService : Service, IIdeaService
         return _mapper.Map<SimpleIdeaResponse>(add.Entity);
     }
 
+    public async Task<SimpleIdeaResponse> MockCreateAsync(CreateIdeaRequest request)
+    {
+        var users = (await _userManager.GetUsersInRoleAsync(RoleNames.Manager)).ToList();
+        var user = users[new Random().Next(users.Count)];
+
+        // request.SubmissionId is actually sub title, in this case
+        var subs = _unitOfWork.Submissions.Set.ToList();
+        var submission = subs[new Random().Next(subs.Count)];
+
+        if (user == null || submission == null)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        var idea = _mapper.Map<Idea>(request);
+        idea.CreatedDate = submission.CreatedDate;
+        idea.CreatedBy = user.Email;
+        idea.ModifiedBy = user.Email;
+
+        var add = await _unitOfWork.Ideas.AddAsync(idea);
+        if (!add.Succeeded || add.Entity == null)
+            throw new HttpException(HttpStatusCode.InternalServerError);
+
+        if (request.Tags != null)
+            await AddTagsAsync(add.Entity!, request.Tags);
+
+        return _mapper.Map<SimpleIdeaResponse>(add.Entity);
+    }
+
     public async Task DeleteLikenessAsync(string userId, string ideaId)
     {
         var user = await _userManager.FindByIdAsync(userId);

@@ -95,22 +95,11 @@ public class UserService : Service, IUserService
         {
             var role = await _userManager.GetRolesAsync(user);
             var department = await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
-
-            mappedUsers.Add(
-                _mapper.Map<UserDetailsResponse>(
-                    user,
-                    opt =>
-                        opt.AfterMap(
-                            (src, dest) =>
-                            {
-                                dest.Department = department?.Name;
-                                dest.Role = role?.FirstOrDefault() ?? string.Empty;
-                            }
-                        )
-                )
-            );
+            var mappedUser = _mapper.Map<UserDetailsResponse>(user);
+            mappedUser.Department = department?.Name;
+            mappedUser.Role = role?.FirstOrDefault() ?? string.Empty;
+            mappedUsers.Add(mappedUser);
         }
-
         return new(
             rows: mappedUsers,
             index: model?.Page ?? 1,
@@ -124,24 +113,12 @@ public class UserService : Service, IUserService
         if (user == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var department =
-            user.DepartmentId == null
-                ? null
-                : await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
-
+        var department = await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
         var role = await _userManager.GetRolesAsync(user);
+        var mappedUser = _mapper.Map<UserDetailsResponse>(user);
+        mappedUser.Department = department?.Name;
+        mappedUser.Role = role?.FirstOrDefault() ?? string.Empty;
 
-        var mappedUser = _mapper.Map<UserDetailsResponse>(
-            user,
-            opt =>
-                opt.AfterMap(
-                    (src, dest) =>
-                    {
-                        dest.Department = department?.Name;
-                        dest.Role = role.First();
-                    }
-                )
-        );
         return mappedUser;
     }
 
@@ -151,25 +128,34 @@ public class UserService : Service, IUserService
         if (user == null)
             throw new HttpException(HttpStatusCode.BadRequest);
 
-        var department =
-            user.DepartmentId == null
-                ? null
-                : await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
-
+        var department = await _unitOfWork.Departments.GetByIdAsync(user.DepartmentId);
         var role = await _userManager.GetRolesAsync(user);
+        var mappedUser = _mapper.Map<UserDetailsResponse>(user);
+        mappedUser.Department = department?.Name;
+        mappedUser.Role = role?.FirstOrDefault() ?? string.Empty;
 
-        var mappedUser = _mapper.Map<UserDetailsResponse>(
-            user,
-            opt =>
-                opt.AfterMap(
-                    (src, dest) =>
-                    {
-                        dest.Department = department?.Name;
-                        dest.Role = role.First();
-                    }
-                )
-        );
         return mappedUser;
+    }
+
+    public async Task MockCreateAsync(CreateUserRequest request, string password)
+    {
+        var userExist = await _userManager.FindByEmailAsync(request.Email);
+        if (userExist != null || request.Role == EnvVars.Role.PwrUser)
+            throw new HttpException(HttpStatusCode.BadRequest);
+
+        if (request.Avatar.IsNullOrEmpty())
+            request.Avatar = await DiceBearHelpers.GetAvatarAsync();
+
+        var newUser = _mapper.Map<AppUser>(request);
+        var userCreated = await _userManager.CreateAsync(newUser, password);
+        await AddToDepartmentAsync(newUser, request.Department);
+        await _userManager.AddToRoleAsync(newUser, request.Role);
+
+        if (!userCreated.Succeeded)
+        {
+            await _userManager.DeleteAsync(newUser);
+            throw new HttpException(HttpStatusCode.InternalServerError);
+        }
     }
 
     public async Task RemoveAsync(string userId)
